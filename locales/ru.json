@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "title": {
+      "main": "LaunchGate - стартап",
+      "homePage": "LaunchGate - стартап"
+    },
+    "description": "LaunchGate - сервис для создания стратапа поиска хакатона"
+  },
+  "pages":{
+    "homePage": {
+      "newLook": "новый_взгляд",
+      "platformForFirst": "Платформа для тех, кто ищет *** и хочет открыть миру новый взгляд на вещи",
+      "platformForSecond": "открыть миру новый взгляд на вещи",
+      "joining": "ПРИСОЕДИНЕНИЕ",
+      "weHelpFirst": "Мы помогаем найти или создать нужный",
+      "weHelpSecond": "конкурс или событие быстро и ***",
+      "find": "Найти",
+      "create": "Создать",
+      "competition": "Конкурс",
+      "event": "Событие"
+    }
+  },
+  "header": {
+    "join": "Участвовать",
+    "create": "Организовать",
+    "login": "Войти"
+  }
+
+}
