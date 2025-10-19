@@ -9,6 +9,11 @@ export const SHomePage = styled.div`
 `;
 
 export const SHomePageBanner = styled.div`
+  pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
   display: flex;
   justify-content: center;
   width: 100%;
@@ -175,5 +180,11 @@ export const SLargeButton = styled(Button).attrs(() => ({
     width: 130px;
     font-size: 54px;
     border: 4px solid ${({ theme }) => theme.colors.white};
+  }
+`;
+
+export const SButton = styled(Button)`
+  &.ant-btn-variant-outlined {
+    padding: 0 15px;
   }
 `;

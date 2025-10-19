@@ -53,6 +53,11 @@ a:hover {
     text-decoration: none;
 }
 
+a:-webkit-any-link:active,
+a:-webkit-any-link {
+    color: inherit ;
+}
+
 /* Common */
 aside,
 nav,

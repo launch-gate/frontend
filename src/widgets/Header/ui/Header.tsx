@@ -3,9 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import React from "react";
 
 import { appLogo } from "@/shared/assets";
 import { Button } from "@/shared/components";
+import { routes } from "@/shared/config";
 
 import { SHeader, SHeaderActions, SHeaderMainContent } from "./header.styles";
 
@@ -15,7 +17,9 @@ export const Header = () => {
   return (
     <SHeader>
       <SHeaderMainContent>
-        <Image src={appLogo} alt="app-logo" width={132} />
+        <Link href={routes.HOME_PAGE}>
+          <Image src={appLogo} alt="app-logo" width={132} />
+        </Link>
         <SHeaderActions>
           <Button type="text">
             <Link href={"/competition"}>{t("join")}</Link>

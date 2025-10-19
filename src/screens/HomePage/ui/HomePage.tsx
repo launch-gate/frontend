@@ -7,6 +7,7 @@ import { Button } from "@/shared/components/Button";
 
 import {
   SBannerContent,
+  SButton,
   SButtonsFirstRow,
   SButtonsThirdRow,
   SCircleButtonsFirstRow,
@@ -41,14 +42,14 @@ export const HomePage = () => {
           <SFirstRow>
             <SColumnFlex>
               <SButtonsFirstRow>
-                <Button color={"white"}>#{t("newLook")}</Button>
+                <SButton color={"white"}>#{t("newLook")}</SButton>
                 <SCircleButtonsFirstRow>
-                  <Button shape="circle" color={"white"}>
+                  <SButton shape="circle" color={"white"}>
                     #
-                  </Button>
-                  <Button shape="circle" color={"transparentWhite"}>
+                  </SButton>
+                  <SButton shape="circle" color={"transparentWhite"}>
                     #
-                  </Button>
+                  </SButton>
                 </SCircleButtonsFirstRow>
               </SButtonsFirstRow>
               <div>
@@ -86,12 +87,12 @@ export const HomePage = () => {
           <SThirdRow>
             <SInfoThirdRow>
               <SButtonsThirdRow>
-                <Button shape={"circle"} color={"white"}>
+                <SButton shape={"circle"} color={"white"}>
                   <ArrowRight />
-                </Button>
-                <Button shape={"circle"} color={"transparentWhite"}>
+                </SButton>
+                <SButton shape={"circle"} color={"transparentWhite"}>
                   #
-                </Button>
+                </SButton>
               </SButtonsThirdRow>
               <div>
                 {t("weHelpFirst")}

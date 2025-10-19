@@ -2,7 +2,8 @@
   "metadata": {
     "title": {
       "main": "LaunchGate - стартап",
-      "homePage": "LaunchGate - стартап"
+      "homePage": "LaunchGate - стартап",
+      "create": "LaunchGate - создание соревнования"
     },
     "description": "LaunchGate - сервис для создания стратапа поиска хакатона"
   },

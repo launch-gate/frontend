@@ -2,17 +2,17 @@
 
 import { getTranslations } from "next-intl/server";
 
-import { HomePage } from "@/screens/HomePage";
+import { CreatePage } from "@/screens/CreatePage";
 
 export async function generateMetadata() {
   const t = await getTranslations();
 
   return {
-    title: t("metadata.title.homePage"),
+    title: t("metadata.title.create"),
     description: t("metadata.description"),
   };
 }
 
-export default async function Home() {
-  return <HomePage />;
+export default async function Create() {
+  return <CreatePage />;
 }
