@@ -1,11 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 
 import { Cross } from "@/shared/assets";
 import { routes } from "@/shared/config";
-import { Button, Input } from "@/shared/components";
-import { Steps } from "@/shared/components/Steps/ui/Steps";
+import { Button, Steps } from "@/shared/components";
+import {
+  BasicsCompetition,
+  DecorationCompetition,
+  FirstStepsCompetition,
+  MaterialsCompetition,
+  RequirementsCompetition,
+} from "@/entities/competition";
 
 import {
   SButtonSection,
@@ -13,8 +20,6 @@ import {
   SCreatePage,
   SForm,
   SFormContent,
-  SFormItem,
-  SFormTitle,
   SMainContent,
   SPageHeader,
   STitle,
@@ -24,26 +29,41 @@ const items = [
   {
     title: "Первые шаги",
     description: "Название, дата проведения",
+    component: FirstStepsCompetition,
   },
   {
     title: "Основы",
     description: "Базовая информация",
+    component: BasicsCompetition,
   },
   {
     title: "Требования",
     description: "Условия для участия",
+    component: RequirementsCompetition,
   },
   {
     title: "Оформление",
     description: "Внешний вид конкурса",
+    component: DecorationCompetition,
   },
   {
     title: "Страница конкурса",
     description: "Базовые и доп. материалы",
+    component: MaterialsCompetition,
   },
 ];
 
 export const CreatePage = () => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const showPrevButton = currentStep > 0;
+  const showNextButton = currentStep < items.length - 1;
+  const showFinishButton = currentStep === items.length - 1;
+
+  const handlePrevButtonClick = () => setCurrentStep((prev) => prev - 1);
+  const handleNextButtonClick = () => setCurrentStep((prev) => prev + 1);
+
+  const CurrentStageComponent = items[currentStep].component;
+
   return (
     <SCreatePage>
       <SPageHeader>
@@ -56,24 +76,31 @@ export const CreatePage = () => {
       </SPageHeader>
       <SMainContent>
         <Steps
-          current={1}
+          current={currentStep}
           percent={60}
           labelPlacement="vertical"
           items={items}
         />
         <SForm>
           <SFormContent>
-            <SFormItem>
-              <SFormTitle>Название</SFormTitle>
-              <Input placeholder={"Например, Хакатон по продвижению проекта"} />
-            </SFormItem>
-            <SFormItem>
-              <SFormTitle>Дата старта подачи заявок</SFormTitle>
-              <Input placeholder={"Форма календаря выпадающая"} />
-            </SFormItem>
+            <CurrentStageComponent />
           </SFormContent>
           <SButtonSection>
-            <Button color="violet">Далее</Button>
+            {showPrevButton && (
+              <Button color="gray" onClick={handlePrevButtonClick}>
+                Назад
+              </Button>
+            )}
+            {showNextButton && (
+              <Button color="violet" onClick={handleNextButtonClick}>
+                Далее
+              </Button>
+            )}
+            {showFinishButton && (
+              <Link href={routes.HOME_PAGE}>
+                <Button color="violet">Завершить</Button>
+              </Link>
+            )}
           </SButtonSection>
         </SForm>
       </SMainContent>

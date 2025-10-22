@@ -35,16 +35,6 @@ export const SForm = styled.div`
   gap: 60px;
 `;
 
-export const SFormTitle = styled.div`
-  ${({ theme }) => theme.font.title2}
-`;
-
-export const SFormItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
 export const SFormContent = styled.div`
   display: flex;
   flex-direction: column;
@@ -54,4 +44,5 @@ export const SFormContent = styled.div`
 export const SButtonSection = styled.div`
   display: flex;
   justify-content: center;
+  gap: 24px;
 `;
