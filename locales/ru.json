@@ -3,7 +3,8 @@
     "title": {
       "main": "LaunchGate - стартап",
       "homePage": "LaunchGate - стартап",
-      "create": "LaunchGate - создание соревнования"
+      "create": "LaunchGate - создание соревнования",
+      "competition": "LaunchGate - поиск соревнования"
     },
     "description": "LaunchGate - сервис для создания стратапа поиска хакатона"
   },

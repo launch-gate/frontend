@@ -10,14 +10,21 @@
   },
   "dependencies": {
     "@next/bundle-analyzer": "^15.5.4",
+    "@tanstack/react-query": "^5.90.5",
     "antd": "^5.27.5",
+    "axios": "^1.12.2",
     "css": "^3.0.0",
+    "formik": "^2.4.6",
     "next": "15.5.4",
     "next-intl": "^3.26.3",
     "prettier": "^3.6.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "styled-components": "^6.1.19"
+    "react-virtuoso": "^4.14.1",
+    "styled-components": "^6.1.19",
+    "tanstack": "^1.0.3",
+    "yup": "^1.7.1",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
