@@ -1,13 +1,15 @@
 import { useGetCompetitionsList } from "@/entities/competition/api";
-import { competitionFilterStore } from "@/entities/competition";
-import { VirtualizedList } from "@/shared/components";
+import {
+  CompetitionCard,
+  competitionFilterStore,
+} from "@/entities/competition";
 
 export const CompetitionsList = () => {
   const filters = competitionFilterStore().getFilters();
-  const getCompetitionsList = useGetCompetitionsList(filters.find);
+  // const getCompetitionsList = useGetCompetitionsList(filters.find);
 
   return (
-    <VirtualizedList
+    /*<VirtualizedList
       data={getCompetitionsList.data}
       isError={getCompetitionsList.isError}
       isFetching={getCompetitionsList.isFetching}
@@ -17,6 +19,13 @@ export const CompetitionsList = () => {
       itemLoadingContent={itemLoadingContent}
       gap={0}
       isNotFound={!!getCompetitionsList.data}
-    />
+    />*/ <>
+      <CompetitionCard />
+      <CompetitionCard />
+      <CompetitionCard />
+      <CompetitionCard />
+      <CompetitionCard />
+      <CompetitionCard />
+    </>
   );
 };
