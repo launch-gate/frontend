@@ -6,7 +6,6 @@ import { Dayjs } from "dayjs";
 import { initialCreateCompetitionState } from "./initialCreateCompetitionState";
 import {
   CompetitionType,
-  DateDayjsType,
   ICreateCompetition,
   ICreateCompetitionFormik,
   IPrize,
@@ -33,7 +32,7 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
     setValues((prev) => ({ ...prev, name: e.target.value }));
   };
   const onChangeShortDescription = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setValues((prev) => ({ ...prev, name: e.target.value }));
+    setValues((prev) => ({ ...prev, shortDescription: e.target.value }));
   };
   const onRegistrationDateRangeChange: RangePickerProps["onChange"] = (
     dates,
@@ -67,10 +66,9 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
     }));
   };
   const onTagInfoChange = (tags: ITag["id"][]) => {
-    console.log(tags);
     setValues((prev) => ({
       ...prev,
-      tag: tags,
+      tagInfos: tags,
     }));
   };
   const onCompetitionTypeChange = (competitionType: CompetitionType) => {
