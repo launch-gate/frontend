@@ -3,9 +3,9 @@ import { Select } from "antd";
 
 import { Cross } from "@/shared/assets";
 
-export const SSelect = styled(Select).attrs({
-  allowClear: { clearIcon: <Cross /> },
-})`
+export const SSelect = styled(Select).attrs((props) => ({
+  allowClear: props.allowClear === false ? false : { clearIcon: <Cross /> },
+}))`
   &.ant-select-single:not(.ant-select-customize-input) .ant-select-selector,
   &.ant-select-multiple .ant-select-selector {
     border-radius: 60px;
@@ -32,6 +32,13 @@ export const SSelect = styled(Select).attrs({
     &:hover {
       color: ${({ theme }) => theme.colors.violet};
     }
+  }
+
+  &.ant-select-single:not(.ant-select-customize-input)
+    .ant-select-selector:after,
+  &.ant-select-single .ant-select-selector .ant-select-selection-item,
+  &.ant-select-single .ant-select-selector .ant-select-selection-wrap:after {
+    line-height: unset;
   }
 
   .ant-select-arrow {

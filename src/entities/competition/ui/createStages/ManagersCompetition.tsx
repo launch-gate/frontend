@@ -1,8 +1,11 @@
+import { FC } from "react";
+
 import { Input } from "@/shared/components";
 
 import { SFormItem, SFormTitle } from "./createStages.styles";
+import { ICreateCompetitionFormik } from "../../model/createCompetitionFilters.types";
 
-export const ManagersCompetition = () => {
+export const ManagersCompetition: FC<ICreateCompetitionFormik> = () => {
   return (
     <>
       <SFormItem>

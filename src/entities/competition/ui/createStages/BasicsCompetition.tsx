@@ -1,8 +1,14 @@
 import { SelectProps } from "antd";
+import { FC } from "react";
+import dayjs, { Dayjs } from "dayjs";
 
-import { Input, Select, TextArea } from "@/shared/components";
-import { DateRangePicker } from "@/shared/components/DateRangePicker";
+import { Input, Select, TextArea, DateRangePicker } from "@/shared/components";
 
+import {
+  DateType,
+  ICreateCompetitionFormik,
+  Pair,
+} from "../../model/createCompetitionFilters.types";
 import { SFormItem, SFormTitle } from "./createStages.styles";
 
 const tagOptions: SelectProps["options"] = [
@@ -27,41 +33,65 @@ const competitionTypeOptions: SelectProps["options"] = [
 ];
 
 const managersOptions: SelectProps["options"] = [
-  { label: "Менеджер Иван", value: 1 },
-  { label: "Менеджер Алиса", value: 2 },
-  { label: "Менеджер Игорь", value: 3 },
-  { label: "Менеджер Алексей", value: 4 },
+  { label: "Менеджер Иван", value: "1" },
+  { label: "Менеджер Алиса", value: "2" },
+  { label: "Менеджер Игорь", value: "3" },
+  { label: "Менеджер Алексей", value: "4" },
 ];
 
-export const BasicsCompetition = () => {
+export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
+  name,
+  registrationDateRange,
+  competitionDateRange,
+  resultDateRange,
+  shortDescription,
+  tagInfos,
+  competitionType,
+}) => {
+  const timestampsToDayjs = (
+    timestamps: Pair<DateType>,
+  ): [Dayjs | null, Dayjs | null] => {
+    return [
+      timestamps[0] ? dayjs(timestamps[0]) : null,
+      timestamps[1] ? dayjs(timestamps[1]) : null,
+    ];
+  };
+
   return (
     <>
       <SFormItem>
         <SFormTitle>Название</SFormTitle>
-        <Input placeholder={"Например, Хакатон по продвижению проекта"} />
-      </SFormItem>
-
-      <SFormItem>
-        <SFormTitle>Дата старта подачи заявок</SFormTitle>
-        <Input placeholder={"Форма календаря выпадающая"} />
+        <Input
+          placeholder={name.placeHolder}
+          value={name.value}
+          onChange={name.onChange}
+        />
       </SFormItem>
 
       <SFormItem>
         <SFormTitle>Даты регистрации</SFormTitle>
         <DateRangePicker
-          placeholder={["Начало регистрации", "Конец регистрации"]}
+          placeholder={registrationDateRange.placeholder}
+          value={timestampsToDayjs(registrationDateRange.value)}
+          onChange={registrationDateRange.onChange}
         />
       </SFormItem>
 
       <SFormItem>
         <SFormTitle>Даты конкурса</SFormTitle>
-        <DateRangePicker placeholder={["Начало конкурса", "Конец конкурса"]} />
+        <DateRangePicker
+          placeholder={competitionDateRange.placeholder}
+          value={timestampsToDayjs(competitionDateRange.value)}
+          onChange={competitionDateRange.onChange}
+        />
       </SFormItem>
 
       <SFormItem>
         <SFormTitle>Даты подведения итогов</SFormTitle>
         <DateRangePicker
-          placeholder={["Начало подведения итогов", "Конец подведения итогов"]}
+          placeholder={resultDateRange.placeholder}
+          value={timestampsToDayjs(resultDateRange.value)}
+          onChange={resultDateRange.onChange}
         />
       </SFormItem>
 
@@ -69,7 +99,9 @@ export const BasicsCompetition = () => {
         <SFormTitle>Краткое описание</SFormTitle>
         <TextArea
           size="large"
-          placeholder="Опишите самую важную информацию о проекте"
+          placeholder={shortDescription.placeHolder}
+          value={shortDescription.value}
+          onChange={shortDescription.onChange}
         />
       </SFormItem>
 
@@ -78,7 +110,9 @@ export const BasicsCompetition = () => {
         <Select
           mode="multiple"
           options={tagOptions}
-          placeholder="Выберите теги конкурса"
+          placeholder={tagInfos.placeholder}
+          value={tagInfos.value}
+          onChange={tagInfos.onChange}
         />
       </SFormItem>
 
@@ -94,16 +128,9 @@ export const BasicsCompetition = () => {
         <SFormTitle>Тип конкурса</SFormTitle>
         <Select
           options={competitionTypeOptions}
-          placeholder="Выберите тип конкурса"
-        />
-      </SFormItem>
-
-      <SFormItem>
-        <SFormTitle>Менеджеры</SFormTitle>
-        <Select
-          mode="multiple"
-          options={managersOptions}
-          placeholder="Выберите менеджеров"
+          placeholder={competitionType.placeholder}
+          value={competitionType.value}
+          onChange={competitionType.onChange}
         />
       </SFormItem>
     </>

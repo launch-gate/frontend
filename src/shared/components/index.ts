@@ -9,3 +9,5 @@ export * from "./AppBanner";
 export * from "./TextArea";
 export * from "./Select";
 export * from "./Switch";
+export * from "./Slider";
+export * from "./DateRangePicker";

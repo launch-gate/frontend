@@ -10,8 +10,37 @@ export const SFormItem = styled.div`
   gap: 20px;
 `;
 
-export const SSwitchContainer = styled.div`
+export const SPrizeContainer = styled.div`
   display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+`;
+
+export const SPrizeItem = styled.div`
+  padding: 16px;
+  border: 1px solid ${({ theme }) => theme.colors.violet};
+  border-radius: 28px;
+`;
+
+export const SPrizeHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  margin-bottom: 12px;
+`;
+
+export const SPlaceLabel = styled.div`
+  color: ${({ theme }) => theme.colors.violet};
+`;
+
+export const SPrizeFields = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  gap: 12px;
+`;
+
+export const SPrizeActions = styled.div`
+  display: flex;
+  justify-content: center;
 `;

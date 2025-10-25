@@ -8,12 +8,10 @@ import { routes } from "@/shared/config";
 import { Button, Steps } from "@/shared/components";
 import {
   BasicsCompetition,
-  DecorationCompetition,
   ManagersCompetition,
-  MaterialsCompetition,
   PrizesCompetition,
-  RequirementsCompetition,
   RestrictionsCompetition,
+  useCreateCompetitionForm,
 } from "@/entities/competition";
 
 import {
@@ -51,6 +49,7 @@ const items = [
 ];
 
 export const CreatePage = () => {
+  const args = useCreateCompetitionForm();
   const [currentStep, setCurrentStep] = useState(0);
   const showPrevButton = currentStep > 0;
   const showNextButton = currentStep < items.length - 1;
@@ -80,7 +79,7 @@ export const CreatePage = () => {
         />
         <SForm>
           <SFormContent>
-            <CurrentStageComponent />
+            <CurrentStageComponent {...args} />
           </SFormContent>
           <SButtonSection>
             {showPrevButton && (

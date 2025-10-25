@@ -13,6 +13,7 @@ export const getAntdTheme = (
   components: {
     Button: {
       borderRadius: 100,
+      colorPrimaryHover: styledComponentsTheme.colors.violet,
     },
     DatePicker: {
       colorPrimary: styledComponentsTheme.colors.violet,
@@ -35,6 +36,24 @@ export const getAntdTheme = (
       trackMinWidth: 44,
       trackHeight: 22,
       handleSize: 18,
+    },
+    Slider: {
+      colorPrimary: styledComponentsTheme.colors.violet,
+      colorPrimaryBorder: styledComponentsTheme.colors.violet,
+      trackBg: styledComponentsTheme.colors.violet,
+      trackHoverBg: styledComponentsTheme.colors.violet,
+      handleColor: styledComponentsTheme.colors.violet,
+      handleActiveColor: styledComponentsTheme.colors.violet,
+      dotBorderColor: `${styledComponentsTheme.colors.violet}`,
+      dotActiveBorderColor: styledComponentsTheme.colors.violet,
+      railBg: "#f0f0f0",
+      railHoverBg: "#e1e1e1",
+      handleLineWidth: 2,
+      handleSize: 16,
+      handleSizeHover: 18,
+      controlSize: 16,
+      colorTextDisabled: "#00000040",
+      colorBgContainerDisabled: "#00000040",
     },
   },
 });
