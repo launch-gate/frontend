@@ -1,12 +1,18 @@
 import React, { FC } from "react";
-import { TextAreaProps } from "antd/es/input";
+import { Form } from "antd";
 
 import { STextArea } from "./textArea.styles";
+import { TextAreaPropss } from "../model/textArea.types";
 
-export const TextArea: FC<TextAreaProps> = ({
+export const TextArea: FC<TextAreaPropss> = ({
   size = "middle",
-  autoCorrect = false,
+  validateStatus,
+  help,
   ...props
 }) => {
-  return <STextArea size={size} {...props} />;
+  return (
+    <Form.Item validateStatus={validateStatus} help={help}>
+      <STextArea size={size} {...props} />
+    </Form.Item>
+  );
 };

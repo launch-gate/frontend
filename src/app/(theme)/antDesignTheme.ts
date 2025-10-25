@@ -11,6 +11,11 @@ export const getAntdTheme = (
     lineHeight: 1,
   },
   components: {
+    Form: {
+      itemMarginBottom: 16,
+      verticalLabelPadding: "0 0 8px",
+      labelFontSize: 14,
+    },
     Button: {
       borderRadius: 100,
       colorPrimaryHover: styledComponentsTheme.colors.violet,

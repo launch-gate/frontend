@@ -2,18 +2,14 @@ import { ChangeEvent } from "react";
 import { Dayjs } from "dayjs";
 import { RangePickerProps } from "antd/es/date-picker";
 
+import { ITag } from "@/entities/tags";
+import { InputProps } from "@/shared/components";
+
 export type RoleType = "ADMIN";
-export interface ITag {
-  name: string;
-  id: number;
-}
+
 export type ContactType = "VK" | "TG" | "MAIL";
 export interface IContactInfo {
   contactsType: ContactType;
-  source: string;
-}
-export interface IContactInfo {
-  contactsTypeString: string; //TODO поменять на contactsType
   source: string;
 }
 export interface IContact {
@@ -30,7 +26,6 @@ export interface IManager {
   isCreator: boolean;
   role: RoleType;
   contacts: IContact[];
-  hostId: number;
 }
 export type PrizeType = "MONEY" | "CRYPTO" | "CUSTOM";
 export interface IPrize {
@@ -70,7 +65,6 @@ export interface ICreateCompetition {
 export type StageType = number;
 export type Pair<T> = T[];
 export type DateType = number | null | undefined;
-export type DateDayjsType = Dayjs | null;
 
 export interface ICreateCompetitionFormik {
   currentStage: { value: StageType; onChange: (stage: StageType) => void };
@@ -78,72 +72,107 @@ export interface ICreateCompetitionFormik {
     value: string;
     placeHolder: string;
     onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   registrationDateRange: {
     value: Pair<DateType>;
     onChange: RangePickerProps["onChange"];
-    placeholder: Pair<string>;
+    placeholder: [string, string];
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   competitionDateRange: {
     value: Pair<DateType>;
     onChange: RangePickerProps["onChange"];
-    placeholder: Pair<string>;
+    placeholder: [string, string];
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   resultDateRange: {
     value: Pair<DateType>;
     onChange: RangePickerProps["onChange"];
-    placeholder: Pair<string>;
+    placeholder: [string, string];
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   shortDescription: {
     value: string;
     placeHolder: string;
     onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   tagInfos: {
     value: ITag["id"][];
     onChange: (tagValues: ITag["id"][]) => void;
     placeholder: string;
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   competitionType: {
-    value: string | null;
+    value: CompetitionType | null;
     placeholder: string;
     onChange: (competitionType: CompetitionType) => void;
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
+  };
+  competitionFormat: {
+    value: CompetitionFormatType | null;
+    placeholder: string;
+    onChange: (competitionType: CompetitionFormatType) => void;
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   isPublic: {
     value: boolean;
     placeholder: string;
     onChange: (e: boolean) => void;
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   participantAgeRange: {
     value: Pair<number>;
     onChange: (values: Pair<number>) => void;
     placeholder: Pair<string>;
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   targetAudience: {
     value: string;
     placeholder: string;
     onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   isTeamRequired: {
     value: boolean;
     placeholder: string;
     onChange: (e: boolean) => void;
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   teamSizeRange: {
     value: Pair<number>;
     onChange: (values: Pair<number>) => void;
     placeholder: Pair<string>;
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   isCountry: {
     value: boolean;
     placeHolder: string;
     onChange: (e: boolean) => void;
+    validateStatus: InputProps["validateStatus"];
+    help: InputProps["help"];
   };
   prizeInfo: {
     description: {
       value: string;
       placeHolder: string;
       onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+      validateStatus: InputProps["validateStatus"];
+      help: InputProps["help"];
     };
     prizesInfo: {
       value: IPrize[];

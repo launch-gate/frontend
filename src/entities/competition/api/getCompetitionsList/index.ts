@@ -24,7 +24,7 @@ const getCompetitionsList = async (
       return validate;
     })
     .catch((error: AxiosError<IError> | ValidationError) => {
-      const errorName = "/preorders/getCargoTypesList";
+      const errorName = "/competition";
 
       if (error instanceof AxiosError) {
         throw new DetailsError(errorName, {

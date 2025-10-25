@@ -56,7 +56,7 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
       timestamps[1] ? dayjs(timestamps[1]) : null,
     ];
   };
-
+  console.log(name.help, name.validateStatus);
   return (
     <>
       <SFormItem>
@@ -65,6 +65,8 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
           placeholder={name.placeHolder}
           value={name.value}
           onChange={name.onChange}
+          help={name.help}
+          validateStatus={name.validateStatus}
         />
       </SFormItem>
 
@@ -102,6 +104,8 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
           placeholder={shortDescription.placeHolder}
           value={shortDescription.value}
           onChange={shortDescription.onChange}
+          validateStatus={shortDescription.validateStatus}
+          help={shortDescription.help}
         />
       </SFormItem>
 
@@ -131,6 +135,8 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
           placeholder={competitionType.placeholder}
           value={competitionType.value}
           onChange={competitionType.onChange}
+          help={competitionType.help}
+          validateStatus={competitionType.validateStatus}
         />
       </SFormItem>
     </>

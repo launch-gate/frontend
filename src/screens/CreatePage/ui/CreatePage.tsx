@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 
 import { Cross } from "@/shared/assets";
 import { routes } from "@/shared/config";
@@ -50,15 +49,15 @@ const items = [
 
 export const CreatePage = () => {
   const args = useCreateCompetitionForm();
-  const [currentStep, setCurrentStep] = useState(0);
-  const showPrevButton = currentStep > 0;
-  const showNextButton = currentStep < items.length - 1;
-  const showFinishButton = currentStep === items.length - 1;
+  const showPrevButton = args.currentStage.value > 0;
+  const showNextButton = args.currentStage.value < items.length - 1;
+  const showFinishButton = args.currentStage.value === items.length - 1;
 
-  const handlePrevButtonClick = () => setCurrentStep((prev) => prev - 1);
-  const handleNextButtonClick = () => setCurrentStep((prev) => prev + 1);
-
-  const CurrentStageComponent = items[currentStep].component;
+  const handlePrevButtonClick = () =>
+    args.currentStage.onChange(args.currentStage.value - 1);
+  const handleNextButtonClick = () =>
+    args.currentStage.onChange(args.currentStage.value + 1);
+  const CurrentStageComponent = items[args.currentStage.value].component;
 
   return (
     <SCreatePage>
@@ -72,7 +71,7 @@ export const CreatePage = () => {
       </SPageHeader>
       <SMainContent>
         <Steps
-          current={currentStep}
+          current={args.currentStage.value}
           percent={60}
           labelPlacement="vertical"
           items={items}

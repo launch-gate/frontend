@@ -19,4 +19,5 @@ export const initialCreateCompetitionState: ICreateCompetition = {
   managers: [],
   eventContacts: [],
   prizeInfo: { description: "", prizes: [] },
+  currentStage: 0,
 };
