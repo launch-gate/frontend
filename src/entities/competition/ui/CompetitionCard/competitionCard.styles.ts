@@ -4,6 +4,7 @@ export const SCompetitionCard = styled.div`
   display: grid;
   grid-template-columns: 4fr 5fr;
   border-radius: 12px;
+  overflow: hidden;
   width: 100%;
   border: 1px solid ${({ theme }) => theme.colors.gray.primary};
 `;
@@ -14,7 +15,6 @@ export const SCardImage = styled.div`
   justify-content: space-between;
   background-color: ${({ theme }) => theme.colors.gray.primary};
   padding: 16px;
-  border-radius: inherit;
 `;
 
 export const STagsSection = styled.div`
@@ -32,6 +32,7 @@ export const SMainContent = styled.div`
   justify-content: space-between;
   gap: 74px;
   padding: 24px;
+  background: ${({ theme }) => theme.colors.white};
 `;
 
 export const SMainInfo = styled.div`

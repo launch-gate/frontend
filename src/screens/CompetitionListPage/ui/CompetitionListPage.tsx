@@ -7,6 +7,8 @@ import { CompetitionsList } from "@/widgets/CompetitionsList";
 import { CompetitionFilters } from "@/features/CompetitionFilters";
 
 import {
+  SBanner,
+  SBannerWrapper,
   SCompetitionsListPage,
   SFilters,
   SMainContent,
@@ -20,9 +22,11 @@ export const CompetitionListPage = () => {
 
   return (
     <SCompetitionsListPage>
-      <SFilters>
-        <CompetitionFilters />
-      </SFilters>
+      <SBannerWrapper>
+        <SBanner />
+      </SBannerWrapper>
+
+      <CompetitionFilters />
       <SMainContent>
         <Input
           onChange={handleChangeInputSearch}

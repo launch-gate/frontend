@@ -4,6 +4,7 @@ export const SCreatePage = styled.div`
   display: flex;
   flex-direction: column;
   gap: 62px;
+  padding: 0 120px 40px 120px;
 `;
 
 export const SPageHeader = styled.div`
@@ -36,8 +37,7 @@ export const SForm = styled.div`
 `;
 
 export const SFormContent = styled.div`
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 40px;
 `;
 

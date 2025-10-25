@@ -9,3 +9,9 @@ export const SFormItem = styled.div`
   flex-direction: column;
   gap: 20px;
 `;
+
+export const SSwitchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 20px;
+`;

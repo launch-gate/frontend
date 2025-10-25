@@ -9,9 +9,11 @@ import { Button, Steps } from "@/shared/components";
 import {
   BasicsCompetition,
   DecorationCompetition,
-  FirstStepsCompetition,
+  ManagersCompetition,
   MaterialsCompetition,
+  PrizesCompetition,
   RequirementsCompetition,
+  RestrictionsCompetition,
 } from "@/entities/competition";
 
 import {
@@ -27,29 +29,24 @@ import {
 
 const items = [
   {
-    title: "Первые шаги",
+    title: "Базовая информация",
     description: "Название, дата проведения",
-    component: FirstStepsCompetition,
-  },
-  {
-    title: "Основы",
-    description: "Базовая информация",
     component: BasicsCompetition,
   },
   {
-    title: "Требования",
-    description: "Условия для участия",
-    component: RequirementsCompetition,
+    title: "Ограничения и правила",
+    description: "Допустимый возраст, регион",
+    component: RestrictionsCompetition,
   },
   {
-    title: "Оформление",
-    description: "Внешний вид конкурса",
-    component: DecorationCompetition,
+    title: "Контакты и организаторы",
+    description: "Информация о менеджерах проекта",
+    component: ManagersCompetition,
   },
   {
-    title: "Страница конкурса",
-    description: "Базовые и доп. материалы",
-    component: MaterialsCompetition,
+    title: "Призы",
+    description: "Места и призы",
+    component: PrizesCompetition,
   },
 ];
 

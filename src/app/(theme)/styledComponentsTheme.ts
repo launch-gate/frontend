@@ -11,6 +11,7 @@ const lightThemeColors: IColorsTheme = {
   },
   white: "rgba(255, 255, 255, 1)",
   violet: "rgba(30, 4, 146, 1)",
+  lightViolet: "#D1CCEF",
 };
 
 const AppFonts = {

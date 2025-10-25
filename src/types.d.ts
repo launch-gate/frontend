@@ -26,6 +26,7 @@ export interface IColorsTheme {
   };
   white: string;
   violet: string;
+  lightViolet: string;
 }
 
 export type ThemeTitleType = "light";

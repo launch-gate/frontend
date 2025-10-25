@@ -4,3 +4,8 @@ export * from "./Steps";
 export * from "./VirtualizedList";
 export * from "./Tag";
 export * from "./Segmented";
+export * from "./Checkbox";
+export * from "./AppBanner";
+export * from "./TextArea";
+export * from "./Select";
+export * from "./Switch";

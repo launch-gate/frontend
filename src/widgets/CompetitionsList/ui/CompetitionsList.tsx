@@ -19,13 +19,13 @@ export const CompetitionsList = () => {
       itemLoadingContent={itemLoadingContent}
       gap={0}
       isNotFound={!!getCompetitionsList.data}
-    />*/ <>
+    />*/ <div style={{ display: "grid", gap: 20, paddingBottom: 20 }}>
       <CompetitionCard />
       <CompetitionCard />
       <CompetitionCard />
       <CompetitionCard />
       <CompetitionCard />
       <CompetitionCard />
-    </>
+    </div>
   );
 };
