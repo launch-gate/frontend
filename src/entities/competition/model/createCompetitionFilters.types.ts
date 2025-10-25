@@ -68,7 +68,7 @@ export interface ICreateCompetition {
 }
 
 export type StageType = number;
-export type Pair<T> = [T, T];
+export type Pair<T> = T[];
 export type DateType = number | null | undefined;
 export type DateDayjsType = Dayjs | null;
 
@@ -143,7 +143,7 @@ export interface ICreateCompetitionFormik {
     description: {
       value: string;
       placeHolder: string;
-      onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+      onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
     };
     prizesInfo: {
       value: IPrize[];

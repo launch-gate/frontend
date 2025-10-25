@@ -1,9 +1,11 @@
 import { useFormik } from "formik";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useCallback, useEffect } from "react";
 import { RangePickerProps } from "antd/es/date-picker";
 import { Dayjs } from "dayjs";
+import { debounce } from "lodash";
 
-import { initialCreateCompetitionState } from "./initialCreateCompetitionState";
+import { createCompetitionStore } from "@/entities/competition";
+
 import {
   CompetitionType,
   ICreateCompetition,
@@ -14,13 +16,23 @@ import {
 } from "../model/createCompetitionFilters.types";
 
 export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
+  const { createCompetitionState, setState } = createCompetitionStore();
   const onSubmit = (form: ICreateCompetition) => console.log(form);
   const { values, setValues, errors, submitForm } =
     useFormik<ICreateCompetition>({
-      initialValues: initialCreateCompetitionState,
+      initialValues: createCompetitionState,
       onSubmit,
+      enableReinitialize: true,
     });
-  console.log(values);
+  const debouncedSetState = useCallback(
+    debounce((newValues: ICreateCompetition) => {
+      setState(newValues);
+    }, 300),
+    [setState],
+  );
+  useEffect(() => {
+    debouncedSetState(values);
+  }, [values, setState]);
 
   const onCurrentStageChange = (currentStage: number) => {
     setValues((prev) => ({
@@ -110,7 +122,7 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
       isCountry,
     }));
   };
-  const onPrizeDescriptionChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const onPrizeDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setValues((prev) => ({
       ...prev,
       prizeInfo: { ...prev.prizeInfo, description: e.target.value },

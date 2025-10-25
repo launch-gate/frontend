@@ -19,57 +19,43 @@ import {
 } from "../../model/prizesTypes.types";
 import { ICreateCompetitionFormik } from "../../model/createCompetitionFilters.types";
 
-export const PrizesCompetition: FC<ICreateCompetitionFormik> = () => {
-  const [prizeData, setPrizeData] = useState<PrizeData>({
-    description: "",
-    prizes: [],
-  });
-
+export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({
+  prizeInfo,
+}) => {
   const addPrize = () => {
-    const newPlace = prizeData.prizes.length + 1;
-    setPrizeData({
-      ...prizeData,
-      prizes: [
-        ...prizeData.prizes,
-        {
-          medalPlace: newPlace,
-          type: "MONEY",
-          source: "",
-        },
-      ],
-    });
+    const newPlace = prizeInfo.prizesInfo.value.length + 1;
+    prizeInfo.prizesInfo.onChange([
+      ...prizeInfo.prizesInfo.value,
+      {
+        medalPlace: newPlace,
+        type: "MONEY",
+        source: "",
+      },
+    ]);
   };
 
   const removePrize = (index: number) => {
-    const updatedPrizes = prizeData.prizes.filter((_, i) => i !== index);
+    const updatedPrizes = prizeInfo.prizesInfo.value.filter(
+      (_, i) => i !== index,
+    );
     const renumberedPrizes = updatedPrizes.map((prize, idx) => ({
       ...prize,
       medalPlace: idx + 1,
     }));
-    setPrizeData({
-      ...prizeData,
-      prizes: renumberedPrizes,
-    });
+    prizeInfo.prizesInfo.onChange(renumberedPrizes);
   };
 
   const updatePrize = (index: number, field: keyof Prize, value: string) => {
-    const updatedPrizes = [...prizeData.prizes];
+    const updatedPrizes = [...prizeInfo.prizesInfo.value];
     updatedPrizes[index] = {
       ...updatedPrizes[index],
       [field]: field === "medalPlace" ? parseInt(value) || 1 : value,
     };
-    setPrizeData({
-      ...prizeData,
-      prizes: updatedPrizes,
-    });
+    prizeInfo.prizesInfo.onChange(updatedPrizes);
   };
 
-  const updateDescription = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setPrizeData({
-      ...prizeData,
-      description: e.target.value,
-    });
-  };
+  const updateDescription = (e: ChangeEvent<HTMLTextAreaElement>) =>
+    prizeInfo.description.onChange(e);
 
   const getPlaceLabel = (place: number) => {
     return `${place} место`;
@@ -101,7 +87,7 @@ export const PrizesCompetition: FC<ICreateCompetitionFormik> = () => {
       <SFormItem>
         <SFormTitle>Призы</SFormTitle>
         <SPrizeContainer>
-          {prizeData.prizes.map((prize, index) => (
+          {prizeInfo.prizesInfo.value.map((prize, index) => (
             <SPrizeItem key={index}>
               <SPrizeHeader>
                 <SPlaceLabel>{getPlaceLabel(prize.medalPlace)}</SPlaceLabel>

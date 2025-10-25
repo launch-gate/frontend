@@ -2,9 +2,9 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { initialCreateCompetitionState } from "../lib/initialCreateCompetitionState";
-import { ICreateCompetition } from "./createCompetitionFilters.types";
+import { ICreateCompetitionStore } from "./createCompetitionFilters.types";
 
-export const createCompetitionStore = create<ICreateCompetition>()(
+export const createCompetitionStore = create<ICreateCompetitionStore>()(
   persist(
     (set, get) => ({
       createCompetitionState: initialCreateCompetitionState,
@@ -12,19 +12,19 @@ export const createCompetitionStore = create<ICreateCompetition>()(
       setState: (updatedState) =>
         set((state) => ({
           createCompetitionState: {
-            ...state.competitionState,
+            ...state.createCompetitionState,
             ...updatedState,
           },
         })),
 
       resetState: () =>
         set(() => ({
-          createCompetitionState: initialFilters,
+          createCompetitionState: initialCreateCompetitionState,
         })),
 
       getState: () => {
         const state = get();
-        return state.competitionState;
+        return state.createCompetitionState;
       },
     }),
     {
