@@ -26,7 +26,9 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
     useCreateCompetition();
   const { createCompetitionState, setState } = createCompetitionStore();
   const onSubmit = async (form: ICreateCompetition) => {
-    mutateAsync(form)
+    const { currentStage, ...requestForm } = form;
+    console.log(requestForm);
+    mutateAsync(requestForm)
       .then(async () => {
         console.log("успех");
         router.push(routes.COMPETITIONS_PAGE);
@@ -165,17 +167,17 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
     }));
   };
   const onPrizeDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setFieldTouched("prizeInfo.description", true, true);
+    setFieldTouched("prize.description", true, true);
     setValues((prev) => ({
       ...prev,
-      prizeInfo: { ...prev.prizeInfo, description: e.target.value },
+      prize: { ...prev.prize, description: e.target.value },
     }));
   };
   const onPrizesChange = (prizes: IPrize[]) => {
-    setFieldTouched("prizeInfo.prizes", true, true);
+    setFieldTouched("prize.prizes", true, true);
     setValues((prev) => ({
       ...prev,
-      prizeInfo: { ...prev.prizeInfo, prizes: prizes },
+      prize: { ...prev.prize, prizes: prizes },
     }));
   };
 
@@ -285,16 +287,16 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
       validateStatus: errors.isCountry && "error",
       help: touched.isCountry && errors.isCountry,
     },
-    prizeInfo: {
+    prize: {
       description: {
-        value: values.prizeInfo.description,
+        value: values.prize.description,
         onChange: onPrizeDescriptionChange,
         placeHolder: "Описание призового фонда",
-        validateStatus: errors.prizeInfo?.description && "error",
-        help: touched.prizeInfo?.description && errors.prizeInfo?.description,
+        validateStatus: errors.prize?.description && "error",
+        help: touched.prize?.description && errors.prize?.description,
       },
       prizesInfo: {
-        value: values.prizeInfo.prizes,
+        value: values.prize.prizes,
         onChange: onPrizesChange,
         placeHolder: "Информация о призе",
       },

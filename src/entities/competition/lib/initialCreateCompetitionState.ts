@@ -18,6 +18,6 @@ export const initialCreateCompetitionState: ICreateCompetition = {
   isCountry: true,
   managers: [],
   eventContacts: [],
-  prizeInfo: { description: "", prizes: [] },
+  prize: { description: "", prizes: [] },
   currentStage: 0,
 };

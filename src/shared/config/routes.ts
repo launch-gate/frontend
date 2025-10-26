@@ -1,7 +1,7 @@
 export const routes = {
   HOME_PAGE: "/",
   CREATE_PAGE: "/create",
-  COMPETITIONS_PAGE: "/competitions",
+  COMPETITIONS_PAGE: "/competition",
   COMPETITION_PAGE: "/competitions/:id",
 };
 

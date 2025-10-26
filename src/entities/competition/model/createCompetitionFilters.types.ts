@@ -34,7 +34,7 @@ export interface IPrize {
   type: PrizeType;
   source: string;
 }
-export interface IPrizeInfo {
+export interface Iprize {
   description: string;
   prizes: IPrize[];
 }
@@ -60,7 +60,7 @@ export interface ICreateCompetition {
   isCountry: boolean;
   managers: IManager[];
   eventContacts: IEventContact[];
-  prizeInfo: IPrizeInfo;
+  prize: Iprize;
 }
 
 export type StageType = number;
@@ -167,7 +167,7 @@ export interface ICreateCompetitionFormik {
     validateStatus: InputProps["validateStatus"];
     help: InputProps["help"];
   };
-  prizeInfo: {
+  prize: {
     description: {
       value: string;
       placeHolder: string;

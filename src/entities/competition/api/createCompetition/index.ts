@@ -12,7 +12,7 @@ const createCompetition = async (
   competition: ICreateCompetitionRequest,
 ): Promise<void> =>
   API<void>({
-    url: "/competitions",
+    url: "/competitions/create",
     method: "POST",
     data: competition,
   })

@@ -15,7 +15,6 @@ const getSecondLevelBreadcrumb = (title: string) => [
 
 const exactRoutesMap: Partial<Record<RouteValue, BreadcrumbProps["items"]>> = {
   [routes.CREATE_PAGE]: getSecondLevelBreadcrumb("Организовать конкурс"),
-  [routes.COMPETITION_PAGE]: getSecondLevelBreadcrumb("Участвовать в конкурсе"),
 };
 
 export const getBreadcrumbItems = ({
@@ -23,5 +22,8 @@ export const getBreadcrumbItems = ({
 }: GetBreadcrumbProps): BreadcrumbProps["items"] => {
   const exact = exactRoutesMap[pathname as RouteValue];
   if (exact) return exact;
+  if (pathname.startsWith("/competition/")) {
+    return getSecondLevelBreadcrumb("Участвовать в конкурсе");
+  }
   return [];
 };

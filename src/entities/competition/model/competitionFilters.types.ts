@@ -1,5 +1,5 @@
 export interface ICompetitionStore {
-  find: string;
+  search: string;
 }
 
 export interface ICompetitionFiltersStore {

@@ -60,5 +60,14 @@ export const getAntdTheme = (
       colorTextDisabled: "#00000040",
       colorBgContainerDisabled: "#00000040",
     },
+    Tabs: {
+      colorPrimary: styledComponentsTheme.colors.violet,
+      colorPrimaryHover: styledComponentsTheme.colors.violet,
+      colorPrimaryActive: styledComponentsTheme.colors.violet,
+      itemSelectedColor: styledComponentsTheme.colors.violet,
+      itemHoverColor: styledComponentsTheme.colors.violet,
+      itemActiveColor: styledComponentsTheme.colors.violet,
+      inkBarColor: styledComponentsTheme.colors.violet,
+    },
   },
 });

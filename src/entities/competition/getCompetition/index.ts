@@ -3,19 +3,19 @@ import { AxiosError } from "axios";
 import { ValidationError } from "yup";
 
 import API, { DetailsError, IError } from "@/shared/api";
-import { ITag } from "@/entities/tags";
+import { IGetCreateCompetition } from "@/entities/competition/api";
 
-import { tagsArraySchema } from "./getTags.validation";
+import { competitionItemSchema } from "../api/getCompetitionsList/getCompetitionsList.validation";
 
 const getCompetitionTagsKey = "getCompetitionTags";
 
-const getTagsList = async (): Promise<ITag[]> => {
-  return API<ITag[]>({
-    url: `/tag/get-all`,
+const getCompetition = async (id: number): Promise<IGetCreateCompetition> => {
+  return API<IGetCreateCompetition>({
+    url: `/competitions/get/${id}`,
     method: "GET",
   })
     .then(async ({ data }) => {
-      const validate = await tagsArraySchema.validate(data, {
+      const validate = await competitionItemSchema.validate(data, {
         abortEarly: false,
       });
       return validate;
@@ -38,10 +38,8 @@ const getTagsList = async (): Promise<ITag[]> => {
     });
 };
 
-export const useGetTags = () =>
-  useQuery<ITag[], AxiosError, ITag[]>({
-    queryKey: [getCompetitionTagsKey],
-    queryFn: async (): Promise<ITag[]> => getTagsList(),
+export const useGetCompetition = (id: number) =>
+  useQuery<IGetCreateCompetition, AxiosError, IGetCreateCompetition>({
+    queryKey: [getCompetitionTagsKey, id],
+    queryFn: async (): Promise<IGetCreateCompetition> => getCompetition(id),
   });
-
-export * from "./getTags.types";

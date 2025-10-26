@@ -1,31 +1,35 @@
-import { useGetCompetitionsList } from "@/entities/competition/api";
+import {
+  useGetCompetitionsList,
+  IGetCreateCompetition,
+} from "@/entities/competition/api";
 import {
   CompetitionCard,
   competitionFilterStore,
 } from "@/entities/competition";
+import { InfinityListProps, VirtualizedList } from "@/shared/components";
 
 export const CompetitionsList = () => {
   const filters = competitionFilterStore().getFilters();
-  // const getCompetitionsList = useGetCompetitionsList(filters.find);
+  const getCompetitionsList = useGetCompetitionsList(filters.search);
 
+  const itemContent: InfinityListProps<
+    IGetCreateCompetition,
+    unknown
+  >["itemContent"] = (_, props) => <CompetitionCard {...props} />;
+  const itemLoadingContent: InfinityListProps<
+    IGetCreateCompetition,
+    unknown
+  >["itemLoadingContent"] = (key) => <div>Loading...</div>;
   return (
-    /*<VirtualizedList
-      data={getCompetitionsList.data}
+    <VirtualizedList
+      data={getCompetitionsList.data || []}
       isError={getCompetitionsList.isError}
       isFetching={getCompetitionsList.isFetching}
       isPending={getCompetitionsList.isPending}
       fetchNextPage={getCompetitionsList.fetchNextPage}
       itemContent={itemContent}
       itemLoadingContent={itemLoadingContent}
-      gap={0}
       isNotFound={!!getCompetitionsList.data}
-    />*/ <div style={{ display: "grid", gap: 20, paddingBottom: 20 }}>
-      <CompetitionCard />
-      <CompetitionCard />
-      <CompetitionCard />
-      <CompetitionCard />
-      <CompetitionCard />
-      <CompetitionCard />
-    </div>
+    />
   );
 };

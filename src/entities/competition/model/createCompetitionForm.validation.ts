@@ -76,7 +76,7 @@ export const createCompetitionValidationSchema = object({
     .required("Контакты мероприятия обязательны")
     .min(1, "Должен быть указан хотя бы один контакт"),*/
 
-  prizeInfo: object({
+  prize: object({
     description: string()
       .required("Описание призов обязательно")
       .min(6, "Описание призов должно содержать минимум 6 символов"),

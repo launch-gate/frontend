@@ -3,6 +3,7 @@ import { FC } from "react";
 import dayjs, { Dayjs } from "dayjs";
 
 import { Input, Select, TextArea, DateRangePicker } from "@/shared/components";
+import { ITag, useGetTags } from "@/entities/tags";
 
 import {
   DateType,
@@ -10,13 +11,6 @@ import {
   Pair,
 } from "../../model/createCompetitionFilters.types";
 import { SFormItem, SFormTitle } from "./createStages.styles";
-
-const tagOptions: SelectProps["options"] = [
-  { label: "Tag1", value: 1 },
-  { label: "Tag2", value: 2 },
-  { label: "Tag3", value: 3 },
-  { label: "Tag4", value: 4 },
-];
 
 const organisationsOptions: SelectProps["options"] = [
   { label: "Компания1", value: 1 },
@@ -38,12 +32,12 @@ const competitionFormatOptions: SelectProps["options"] = [
   { label: "Гибридный формат", value: "HYBRID" },
 ];
 
-const managersOptions: SelectProps["options"] = [
-  { label: "Менеджер Иван", value: "1" },
-  { label: "Менеджер Алиса", value: "2" },
-  { label: "Менеджер Игорь", value: "3" },
-  { label: "Менеджер Алексей", value: "4" },
-];
+const transformTagsToOptions = (tags: ITag[]): SelectProps["options"] => {
+  return tags.map((tag) => ({
+    label: tag.name,
+    value: tag.id,
+  }));
+};
 
 export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
   name,
@@ -55,6 +49,8 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
   competitionType,
   competitionFormat,
 }) => {
+  const { data: tagOptions } = useGetTags();
+  const coversedTags = transformTagsToOptions(tagOptions || []);
   const timestampsToDayjs = (
     timestamps: Pair<DateType>,
   ): [Dayjs | null, Dayjs | null] => {
@@ -119,7 +115,7 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
         <SFormTitle>Теги конкурса</SFormTitle>
         <Select
           mode="multiple"
-          options={tagOptions}
+          options={coversedTags}
           placeholder={tagInfos.placeholder}
           value={tagInfos.value}
           onChange={tagInfos.onChange}

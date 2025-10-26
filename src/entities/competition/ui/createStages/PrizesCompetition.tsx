@@ -15,13 +15,11 @@ import {
 import { medalTypesOptions, Prize } from "../../model/prizesTypes.types";
 import { ICreateCompetitionFormik } from "../../model/createCompetitionFilters.types";
 
-export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({
-  prizeInfo,
-}) => {
+export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({ prize }) => {
   const addPrize = () => {
-    const newPlace = prizeInfo.prizesInfo.value.length + 1;
-    prizeInfo.prizesInfo.onChange([
-      ...prizeInfo.prizesInfo.value,
+    const newPlace = prize.prizesInfo.value.length + 1;
+    prize.prizesInfo.onChange([
+      ...prize.prizesInfo.value,
       {
         medalPlace: newPlace,
         type: "MONEY",
@@ -31,27 +29,25 @@ export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({
   };
 
   const removePrize = (index: number) => {
-    const updatedPrizes = prizeInfo.prizesInfo.value.filter(
-      (_, i) => i !== index,
-    );
+    const updatedPrizes = prize.prizesInfo.value.filter((_, i) => i !== index);
     const renumberedPrizes = updatedPrizes.map((prize, idx) => ({
       ...prize,
       medalPlace: idx + 1,
     }));
-    prizeInfo.prizesInfo.onChange(renumberedPrizes);
+    prize.prizesInfo.onChange(renumberedPrizes);
   };
 
   const updatePrize = (index: number, field: keyof Prize, value: string) => {
-    const updatedPrizes = [...prizeInfo.prizesInfo.value];
+    const updatedPrizes = [...prize.prizesInfo.value];
     updatedPrizes[index] = {
       ...updatedPrizes[index],
       [field]: field === "medalPlace" ? parseInt(value) || 1 : value,
     };
-    prizeInfo.prizesInfo.onChange(updatedPrizes);
+    prize.prizesInfo.onChange(updatedPrizes);
   };
 
   const updateDescription = (e: ChangeEvent<HTMLTextAreaElement>) =>
-    prizeInfo.description.onChange(e);
+    prize.description.onChange(e);
 
   const getPlaceLabel = (place: number) => {
     return `${place} место`;
@@ -77,15 +73,15 @@ export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({
         <TextArea
           onChange={updateDescription}
           placeholder="Описание призового фонда"
-          validateStatus={prizeInfo.description.validateStatus}
-          help={prizeInfo.description.help}
+          validateStatus={prize.description.validateStatus}
+          help={prize.description.help}
         />
       </SFormItem>
 
       <SFormItem>
         <SFormTitle>Призы</SFormTitle>
         <SPrizeContainer>
-          {prizeInfo.prizesInfo.value.map((prize, index) => (
+          {prize.prizesInfo.value.map((prize, index) => (
             <SPrizeItem key={index}>
               <SPrizeHeader>
                 <SPlaceLabel>{getPlaceLabel(prize.medalPlace)}</SPlaceLabel>

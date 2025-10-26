@@ -1,5 +1,5 @@
 export interface IGetCompetition {
-  find: string;
+  search: string;
   page: number;
 }
 

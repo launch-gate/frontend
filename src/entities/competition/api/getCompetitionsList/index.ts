@@ -3,22 +3,24 @@ import { AxiosError } from "axios";
 import { ValidationError } from "yup";
 
 import API, { DetailsError, IError } from "@/shared/api";
+import { removeEmpty } from "@/shared/lib";
+import { IGetCreateCompetition } from "@/entities/competition/api";
 
-import { cargoTypeSchema } from "./getCompetitionsList.validation";
-import { IGetCompetition, ICompetition } from "./getCompetitionsList.types";
+import { competitionsListValidationSchema } from "./getCompetitionsList.validation";
+import { IGetCompetition } from "./getCompetitionsList.types";
 
 const getCargoTypesKey = "getCargoTypesList";
 
 const getCompetitionsList = async (
   params: IGetCompetition,
-): Promise<ICompetition[]> => {
-  return API<ICompetition[]>({
-    url: `/web/competition`,
+): Promise<IGetCreateCompetition[]> => {
+  return API<IGetCreateCompetition[]>({
+    url: `/competitions/get-all`,
     method: "GET",
-    params,
+    params: removeEmpty(params),
   })
     .then(async ({ data }) => {
-      const validate = await cargoTypeSchema.validate(data, {
+      const validate = await competitionsListValidationSchema.validate(data, {
         abortEarly: false,
       });
       return validate;
@@ -41,17 +43,18 @@ const getCompetitionsList = async (
     });
 };
 
-const groupGetCompetitionsList = (find: string) =>
+const groupGetCompetitionsList = (search: string) =>
   infiniteQueryOptions({
-    queryKey: [getCargoTypesKey, find],
-    queryFn: ({ pageParam }) => getCompetitionsList({ find, page: pageParam }),
-    initialPageParam: 1,
+    queryKey: [getCargoTypesKey, search],
+    queryFn: ({ pageParam }) =>
+      getCompetitionsList({ search, page: pageParam }),
+    initialPageParam: 0,
     select: (data) => data?.pages.flat(),
     getNextPageParam: (lastPage, _, lastPageParam) =>
       lastPage?.length ? lastPageParam + 1 : null,
   });
 
-export const useGetCompetitionsList = (find: string) =>
-  useInfiniteQuery(groupGetCompetitionsList(find));
+export const useGetCompetitionsList = (search: string) =>
+  useInfiniteQuery(groupGetCompetitionsList(search));
 
 export * from "./getCompetitionsList.types";

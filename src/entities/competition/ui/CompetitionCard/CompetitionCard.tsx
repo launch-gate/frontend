@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { FC } from "react";
 
 import { Tag } from "@/shared/components";
+import { IGetCreateCompetition } from "@/entities/competition/api";
+import { formatUtcToShortDate } from "@/shared/lib";
 
 import {
   SCardImage,
@@ -19,34 +22,45 @@ import {
   STitle,
 } from "./competitionCard.styles";
 
-export const CompetitionCard = () => {
-  const cardGUID = 1; //TODO изменить
-  const cardHref = `/competition/${cardGUID}`;
+export const CompetitionCard: FC<IGetCreateCompetition> = ({
+  name,
+  competitionFormat,
+  tagInfos,
+  prize,
+  registrationDateRange,
+  id,
+}) => {
+  const cardHref = `/competition/${id}`;
 
   return (
     <Link href={cardHref} prefetch={false}>
       <SCompetitionCard>
         <SCardImage>
           <STagsSection>
-            <Tag>тег</Tag>
-            <Tag>тег</Tag>
+            {tagInfos.map((tag) => (
+              <Tag key={tag}>{tag}</Tag>
+            ))}
           </STagsSection>
-          <SParticipantsNumber>number</SParticipantsNumber>
+          <SParticipantsNumber>Кол-во участников: ...</SParticipantsNumber>
         </SCardImage>
         <SMainContent>
           <SMainInfo>
-            <STitle>Название</STitle>
+            <STitle>{name}</STitle>
             <SSubTitle>
-              <SSubtitleText>Онлайн</SSubtitleText>
+              <SSubtitleText>{competitionFormat}</SSubtitleText>
               <SSubtitleText>Регистрация</SSubtitleText>
             </SSubTitle>
           </SMainInfo>
           <SGeneralInfo>
             <SGeneral>
-              <SGeneralText>Даты проведения</SGeneralText>
-              <SGeneralText>Призовой фонд</SGeneralText>
+              <SGeneralText>
+                Даты проведения:{" "}
+                {formatUtcToShortDate(registrationDateRange[0] || 0)} -{" "}
+                {formatUtcToShortDate(registrationDateRange[1] || 0)}
+              </SGeneralText>
+              <SGeneralText>{prize.description}</SGeneralText>
             </SGeneral>
-            <SGeneralText>Организатор</SGeneralText>
+            <SGeneralText>Организатор: ...</SGeneralText>
           </SGeneralInfo>
         </SMainContent>
       </SCompetitionCard>
