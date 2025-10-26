@@ -68,13 +68,13 @@ export const createCompetitionValidationSchema = object({
 
   isCountry: boolean().required("Статус странового ограничения обязателен"),
 
-  managers: array()
+  /*managers: array()
     .required("Менеджеры обязательны")
     .min(1, "Должен быть назначен хотя бы один менеджер"),
 
   eventContacts: array()
     .required("Контакты мероприятия обязательны")
-    .min(1, "Должен быть указан хотя бы один контакт"),
+    .min(1, "Должен быть указан хотя бы один контакт"),*/
 
   prizeInfo: object({
     description: string()

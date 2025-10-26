@@ -3,9 +3,11 @@ import { ChangeEvent, useCallback, useEffect } from "react";
 import { RangePickerProps } from "antd/es/date-picker";
 import { Dayjs } from "dayjs";
 import { debounce } from "lodash";
+import { useRouter } from "next/navigation";
 
 import { createCompetitionStore } from "@/entities/competition";
 import { ITag } from "@/entities/tags";
+import { routes } from "@/shared/config";
 
 import { createCompetitionValidationSchema } from "../model/createCompetitionForm.validation";
 import {
@@ -16,10 +18,23 @@ import {
   IPrize,
   Pair,
 } from "../model/createCompetitionFilters.types";
+import { useCreateCompetition } from "../api/createCompetition";
 
 export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
+  const router = useRouter();
+  const { mutateAsync, isError: createCompetitionError } =
+    useCreateCompetition();
   const { createCompetitionState, setState } = createCompetitionStore();
-  const onSubmit = (form: ICreateCompetition) => console.log(form);
+  const onSubmit = async (form: ICreateCompetition) => {
+    mutateAsync(form)
+      .then(async () => {
+        console.log("успех");
+        router.push(routes.COMPETITIONS_PAGE);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
   const { values, setValues, errors, touched, submitForm, setFieldTouched } =
     useFormik<ICreateCompetition>({
       initialValues: createCompetitionState,
@@ -179,91 +194,94 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
     registrationDateRange: {
       value: values.registrationDateRange,
       onChange: onRegistrationDateRangeChange,
-      placeholder: ["start", "end"],
+      placeholder: ["Начало регистрации", "Конец регистрации"],
       validateStatus: errors.registrationDateRange && "error",
       help: touched.registrationDateRange && errors.registrationDateRange,
     },
     competitionDateRange: {
       value: values.competitionDateRange,
       onChange: onCompetitionDateRangeChange,
-      placeholder: ["start", "end"],
+      placeholder: ["Начало конкурса", "Конец конкурса"],
       validateStatus: errors.competitionDateRange && "error",
       help: touched.competitionDateRange && errors.competitionDateRange,
     },
     resultDateRange: {
       value: values.resultDateRange,
       onChange: onResultDateRangeChange,
-      placeholder: ["start", "end"],
+      placeholder: ["Начало подведения итогов", "Конец подведения итогов"],
       validateStatus: errors.resultDateRange && "error",
       help: touched.resultDateRange && errors.resultDateRange,
     },
     shortDescription: {
       value: values.shortDescription,
       onChange: onChangeShortDescription,
-      placeHolder: "Например, Хакатон по продвижению проекта",
+      placeHolder: "Краткое описание конкурса",
       validateStatus: errors.shortDescription && "error",
       help: errors.shortDescription,
     },
     tagInfos: {
       value: values.tagInfos,
       onChange: onTagInfoChange,
-      placeholder: "Tags",
+      placeholder: "Теги конкурса",
       validateStatus: errors.tagInfos && "error",
       help: touched.tagInfos && errors.tagInfos,
     },
     competitionType: {
       value: values.competitionType,
       onChange: onCompetitionTypeChange,
-      placeholder: "competitionType",
+      placeholder: "Тип конкурса",
       validateStatus: errors.competitionType && "error",
       help: touched.competitionType && errors.competitionType,
     },
     competitionFormat: {
       value: values.competitionFormat,
       onChange: onCompetitionFormatChange,
-      placeholder: "competitionFormat",
+      placeholder: "Тип проведения конкурса",
       validateStatus: errors.competitionFormat && "error",
       help: touched.competitionFormat && errors.competitionFormat,
     },
     isPublic: {
       value: values.isPublic,
       onChange: onIsPublicChange,
-      placeholder: "isPublic",
+      placeholder: "Публичный ли конкурс?",
       validateStatus: errors.isPublic && "error",
       help: touched.isPublic && errors.isPublic,
     },
     participantAgeRange: {
       value: values.participantAgeRange,
       onChange: onParticipantAgeRangeChange,
-      placeholder: ["from", "to"],
+      placeholder: ["Минимальный возраст", "Максимальный возраст"],
       validateStatus: errors.participantAgeRange && "error",
       help: touched.participantAgeRange && errors.participantAgeRange,
     },
     targetAudience: {
       value: values.targetAudience,
       onChange: onTargetAudienceChange,
-      placeholder: "targetAudience",
+      placeholder: "Целевая аудитория",
       validateStatus: errors.targetAudience && "error",
       help: touched.targetAudience && errors.targetAudience,
     },
     isTeamRequired: {
       value: values.isTeamRequired,
       onChange: onIsTeamRequiredChange,
-      placeholder: "isTeamRequired",
+      placeholder: "Нужна ли команда?",
       validateStatus: errors.isTeamRequired && "error",
       help: touched.isTeamRequired && errors.isTeamRequired,
     },
     teamSizeRange: {
       value: values.teamSizeRange,
       onChange: onTeamSizeRangeChange,
-      placeholder: ["from", "to"],
+      placeholder: [
+        "Минимальный размер команды",
+        "Максимальный размер команды",
+      ],
       validateStatus: errors.teamSizeRange && "error",
       help: touched.teamSizeRange && errors.teamSizeRange,
     },
     isCountry: {
       value: values.isCountry,
       onChange: onIsCountryChange,
-      placeHolder: "isCountry",
+      placeHolder: "Вся страна участвует?",
       validateStatus: errors.isCountry && "error",
       help: touched.isCountry && errors.isCountry,
     },
@@ -271,15 +289,16 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
       description: {
         value: values.prizeInfo.description,
         onChange: onPrizeDescriptionChange,
-        placeHolder: "prizeInfo",
+        placeHolder: "Описание призового фонда",
         validateStatus: errors.prizeInfo?.description && "error",
         help: touched.prizeInfo?.description && errors.prizeInfo?.description,
       },
       prizesInfo: {
         value: values.prizeInfo.prizes,
         onChange: onPrizesChange,
-        placeHolder: "prizeInfo",
+        placeHolder: "Информация о призе",
       },
     },
+    submitForm: submitForm,
   };
 };

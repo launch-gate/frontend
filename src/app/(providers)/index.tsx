@@ -1,13 +1,15 @@
 import { FC, PropsWithChildren } from "react";
 
-import { ThemeProvider } from "@/app/(providers)/ThemeProvider";
-
+import { ThemeProvider } from "./ThemeProvider";
+import { TanstackClientProvider } from "./QueryClientProvider";
 import { StyledComponentsProvider } from "./StyledComponentsProvider";
 
 export const WithProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
     <StyledComponentsProvider>
-      <ThemeProvider>{children}</ThemeProvider>
+      <TanstackClientProvider>
+        <ThemeProvider>{children}</ThemeProvider>
+      </TanstackClientProvider>
     </StyledComponentsProvider>
   );
 };

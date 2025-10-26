@@ -4,6 +4,7 @@ import { RangePickerProps } from "antd/es/date-picker";
 
 import { ITag } from "@/entities/tags";
 import { InputProps } from "@/shared/components";
+import { ICreateCompetitionRequest } from "@/entities/competition/api/createCompetition";
 
 export type RoleType = "ADMIN";
 
@@ -180,6 +181,7 @@ export interface ICreateCompetitionFormik {
       onChange: (prizesInfo: IPrize[]) => void;
     };
   };
+  submitForm: (form: ICreateCompetitionRequest) => void;
 }
 
 export interface ICreateCompetitionStore {

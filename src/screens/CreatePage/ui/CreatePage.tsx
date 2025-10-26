@@ -7,11 +7,13 @@ import { routes } from "@/shared/config";
 import { Button, Steps } from "@/shared/components";
 import {
   BasicsCompetition,
+  createCompetitionStore,
   ManagersCompetition,
   PrizesCompetition,
   RestrictionsCompetition,
   useCreateCompetitionForm,
 } from "@/entities/competition";
+import { ICreateCompetitionRequest } from "@/entities/competition/api/createCompetition";
 
 import {
   SButtonSection,
@@ -49,6 +51,7 @@ const items = [
 
 export const CreatePage = () => {
   const args = useCreateCompetitionForm();
+  const createCompetitionStoreState = createCompetitionStore().getState();
   const showPrevButton = args.currentStage.value > 0;
   const showNextButton = args.currentStage.value < items.length - 1;
   const showFinishButton = args.currentStage.value === items.length - 1;
@@ -58,6 +61,16 @@ export const CreatePage = () => {
   const handleNextButtonClick = () =>
     args.currentStage.onChange(args.currentStage.value + 1);
   const CurrentStageComponent = items[args.currentStage.value].component;
+
+  const handleSubmitButtonClick = () => {
+    const form: ICreateCompetitionRequest = {
+      ...createCompetitionStoreState,
+      isDraft: false,
+      managers: [],
+      eventContacts: [],
+    };
+    args.submitForm(form);
+  };
 
   return (
     <SCreatePage>
@@ -92,9 +105,9 @@ export const CreatePage = () => {
               </Button>
             )}
             {showFinishButton && (
-              <Link href={routes.HOME_PAGE}>
-                <Button color="violet">Завершить</Button>
-              </Link>
+              <Button color="violet" onClick={handleSubmitButtonClick}>
+                Завершить
+              </Button>
             )}
           </SButtonSection>
         </SForm>

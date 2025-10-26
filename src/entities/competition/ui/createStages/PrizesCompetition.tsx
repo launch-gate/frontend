@@ -12,11 +12,7 @@ import {
   SPrizeHeader,
   SPrizeItem,
 } from "./createStages.styles";
-import {
-  medalTypesOptions,
-  Prize,
-  PrizeData,
-} from "../../model/prizesTypes.types";
+import { medalTypesOptions, Prize } from "../../model/prizesTypes.types";
 import { ICreateCompetitionFormik } from "../../model/createCompetitionFilters.types";
 
 export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({
@@ -81,6 +77,8 @@ export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({
         <TextArea
           onChange={updateDescription}
           placeholder="Описание призового фонда"
+          validateStatus={prizeInfo.description.validateStatus}
+          help={prizeInfo.description.help}
         />
       </SFormItem>
 

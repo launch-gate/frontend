@@ -32,6 +32,12 @@ const competitionTypeOptions: SelectProps["options"] = [
   { label: "Исследование", value: "RESEARCH" },
 ];
 
+const competitionFormatOptions: SelectProps["options"] = [
+  { label: "Онлнай", value: "ONLINE" },
+  { label: "Оффлайн", value: "OFFLINE" },
+  { label: "Гибридный формат", value: "HYBRID" },
+];
+
 const managersOptions: SelectProps["options"] = [
   { label: "Менеджер Иван", value: "1" },
   { label: "Менеджер Алиса", value: "2" },
@@ -47,6 +53,7 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
   shortDescription,
   tagInfos,
   competitionType,
+  competitionFormat,
 }) => {
   const timestampsToDayjs = (
     timestamps: Pair<DateType>,
@@ -56,7 +63,6 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
       timestamps[1] ? dayjs(timestamps[1]) : null,
     ];
   };
-  console.log(name.help, name.validateStatus);
   return (
     <>
       <SFormItem>
@@ -137,6 +143,18 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
           onChange={competitionType.onChange}
           help={competitionType.help}
           validateStatus={competitionType.validateStatus}
+        />
+      </SFormItem>
+
+      <SFormItem>
+        <SFormTitle>Формат конкурса</SFormTitle>
+        <Select
+          options={competitionFormatOptions}
+          placeholder={competitionFormat.placeholder}
+          value={competitionFormat.value}
+          onChange={competitionFormat.onChange}
+          help={competitionFormat.help}
+          validateStatus={competitionFormat.validateStatus}
         />
       </SFormItem>
     </>
