@@ -16,7 +16,6 @@ export async function middleware(request: NextRequest) {
   const pathIgnoreName =
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/web/") ||
-    pathname.startsWith("/auth/") ||
     pathname.startsWith("/routes/") ||
     pathname.startsWith("/guest/") ||
     pathname.startsWith("/assets/") ||
