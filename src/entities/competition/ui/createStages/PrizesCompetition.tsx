@@ -1,6 +1,9 @@
-import { ChangeEvent, FC } from "react";
+import { ChangeEvent, FC, useState } from "react";
+import { OutputData } from "@editorjs/editorjs";
 
 import { Button, Input, Select, TextArea } from "@/shared/components";
+import { Editor } from "@/features/Editor";
+import { Viewer } from "@/features/Viewer";
 
 import {
   SFormItem,
@@ -27,6 +30,7 @@ export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({ prize }) => {
       },
     ]);
   };
+  const [data, setData] = useState<OutputData>({ blocks: [] });
 
   const removePrize = (index: number) => {
     const updatedPrizes = prize.prizesInfo.value.filter((_, i) => i !== index);
@@ -112,6 +116,9 @@ export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({ prize }) => {
             + Добавить приз
           </Button>
         </SPrizeActions>
+
+        <Editor data={data} onChange={setData} />
+        <Viewer data={data} />
       </SFormItem>
     </>
   );

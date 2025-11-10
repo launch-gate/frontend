@@ -9,6 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@editorjs/delimiter": "^1.4.2",
+    "@editorjs/editorjs": "^2.31.0",
+    "@editorjs/header": "^2.8.8",
+    "@editorjs/image": "^2.10.3",
+    "@editorjs/list": "^2.0.8",
+    "@editorjs/paragraph": "^2.11.7",
+    "@editorjs/quote": "^2.7.6",
     "@next/bundle-analyzer": "^15.5.4",
     "@tanstack/react-query": "^5.90.5",
     "antd": "^5.27.5",
