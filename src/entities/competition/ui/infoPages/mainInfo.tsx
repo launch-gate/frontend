@@ -32,7 +32,6 @@ export const MainInfo: FC<Partial<GetCompetitionType>> = ({
   return (
     <SPage>
       <SContent>
-        <SImgTemplate />
         <SBlocksSection>
           <SBlock>
             <SBlockTitle>Краткое описание</SBlockTitle>
