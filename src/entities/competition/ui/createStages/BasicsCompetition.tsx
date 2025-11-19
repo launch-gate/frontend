@@ -1,16 +1,19 @@
-import { SelectProps } from "antd";
-import { FC } from "react";
+import { Button, SelectProps } from "antd";
+import { FC, useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
+import { OutputData } from "@editorjs/editorjs";
 
 import { Input, Select, TextArea, DateRangePicker } from "@/shared/components";
 import { ITag, useGetTags } from "@/entities/tags";
+import { IUpload, UploadImage } from "@/features/UploadImage";
+import { Editor } from "@/features/Editor";
 
 import {
   DateType,
   ICreateCompetitionFormik,
   Pair,
 } from "../../model/createCompetitionFilters.types";
-import { SFormItem, SFormTitle } from "./createStages.styles";
+import { SFormItem, SFormTitle, SImgContainer } from "./createStages.styles";
 
 const organisationsOptions: SelectProps["options"] = [
   { label: "Компания1", value: 1 },
@@ -48,8 +51,10 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
   tagInfos,
   competitionType,
   competitionFormat,
+  mainImageUrl,
 }) => {
   const { data: tagOptions } = useGetTags();
+
   const coversedTags = transformTagsToOptions(tagOptions || []);
   const timestampsToDayjs = (
     timestamps: Pair<DateType>,
@@ -152,6 +157,24 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
           help={competitionFormat.help}
           validateStatus={competitionFormat.validateStatus}
         />
+      </SFormItem>
+
+      <SFormItem>
+        <SFormTitle>Обложка конкурса</SFormTitle>
+
+        <UploadImage
+          upload={mainImageUrl.value}
+          setUpload={mainImageUrl.onChange}
+        />
+        {mainImageUrl.value && (
+          <SImgContainer>
+            <img
+              style={{ height: 300 }}
+              src={mainImageUrl.value.fileUrl}
+              alt={"photo"}
+            />
+          </SImgContainer>
+        )}
       </SFormItem>
     </>
   );

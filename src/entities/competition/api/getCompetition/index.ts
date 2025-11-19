@@ -5,7 +5,7 @@ import { ValidationError } from "yup";
 import API, { DetailsError, IError } from "@/shared/api";
 import { IGetCreateCompetition } from "@/entities/competition/api";
 
-import { competitionItemSchema } from "../api/getCompetitionsList/getCompetitionsList.validation";
+import { competitionItemSchema } from "../getCompetitionsList/getCompetitionsList.validation";
 
 const getCompetitionTagsKey = "getCompetitionTags";
 

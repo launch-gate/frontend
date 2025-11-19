@@ -5,6 +5,7 @@ import { RangePickerProps } from "antd/es/date-picker";
 import { ITag } from "@/entities/tags";
 import { InputProps } from "@/shared/components";
 import { ICreateCompetitionRequest } from "@/entities/competition/api/createCompetition";
+import { IUpload } from "@/features/UploadImage";
 
 export type RoleType = "ADMIN";
 
@@ -61,6 +62,7 @@ export interface ICreateCompetition {
   managers: IManager[];
   eventContacts: IEventContact[];
   prize: Iprize;
+  mainImageUrl: IUpload | null;
 }
 
 export type StageType = number;
@@ -166,6 +168,10 @@ export interface ICreateCompetitionFormik {
     onChange: (e: boolean) => void;
     validateStatus: InputProps["validateStatus"];
     help: InputProps["help"];
+  };
+  mainImageUrl: {
+    value: IUpload | null;
+    onChange: (upload: IUpload | null) => void;
   };
   prize: {
     description: {

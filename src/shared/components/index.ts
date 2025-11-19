@@ -12,3 +12,5 @@ export * from "./Switch";
 export * from "./Slider";
 export * from "./DateRangePicker";
 export * from "./Tabs";
+export * from "./Upload";
+export * from "./Notification";

@@ -1,3 +1,5 @@
+"use client";
+
 import { useFormik } from "formik";
 import { ChangeEvent, useCallback, useEffect } from "react";
 import { RangePickerProps } from "antd/es/date-picker";
@@ -8,6 +10,8 @@ import { useRouter } from "next/navigation";
 import { createCompetitionStore } from "@/entities/competition";
 import { ITag } from "@/entities/tags";
 import { routes } from "@/shared/config";
+import { IUpload } from "@/features/UploadImage";
+import { useNotify } from "@/shared/components";
 
 import { createCompetitionValidationSchema } from "../model/createCompetitionForm.validation";
 import {
@@ -22,19 +26,28 @@ import { useCreateCompetition } from "../api/createCompetition";
 
 export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
   const router = useRouter();
+  const notify = useNotify();
   const { mutateAsync, isError: createCompetitionError } =
     useCreateCompetition();
   const { createCompetitionState, setState } = createCompetitionStore();
   const onSubmit = async (form: ICreateCompetition) => {
     const { currentStage, ...requestForm } = form;
-    console.log(requestForm);
+
     mutateAsync(requestForm)
       .then(async () => {
-        console.log("успех");
+        notify({
+          message: "Успех",
+          type: "success",
+          description: "Фото успешно загружено",
+        });
         router.push(routes.COMPETITIONS_PAGE);
       })
       .catch((err) => {
-        console.log(err);
+        notify({
+          message: "Ошибка",
+          type: "error",
+          description: "Ошибка при отправке формы",
+        });
       });
   };
   const { values, setValues, errors, touched, submitForm, setFieldTouched } =
@@ -181,6 +194,11 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
     }));
   };
 
+  const onMainImageChange = (upload: IUpload | null) => {
+    setFieldTouched("imageUrl", true, true);
+    setValues((prev) => ({ ...prev, mainImageUrl: upload }));
+  };
+
   return {
     currentStage: {
       value: values.currentStage,
@@ -300,6 +318,10 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
         onChange: onPrizesChange,
         placeHolder: "Информация о призе",
       },
+    },
+    mainImageUrl: {
+      value: values.mainImageUrl,
+      onChange: onMainImageChange,
     },
     submitForm: submitForm,
   };

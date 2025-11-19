@@ -24,21 +24,14 @@ export interface IPrizes {
 export interface IGetCreateCompetition {
   id: number;
   name: string;
-  isDraft: boolean;
-  registrationDateRange: Pair<DateType>;
   competitionDateRange: Pair<DateType>;
-  resultDateRange: Pair<DateType>;
-  shortDescription: string;
   tagInfos: ITag["name"][];
   competitionType: CompetitionType | null;
   competitionFormat: CompetitionFormatType | null;
   isPublic: boolean;
-  participantAgeRange: Pair<number>;
   targetAudience: string;
   isTeamRequired: boolean;
   teamSizeRange: Pair<number>;
-  isCountry: boolean;
-  managers: IManager[];
-  eventContacts: IEventContact[];
   prize: IPrizes;
+  mainImageUrl: string;
 }

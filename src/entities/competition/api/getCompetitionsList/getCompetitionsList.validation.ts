@@ -51,22 +51,7 @@ export const competitionItemSchema = object({
 
   name: string().required("Название конкурса обязательно"),
 
-  isDraft: boolean().required("Статус черновика обязателен"),
-
-  registrationDateRange: array()
-    .length(
-      2,
-      "Диапазон дат регистрации должен содержать начальную и конечную дату",
-    )
-    .required("Диапазон дат регистрации обязателен"),
-
   competitionDateRange: array().required("Диапазон дат проведения обязателен"),
-
-  resultDateRange: array().required("Диапазон дат результатов обязателен"),
-
-  shortDescription: string()
-    .required("Краткое описание обязательно")
-    .min(6, "Краткое описание должно содержать минимум 6 символов"),
 
   tagInfos: array()
     .of(string().required("Тег обязателен"))
@@ -82,10 +67,6 @@ export const competitionItemSchema = object({
 
   isPublic: boolean().required("Публичный статус обязателен"),
 
-  participantAgeRange: array()
-    .of(number().required("Возраст должен быть числом"))
-    .required("Диапазон возраста участников обязателен"),
-
   targetAudience: string().required("Целевая аудитория обязательна"),
 
   isTeamRequired: boolean().required("Статус командности обязателен"),
@@ -94,15 +75,8 @@ export const competitionItemSchema = object({
     .of(number().required("Размер команды должен быть числом"))
     .required("Диапазон размера команды обязателен"),
 
-  isCountry: boolean().required("Статус странового ограничения обязателен"),
-
-  managers: array().of(managerSchema).required("Менеджеры обязательны"),
-
-  eventContacts: array()
-    .of(eventContactSchema)
-    .required("Контакты мероприятия обязательны"),
-
   prize: prizeInfoSchema.required("Информация о призах обязательна"),
+  mainImageUrl: string().required("Обложка конкурса обязательна"),
 });
 
 export const competitionsListValidationSchema = array()

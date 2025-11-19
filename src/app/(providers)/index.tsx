@@ -1,4 +1,8 @@
+"use client";
+
 import { FC, PropsWithChildren } from "react";
+
+import { ToastBarProvider } from "@/shared/components";
 
 import { ThemeProvider } from "./ThemeProvider";
 import { TanstackClientProvider } from "./QueryClientProvider";
@@ -8,7 +12,9 @@ export const WithProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
     <StyledComponentsProvider>
       <TanstackClientProvider>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ToastBarProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </ToastBarProvider>
       </TanstackClientProvider>
     </StyledComponentsProvider>
   );

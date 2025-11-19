@@ -44,3 +44,10 @@ export const SPrizeActions = styled.div`
   display: flex;
   justify-content: center;
 `;
+
+export const SImgContainer = styled.div`
+  border: 1px solid ${({ theme }) => theme.colors.violet};
+  display: flex;
+  flex-direction: column;
+  width: min-content;
+`;

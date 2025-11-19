@@ -7,3 +7,4 @@ export * from "./model/competitionFilters.store";
 export * from "./model/createCompetitionForm.store";
 
 export * from "./lib/useCreateCompetitionForm";
+export * from "./api/getCompetition";

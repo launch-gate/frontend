@@ -25,10 +25,14 @@ export const SMainContent = styled.div`
   grid-template-columns: 5fr 2fr;
 `;
 
-export const SImgTemplate = styled.div`
+export const SImgTemplate = styled.div.attrs<{ $mainImageUrl: string }>({})`
   width: 100%;
   height: 428px;
   background: ${({ theme }) => theme.colors.gray.primary};
+  background-image: url(${({ $mainImageUrl }) => $mainImageUrl});
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
 `;
 
 export const SMainContentInfo = styled.div`

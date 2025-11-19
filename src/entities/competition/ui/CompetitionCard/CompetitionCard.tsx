@@ -27,21 +27,22 @@ export const CompetitionCard: FC<IGetCreateCompetition> = ({
   competitionFormat,
   tagInfos,
   prize,
-  registrationDateRange,
+  competitionDateRange,
   id,
+  mainImageUrl,
 }) => {
   const cardHref = `/competition/${id}`;
 
   return (
     <Link href={cardHref} prefetch={false}>
       <SCompetitionCard>
-        <SCardImage>
+        <SCardImage $mainImageUrl={mainImageUrl}>
           <STagsSection>
             {tagInfos.map((tag) => (
               <Tag key={tag}>{tag}</Tag>
             ))}
           </STagsSection>
-          <SParticipantsNumber>Кол-во участников: ...</SParticipantsNumber>
+          <Tag>Кол-во участников: ...</Tag>
         </SCardImage>
         <SMainContent>
           <SMainInfo>
@@ -55,8 +56,8 @@ export const CompetitionCard: FC<IGetCreateCompetition> = ({
             <SGeneral>
               <SGeneralText>
                 Даты проведения:{" "}
-                {formatUtcToShortDate(registrationDateRange[0] || 0)} -{" "}
-                {formatUtcToShortDate(registrationDateRange[1] || 0)}
+                {formatUtcToShortDate(competitionDateRange[0] || 0)} -{" "}
+                {formatUtcToShortDate(competitionDateRange[1] || 0)}
               </SGeneralText>
               <SGeneralText>{prize.description}</SGeneralText>
             </SGeneral>

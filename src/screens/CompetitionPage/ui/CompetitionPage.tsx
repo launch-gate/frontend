@@ -5,10 +5,9 @@ import { useParams, useRouter } from "next/navigation";
 import { TabsProps } from "antd";
 
 import { Button, Tabs, Tag } from "@/shared/components";
-import { useGetCompetition } from "@/entities/competition/getCompetition";
+import { useGetCompetition, MainInfo } from "@/entities/competition";
 import { routes } from "@/shared/config";
 import { formatUtcToShortDate } from "@/shared/lib";
-import { MainInfo } from "@/entities/competition";
 
 import {
   SCompetitionPage,
@@ -44,7 +43,7 @@ export const CompetitionPage = () => {
       <STopBlock>
         <SName>{data?.name}</SName>
         <SMainContent>
-          <SImgTemplate />
+          <SImgTemplate $mainImageUrl={data?.mainImageUrl || ""} />
           <SMainContentInfo>
             <SMainContentTextInfo>
               <SInfoMainSection>
@@ -55,9 +54,8 @@ export const CompetitionPage = () => {
                 <SInfoAdditionalSection>
                   <div>
                     Даты проведения:{" "}
-                    {formatUtcToShortDate(data?.registrationDateRange[0] || 0)}{" "}
-                    -{" "}
-                    {formatUtcToShortDate(data?.registrationDateRange[1] || 0)}
+                    {formatUtcToShortDate(data?.competitionDateRange[0] || 0)} -{" "}
+                    {formatUtcToShortDate(data?.competitionDateRange[1] || 0)}
                   </div>
                   <div>
                     Призовой фонд:{" "}

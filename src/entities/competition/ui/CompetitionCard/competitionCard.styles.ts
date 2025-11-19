@@ -9,11 +9,15 @@ export const SCompetitionCard = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.gray.primary};
 `;
 
-export const SCardImage = styled.div`
+export const SCardImage = styled.div.attrs<{ $mainImageUrl: string }>({})`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background-color: ${({ theme }) => theme.colors.gray.primary};
+  background-image: url(${({ $mainImageUrl }) => $mainImageUrl});
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+
   padding: 16px;
 `;
 
