@@ -3,14 +3,14 @@ import { AxiosError } from "axios";
 import { ValidationError } from "yup";
 
 import API, { DetailsError, IError } from "@/shared/api";
-import { IGetCreateCompetition } from "@/entities/competition/api";
 
-import { competitionItemSchema } from "../getCompetitionsList/getCompetitionsList.validation";
+import { competitionItemSchema } from "./getCompetition.validation";
+import { GetCompetitionType } from "./getCompetition.types";
 
 const getCompetitionTagsKey = "getCompetitionTags";
 
-const getCompetition = async (id: number): Promise<IGetCreateCompetition> => {
-  return API<IGetCreateCompetition>({
+const getCompetition = async (id: number): Promise<GetCompetitionType> => {
+  return API<GetCompetitionType>({
     url: `/competitions/get/${id}`,
     method: "GET",
   })
@@ -39,7 +39,7 @@ const getCompetition = async (id: number): Promise<IGetCreateCompetition> => {
 };
 
 export const useGetCompetition = (id: number) =>
-  useQuery<IGetCreateCompetition, AxiosError, IGetCreateCompetition>({
+  useQuery<GetCompetitionType, AxiosError, GetCompetitionType>({
     queryKey: [getCompetitionTagsKey, id],
-    queryFn: async (): Promise<IGetCreateCompetition> => getCompetition(id),
+    queryFn: async (): Promise<GetCompetitionType> => getCompetition(id),
   });

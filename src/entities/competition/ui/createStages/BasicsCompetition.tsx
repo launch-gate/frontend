@@ -1,11 +1,10 @@
-import { Button, SelectProps } from "antd";
-import { FC, useState } from "react";
+import { SelectProps } from "antd";
+import { FC } from "react";
 import dayjs, { Dayjs } from "dayjs";
-import { OutputData } from "@editorjs/editorjs";
 
-import { Input, Select, TextArea, DateRangePicker } from "@/shared/components";
+import { Input, Select, DateRangePicker } from "@/shared/components";
 import { ITag, useGetTags } from "@/entities/tags";
-import { IUpload, UploadImage } from "@/features/UploadImage";
+import { UploadImage } from "@/features/UploadImage";
 import { Editor } from "@/features/Editor";
 
 import {
@@ -13,7 +12,12 @@ import {
   ICreateCompetitionFormik,
   Pair,
 } from "../../model/createCompetitionFilters.types";
-import { SFormItem, SFormTitle, SImgContainer } from "./createStages.styles";
+import {
+  SFormItem,
+  SFormSubtitle,
+  SFormTitle,
+  SImgContainer,
+} from "./createStages.styles";
 
 const organisationsOptions: SelectProps["options"] = [
   { label: "Компания1", value: 1 },
@@ -106,13 +110,9 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
 
       <SFormItem>
         <SFormTitle>Краткое описание</SFormTitle>
-        <TextArea
-          size="large"
-          placeholder={shortDescription.placeHolder}
-          value={shortDescription.value}
+        <Editor
+          data={shortDescription.value}
           onChange={shortDescription.onChange}
-          validateStatus={shortDescription.validateStatus}
-          help={shortDescription.help}
         />
       </SFormItem>
 

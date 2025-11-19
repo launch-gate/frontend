@@ -1,6 +1,7 @@
 import { ChangeEvent } from "react";
 import { Dayjs } from "dayjs";
 import { RangePickerProps } from "antd/es/date-picker";
+import { OutputData } from "@editorjs/editorjs";
 
 import { ITag } from "@/entities/tags";
 import { InputProps } from "@/shared/components";
@@ -36,7 +37,7 @@ export interface IPrize {
   source: string;
 }
 export interface Iprize {
-  description: string;
+  description: OutputData;
   prizes: IPrize[];
 }
 export type CompetitionType = "HACKATHON" | "IDEATON" | "RESEARCH";
@@ -49,7 +50,7 @@ export interface ICreateCompetition {
   registrationDateRange: Pair<DateType>;
   competitionDateRange: Pair<DateType>;
   resultDateRange: Pair<DateType>;
-  shortDescription: string;
+  shortDescription: OutputData;
   tagInfos: ITag["id"][];
   competitionType: CompetitionType | null;
   competitionFormat: CompetitionFormatType | null;
@@ -100,9 +101,8 @@ export interface ICreateCompetitionFormik {
     help: InputProps["help"];
   };
   shortDescription: {
-    value: string;
-    placeHolder: string;
-    onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+    value: OutputData;
+    onChange: (e: OutputData) => void;
     validateStatus: InputProps["validateStatus"];
     help: InputProps["help"];
   };
@@ -175,9 +175,8 @@ export interface ICreateCompetitionFormik {
   };
   prize: {
     description: {
-      value: string;
-      placeHolder: string;
-      onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+      value: OutputData;
+      onChange: (e: OutputData) => void;
       validateStatus: InputProps["validateStatus"];
       help: InputProps["help"];
     };

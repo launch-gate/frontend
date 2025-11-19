@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { FC } from "react";
+import { OutputData } from "@editorjs/editorjs";
 
 import { Tag } from "@/shared/components";
 import { IGetCreateCompetition } from "@/entities/competition/api";
 import { formatUtcToShortDate } from "@/shared/lib";
+import { Viewer } from "@/features/Viewer";
 
 import {
   SCardImage,
@@ -33,6 +35,11 @@ export const CompetitionCard: FC<IGetCreateCompetition> = ({
 }) => {
   const cardHref = `/competition/${id}`;
 
+  const prizesDescriptionObject = JSON.parse(prize?.description || "");
+  const prizesDescriptionViewerData: OutputData = {
+    blocks: prizesDescriptionObject as OutputData["blocks"],
+  };
+
   return (
     <Link href={cardHref} prefetch={false}>
       <SCompetitionCard>
@@ -59,7 +66,11 @@ export const CompetitionCard: FC<IGetCreateCompetition> = ({
                 {formatUtcToShortDate(competitionDateRange[0] || 0)} -{" "}
                 {formatUtcToShortDate(competitionDateRange[1] || 0)}
               </SGeneralText>
-              <SGeneralText>{prize.description}</SGeneralText>
+              <SGeneralText>
+                Описание призового фонда:
+                <br />
+                <Viewer data={prizesDescriptionViewerData} />
+              </SGeneralText>
             </SGeneral>
             <SGeneralText>Организатор: ...</SGeneralText>
           </SGeneralInfo>

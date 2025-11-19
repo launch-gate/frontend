@@ -14,7 +14,15 @@ const createCompetition = async (
   API<void>({
     url: "/competitions/create",
     method: "POST",
-    data: { ...competition, mainImageUrl: competition.mainImageUrl?.fileUrl },
+    data: {
+      ...competition,
+      mainImageUrl: competition.mainImageUrl?.fileUrl,
+      shortDescription: JSON.stringify(competition.shortDescription.blocks),
+      prize: {
+        ...competition.prize,
+        description: JSON.stringify(competition.prize.description.blocks),
+      },
+    },
   })
     .then(() => {
       return;

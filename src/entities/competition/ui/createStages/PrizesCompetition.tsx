@@ -1,9 +1,7 @@
-import { ChangeEvent, FC, useState } from "react";
-import { OutputData } from "@editorjs/editorjs";
+import { FC } from "react";
 
-import { Button, Input, Select, TextArea } from "@/shared/components";
+import { Button, Input, Select } from "@/shared/components";
 import { Editor } from "@/features/Editor";
-import { Viewer } from "@/features/Viewer";
 
 import {
   SFormItem,
@@ -30,7 +28,6 @@ export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({ prize }) => {
       },
     ]);
   };
-  const [data, setData] = useState<OutputData>({ blocks: [] });
 
   const removePrize = (index: number) => {
     const updatedPrizes = prize.prizesInfo.value.filter((_, i) => i !== index);
@@ -49,9 +46,6 @@ export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({ prize }) => {
     };
     prize.prizesInfo.onChange(updatedPrizes);
   };
-
-  const updateDescription = (e: ChangeEvent<HTMLTextAreaElement>) =>
-    prize.description.onChange(e);
 
   const getPlaceLabel = (place: number) => {
     return `${place} место`;
@@ -74,11 +68,9 @@ export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({ prize }) => {
     <>
       <SFormItem>
         <SFormTitle>Призовой фонд</SFormTitle>
-        <TextArea
-          onChange={updateDescription}
-          placeholder="Описание призового фонда"
-          validateStatus={prize.description.validateStatus}
-          help={prize.description.help}
+        <Editor
+          data={prize.description.value}
+          onChange={prize.description.onChange}
         />
       </SFormItem>
 
@@ -116,9 +108,6 @@ export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({ prize }) => {
             + Добавить приз
           </Button>
         </SPrizeActions>
-
-        <Editor data={data} onChange={setData} />
-        <Viewer data={data} />
       </SFormItem>
     </>
   );

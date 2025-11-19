@@ -1,4 +1,5 @@
 import { object, string, number, array, boolean, mixed } from "yup";
+import { OutputData } from "@editorjs/editorjs";
 
 export const createCompetitionValidationSchema = object({
   currentStage: number()
@@ -32,9 +33,19 @@ export const createCompetitionValidationSchema = object({
     )
     .required("Диапазон дат результатов обязателен"),
 
-  shortDescription: string()
+  shortDescription: mixed<OutputData>()
     .required("Краткое описание обязательно")
-    .min(6, "Краткое описание должно содержать минимум 6 символов"),
+    .test(
+      "has-blocks",
+      "Краткое описание обязательно",
+      (value?: OutputData | null) => {
+        if (!value) return false;
+
+        const blocks = value.blocks;
+
+        return Array.isArray(blocks) && blocks.length > 0;
+      },
+    ),
 
   tagInfos: array()
     .required("Теги обязательны")
@@ -77,9 +88,19 @@ export const createCompetitionValidationSchema = object({
     .min(1, "Должен быть указан хотя бы один контакт"),*/
 
   prize: object({
-    description: string()
-      .required("Описание призов обязательно")
-      .min(6, "Описание призов должно содержать минимум 6 символов"),
+    description: mixed<OutputData>()
+      .required("Краткое описание обязательно")
+      .test(
+        "has-blocks",
+        "Краткое описание обязательно",
+        (value?: OutputData | null) => {
+          if (!value) return false;
+
+          const blocks = value.blocks;
+
+          return Array.isArray(blocks) && blocks.length > 0;
+        },
+      ),
     prizes: array()
       .required("Призы обязательны")
       .min(1, "Должен быть указан хотя бы один приз"),

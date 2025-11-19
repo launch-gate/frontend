@@ -8,7 +8,6 @@ interface ViewerProps {
 }
 
 export const Viewer: React.FC<ViewerProps> = ({ data }) => {
-  console.log(data);
   if (!data || !data.blocks) return <div>Нет данных для отображения</div>;
 
   return (

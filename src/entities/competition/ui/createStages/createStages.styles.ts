@@ -4,6 +4,10 @@ export const SFormTitle = styled.div`
   ${({ theme }) => theme.font.title2}
 `;
 
+export const SFormSubtitle = styled.div`
+  ${({ theme }) => theme.font.body}
+`;
+
 export const SFormItem = styled.div`
   display: flex;
   flex-direction: column;

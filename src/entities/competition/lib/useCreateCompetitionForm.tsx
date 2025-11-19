@@ -6,6 +6,7 @@ import { RangePickerProps } from "antd/es/date-picker";
 import { Dayjs } from "dayjs";
 import { debounce } from "lodash";
 import { useRouter } from "next/navigation";
+import { OutputData } from "@editorjs/editorjs";
 
 import { createCompetitionStore } from "@/entities/competition";
 import { ITag } from "@/entities/tags";
@@ -79,9 +80,9 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
     setFieldTouched("name", true, true);
     setValues((prev) => ({ ...prev, name: e.target.value }));
   };
-  const onChangeShortDescription = (e: ChangeEvent<HTMLTextAreaElement>) => {
+  const onChangeShortDescription = (e: OutputData) => {
     setFieldTouched("shortDescription", true, true);
-    setValues((prev) => ({ ...prev, shortDescription: e.target.value }));
+    setValues((prev) => ({ ...prev, shortDescription: e }));
   };
   const onRegistrationDateRangeChange: RangePickerProps["onChange"] = (
     dates,
@@ -179,11 +180,11 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
       isCountry,
     }));
   };
-  const onPrizeDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+  const onPrizeDescriptionChange = (e: OutputData) => {
     setFieldTouched("prize.description", true, true);
     setValues((prev) => ({
       ...prev,
-      prize: { ...prev.prize, description: e.target.value },
+      prize: { ...prev.prize, description: e },
     }));
   };
   const onPrizesChange = (prizes: IPrize[]) => {
@@ -235,9 +236,11 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
     shortDescription: {
       value: values.shortDescription,
       onChange: onChangeShortDescription,
-      placeHolder: "Краткое описание конкурса",
       validateStatus: errors.shortDescription && "error",
-      help: errors.shortDescription,
+      help:
+        touched.shortDescription && errors.shortDescription
+          ? (errors.shortDescription as unknown as string)
+          : undefined,
     },
     tagInfos: {
       value: values.tagInfos,
@@ -309,9 +312,11 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
       description: {
         value: values.prize.description,
         onChange: onPrizeDescriptionChange,
-        placeHolder: "Описание призового фонда",
         validateStatus: errors.prize?.description && "error",
-        help: touched.prize?.description && errors.prize?.description,
+        help:
+          touched.prize?.description && errors.prize?.description
+            ? (errors.prize.description as unknown as string)
+            : undefined,
       },
       prizesInfo: {
         value: values.prize.prizes,
