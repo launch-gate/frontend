@@ -36,7 +36,7 @@ const paramsSerializer: ParamsSerializerOptions = {
 };
 
 export const API: AxiosInstance = axios.create({
-  baseURL: "http://localhost:8887/api/v1",
+  baseURL: "http://157.22.252.122:8090/api/v1",
   headers: { "Content-Type": "application/json" },
   paramsSerializer,
   signal: controller.signal,

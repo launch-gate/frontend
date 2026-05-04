@@ -14,18 +14,22 @@ const getCargoTypesKey = "getCargoTypesList";
 const getCompetitionsList = async (
   params: IGetCompetition,
 ): Promise<IGetCreateCompetition[]> => {
-  return API<IGetCreateCompetition[]>({
-    url: `/competitions/get-all`,
+  return API<{ contests: IGetCreateCompetition[] }>({
+    url: `/contests`,
     method: "GET",
     params: removeEmpty(params),
   })
     .then(async ({ data }) => {
-      const validate = await competitionsListValidationSchema.validate(data, {
-        abortEarly: false,
-      });
+      const validate = await competitionsListValidationSchema.validate(
+        data.contests,
+        {
+          abortEarly: false,
+        },
+      );
       return validate;
     })
     .catch((error: AxiosError<IError> | ValidationError) => {
+      console.log(error);
       const errorName = "/competition";
 
       if (error instanceof AxiosError) {
