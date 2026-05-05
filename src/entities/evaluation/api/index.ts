@@ -138,10 +138,14 @@ export const useGetExpertReviews = () =>
     queryFn: getExpertReviews,
   });
 
-export const useGetExpertReviewSubmission = (assignmentId: number) =>
+export const useGetExpertReviewSubmission = (
+  assignmentId: number,
+  enabled = true,
+) =>
   useQuery<IStageSubmissionResponse, DetailsError>({
     queryKey: [getExpertReviewSubmissionKey, assignmentId],
     queryFn: () => getExpertReviewSubmission({ assignmentId }),
+    enabled,
   });
 
 export const useSaveExpertReviewDraft = () =>

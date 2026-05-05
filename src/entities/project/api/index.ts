@@ -129,10 +129,11 @@ export const useCreateProject = () =>
     mutationFn: createProject,
   });
 
-export const useGetProject = (projectId: number) =>
+export const useGetProject = (projectId: number, enabled = true) =>
   useQuery<IProjectResponse, DetailsError>({
     queryKey: [getProjectKey, projectId],
     queryFn: () => getProject({ projectId }),
+    enabled,
   });
 
 export const useGetMyProjects = () =>
@@ -161,10 +162,14 @@ export const useSubmitProjectStage = () =>
     mutationFn: submitProjectStage,
   });
 
-export const useGetOrganizerStageSubmission = (submissionId: number) =>
+export const useGetOrganizerStageSubmission = (
+  submissionId: number,
+  enabled = true,
+) =>
   useQuery<IStageSubmissionResponse, DetailsError>({
     queryKey: [getOrganizerStageSubmissionKey, submissionId],
     queryFn: () => getOrganizerStageSubmission({ submissionId }),
+    enabled,
   });
 
 export * from "../model/project.types";

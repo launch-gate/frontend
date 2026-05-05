@@ -185,24 +185,31 @@ export const useCreateMentorCall = () =>
     mutationFn: createMentorCall,
   });
 
-export const useGetTeamMentorCalls = (teamId: number) =>
+export const useGetTeamMentorCalls = (teamId: number, enabled = true) =>
   useQuery<IMentorCallListResponse, DetailsError>({
     queryKey: [getTeamMentorCallsKey, teamId],
     queryFn: () => getTeamMentorCalls({ teamId }),
+    enabled,
   });
 
-export const useGetMentorStageSubmission = (stageSubmissionId: number) =>
+export const useGetMentorStageSubmission = (
+  stageSubmissionId: number,
+  enabled = true,
+) =>
   useQuery<IStageSubmissionResponse, DetailsError>({
     queryKey: [getMentorStageSubmissionKey, stageSubmissionId],
     queryFn: () => getMentorStageSubmission({ stageSubmissionId }),
+    enabled,
   });
 
 export const useGetStageSubmissionMentorComments = (
   stageSubmissionId: number,
+  enabled = true,
 ) =>
   useQuery<IMentorCommentListResponse, DetailsError>({
     queryKey: [getStageSubmissionMentorCommentsKey, stageSubmissionId],
     queryFn: () => getStageSubmissionMentorComments({ stageSubmissionId }),
+    enabled,
   });
 
 export const useCreateMentorComment = () =>

@@ -380,10 +380,11 @@ export const useGetContestStages = (contestId: number) =>
     queryFn: () => getContestStages({ contestId }),
   });
 
-export const useGetContestStage = (stageId: number) =>
+export const useGetContestStage = (stageId: number, enabled = true) =>
   useQuery<IStageParticipantResponse, DetailsError>({
     queryKey: [getContestStageKey, stageId],
     queryFn: () => getContestStage({ stageId }),
+    enabled,
   });
 
 export const useGetOrganizerStageFields = (stageId: number) =>
@@ -392,10 +393,11 @@ export const useGetOrganizerStageFields = (stageId: number) =>
     queryFn: () => getOrganizerStageFields({ stageId }),
   });
 
-export const useGetContestStageFields = (stageId: number) =>
+export const useGetContestStageFields = (stageId: number, enabled = true) =>
   useQuery<IFieldParticipantListResponse, DetailsError>({
     queryKey: [getContestStageFieldsKey, stageId],
     queryFn: () => getContestStageFields({ stageId }),
+    enabled,
   });
 
 export const useCreateStageField = () =>
@@ -416,10 +418,11 @@ export const useDeleteStageField = () =>
     mutationFn: deleteStageField,
   });
 
-export const useGetStageResources = (stageId: number) =>
+export const useGetStageResources = (stageId: number, enabled = true) =>
   useQuery<IResourceListResponse, DetailsError>({
     queryKey: [getStageResourcesKey, stageId],
     queryFn: () => getStageResources({ stageId }),
+    enabled,
   });
 
 export const useCreateStageResource = () =>

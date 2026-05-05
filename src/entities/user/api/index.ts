@@ -44,10 +44,11 @@ export const updateUserProfile = async (
   );
 };
 
-export const useGetUserProfile = () =>
+export const useGetUserProfile = (enabled = true) =>
   useQuery<IUserProfileResponse, DetailsError>({
     queryKey: [getUserProfileKey],
     queryFn: getUserProfile,
+    enabled,
   });
 
 export const useUpdateUserProfile = () =>

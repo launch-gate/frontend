@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { FC } from "react";
 
+import {
+  ContestStatus,
+  IContestInfoResponse,
+  ParticipationMode,
+} from "@/entities/contest";
 import { Tag } from "@/shared/components";
-import { IGetCreateCompetition } from "@/entities/competition/api";
-import { formatUtcToShortDate } from "@/shared/lib";
 
 import {
   SCardImage,
@@ -22,45 +25,76 @@ import {
   STitle,
 } from "./competitionCard.styles";
 
-export const CompetitionCard: FC<IGetCreateCompetition> = ({
-  name,
-  competitionFormat,
-  tagInfos,
-  prize,
-  registrationDateRange,
+const statusLabels: Record<ContestStatus, string> = {
+  DRAFT: "Черновик",
+  FINISHED: "Завершён",
+  PUBLISHED: "Опубликован",
+  RUNNING: "Идёт",
+};
+
+const participationModeLabels: Record<ParticipationMode, string> = {
+  INDIVIDUAL: "Индивидуально",
+  TEAM: "Командно",
+};
+
+const formatDate = (date?: string) => {
+  if (!date) return "-";
+
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(date));
+};
+
+export const CompetitionCard: FC<IContestInfoResponse> = ({
   id,
+  title,
+  description,
+  status,
+  participationMode,
+  registrationEndsAt,
+  startsAt,
+  endsAt,
+  contacts,
 }) => {
-  const cardHref = `/competition/${id}`;
+  const cardHref = id ? `/contests/${id}` : "/contests";
 
   return (
     <Link href={cardHref} prefetch={false}>
       <SCompetitionCard>
         <SCardImage>
           <STagsSection>
-            {tagInfos.map((tag) => (
-              <Tag key={tag}>{tag}</Tag>
-            ))}
+            {status && <Tag>{statusLabels[status]}</Tag>}
+            {participationMode && (
+              <Tag>{participationModeLabels[participationMode]}</Tag>
+            )}
           </STagsSection>
-          <SParticipantsNumber>Кол-во участников: ...</SParticipantsNumber>
+          <SParticipantsNumber>
+            Регистрация до {formatDate(registrationEndsAt)}
+          </SParticipantsNumber>
         </SCardImage>
         <SMainContent>
           <SMainInfo>
-            <STitle>{name}</STitle>
+            <STitle>{title ?? `Конкурс #${id ?? "-"}`}</STitle>
             <SSubTitle>
-              <SSubtitleText>{competitionFormat}</SSubtitleText>
-              <SSubtitleText>Регистрация</SSubtitleText>
+              <SSubtitleText>
+                Старт: {formatDate(startsAt)}
+              </SSubtitleText>
+              <SSubtitleText>
+                Финиш: {formatDate(endsAt)}
+              </SSubtitleText>
             </SSubTitle>
           </SMainInfo>
           <SGeneralInfo>
             <SGeneral>
               <SGeneralText>
-                Даты проведения:{" "}
-                {formatUtcToShortDate(registrationDateRange[0] || 0)} -{" "}
-                {formatUtcToShortDate(registrationDateRange[1] || 0)}
+                {description || "Описание конкурса пока не заполнено."}
               </SGeneralText>
-              <SGeneralText>{prize.description}</SGeneralText>
+              <SGeneralText>
+                Контакты организатора: {contacts || "-"}
+              </SGeneralText>
             </SGeneral>
-            <SGeneralText>Организатор: ...</SGeneralText>
           </SGeneralInfo>
         </SMainContent>
       </SCompetitionCard>

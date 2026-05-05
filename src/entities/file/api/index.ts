@@ -47,10 +47,11 @@ export const useUploadFile = () =>
     mutationFn: uploadFile,
   });
 
-export const useGetFileDownloadUrl = (fileId: number) =>
+export const useGetFileDownloadUrl = (fileId: number, enabled = true) =>
   useQuery<IDownloadUrlResponse, DetailsError>({
     queryKey: [getFileDownloadUrlKey, fileId],
     queryFn: () => getFileDownloadUrl({ fileId }),
+    enabled,
   });
 
 export * from "../model/file.types";

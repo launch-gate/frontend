@@ -22,15 +22,17 @@ export const Header = () => {
         </Link>
         <SHeaderActions>
           <Button type="text">
-            <Link href={"/competition"}>{t("join")}</Link>
+            <Link href={routes.COMPETITIONS_PAGE}>{t("join")}</Link>
           </Button>
           <Button type="text">
-            <Link href={"/create"}>{t("create")}</Link>
+            <Link href={routes.CREATE_PAGE}>{t("create")}</Link>
           </Button>
         </SHeaderActions>
       </SHeaderMainContent>
       <div>
-        <Button>{t("login")}</Button>
+        <Link href={routes.AUTH_PAGE}>
+          <Button>{t("login")}</Button>
+        </Link>
       </div>
     </SHeader>
   );

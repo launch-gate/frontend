@@ -1,4 +1,5 @@
 import createNextIntlPlugin from "next-intl/plugin";
+import path from "node:path";
 
 const withNextIntl = createNextIntlPlugin(
   "./src/entities/locale/lib/request.ts",
@@ -7,6 +8,7 @@ const withNextIntl = createNextIntlPlugin(
 const nextConfig = {
   reactStrictMode: false,
   output: "standalone",
+  outputFileTracingRoot: path.resolve("."),
   compiler: {
     styledComponents: true,
   },

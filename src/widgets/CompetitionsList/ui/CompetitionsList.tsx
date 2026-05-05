@@ -1,7 +1,6 @@
-import {
-  useGetCompetitionsList,
-  IGetCreateCompetition,
-} from "@/entities/competition/api";
+import { useMemo } from "react";
+
+import { IContestInfoResponse, useGetContests } from "@/entities/contest";
 import {
   CompetitionCard,
   competitionFilterStore,
@@ -9,27 +8,46 @@ import {
 import { InfinityListProps, VirtualizedList } from "@/shared/components";
 
 export const CompetitionsList = () => {
-  const filters = competitionFilterStore().getFilters();
-  const getCompetitionsList = useGetCompetitionsList(filters.search);
+  const search = competitionFilterStore(
+    (state) => state.competitionState.search,
+  );
+  const contests = useGetContests();
+
+  const filteredContests = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    const list = contests.data?.contests ?? [];
+
+    if (!normalizedSearch) return list;
+
+    return list.filter((contest) =>
+      [contest.title, contest.description, contest.contacts]
+        .filter(Boolean)
+        .some(
+          (value) => value?.toLowerCase().includes(normalizedSearch) ?? false,
+        ),
+    );
+  }, [contests.data?.contests, search]);
 
   const itemContent: InfinityListProps<
-    IGetCreateCompetition,
+    IContestInfoResponse,
     unknown
   >["itemContent"] = (_, props) => <CompetitionCard {...props} />;
+
   const itemLoadingContent: InfinityListProps<
-    IGetCreateCompetition,
+    IContestInfoResponse,
     unknown
-  >["itemLoadingContent"] = (key) => <div>Loading...</div>;
+  >["itemLoadingContent"] = (key) => <div key={key}>Загрузка...</div>;
+
   return (
     <VirtualizedList
-      data={getCompetitionsList.data || []}
-      isError={getCompetitionsList.isError}
-      isFetching={getCompetitionsList.isFetching}
-      isPending={getCompetitionsList.isPending}
-      fetchNextPage={getCompetitionsList.fetchNextPage}
+      data={filteredContests}
+      isError={contests.isError}
+      isFetching={contests.isFetching}
+      isPending={contests.isPending}
       itemContent={itemContent}
       itemLoadingContent={itemLoadingContent}
-      isNotFound={!!getCompetitionsList.data}
+      emptyComponent={<div>Конкурсы не найдены.</div>}
+      errorComponent={<div>Не удалось загрузить список конкурсов.</div>}
     />
   );
 };

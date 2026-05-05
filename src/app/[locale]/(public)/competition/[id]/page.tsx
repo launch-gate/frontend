@@ -2,7 +2,7 @@
 
 import { getTranslations } from "next-intl/server";
 
-import { CompetitionPage } from "@/screens/CompetitionPage";
+import { ContestPublicPage } from "@/screens/ContestPublicPage";
 
 export async function generateMetadata() {
   const t = await getTranslations();
@@ -14,5 +14,5 @@ export async function generateMetadata() {
 }
 
 export default async function Competition() {
-  return <CompetitionPage />;
+  return <ContestPublicPage />;
 }

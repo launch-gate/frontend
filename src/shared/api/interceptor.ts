@@ -11,6 +11,16 @@ import { env } from "@/shared/config";
 
 const controller = new AbortController();
 const isServer = typeof window === "undefined";
+const API_PREFIX = "/api/v1";
+const DEFAULT_BASE_API_URL = "http://157.22.252.122:8090";
+
+const getApiBaseUrl = (baseUrl = DEFAULT_BASE_API_URL) => {
+  const normalizedBaseUrl = baseUrl.replace(/\/$/, "");
+
+  return normalizedBaseUrl.endsWith(API_PREFIX)
+    ? normalizedBaseUrl
+    : `${normalizedBaseUrl}${API_PREFIX}`;
+};
 
 const paramsSerializer: ParamsSerializerOptions = {
   indexes: null,
@@ -36,7 +46,7 @@ const paramsSerializer: ParamsSerializerOptions = {
 };
 
 export const API: AxiosInstance = axios.create({
-  baseURL: "http://157.22.252.122:8090/api/v1",
+  baseURL: getApiBaseUrl(env.BASE_API_URL),
   headers: { "Content-Type": "application/json" },
   paramsSerializer,
   signal: controller.signal,
@@ -59,7 +69,7 @@ const handlerRequest = async (config: InternalAxiosRequestConfig) => {
   const { method, url } = config;
 
   logOnDev(`🚀 [API] ${method?.toUpperCase()} ${url} | Request`);
-  if (isServer) config.baseURL = env.BASE_API_URL;
+  if (isServer) config.baseURL = getApiBaseUrl(env.BASE_API_URL);
 
   return { ...config };
 };

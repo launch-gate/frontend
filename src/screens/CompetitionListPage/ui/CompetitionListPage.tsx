@@ -2,22 +2,27 @@
 
 import { ChangeEvent, useState } from "react";
 
+import { competitionFilterStore } from "@/entities/competition";
+import { CompetitionFilters } from "@/features/CompetitionFilters";
 import { Input } from "@/shared/components";
 import { CompetitionsList } from "@/widgets/CompetitionsList";
-import { CompetitionFilters } from "@/features/CompetitionFilters";
 
 import {
   SBanner,
   SBannerWrapper,
   SCompetitionsListPage,
-  SFilters,
   SMainContent,
 } from "./competitionListPage.styles";
 
 export const CompetitionListPage = () => {
   const [inputSearch, setInputSearch] = useState("");
-  const handleChangeInputSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    setInputSearch(e.target.value);
+  const setFilters = competitionFilterStore((state) => state.setFilters);
+
+  const handleChangeInputSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    const search = event.target.value;
+
+    setInputSearch(search);
+    setFilters({ search });
   };
 
   return (

@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import { AnySchema, ValidationError } from "yup";
 
 import { DetailsError, IError } from "./errors";
+import { API } from "./interceptor";
 
 const getAuthHeaders = () => {
   if (typeof window === "undefined") return {};
@@ -15,7 +16,7 @@ export const requestWithValidation = async <TResponse>(
   validationSchema: AnySchema | null,
   errorName = config.url ?? "/api",
 ): Promise<TResponse> =>
-  axios<TResponse>({
+  API<TResponse>({
     ...config,
     headers: {
       ...getAuthHeaders(),
