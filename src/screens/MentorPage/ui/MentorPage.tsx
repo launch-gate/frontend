@@ -12,6 +12,7 @@ import {
   useGetStageSubmissionMentorComments,
 } from "@/entities/mentor";
 import { Button } from "@/shared/components";
+import { routes } from "@/shared/config";
 import {
   SActions,
   SField,
@@ -78,6 +79,14 @@ export const MentorPage = () => {
           Команды ментора, календарь созвонов, чтение submission команды и
           комментарии к сдачам.
         </SWorkspaceSubtitle>
+        <SActions>
+          <Link href={routes.EXPERT_PAGE}>
+            <Button>Кабинет эксперта</Button>
+          </Link>
+          <Link href={routes.ORGANIZER_EVALUATIONS_PAGE}>
+            <Button>Назначения</Button>
+          </Link>
+        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>
@@ -157,7 +166,6 @@ export const MentorPage = () => {
                   {
                     onSuccess: (data) => {
                       setActionResult(`Созвон создан: #${data.callId ?? "-"}`);
-                      calls.refetch();
                     },
                     onError: (error) => setActionResult(error.message),
                   },
@@ -236,7 +244,6 @@ export const MentorPage = () => {
                   {
                     onSuccess: (data) => {
                       setActionResult(`Комментарий создан: #${data.commentId ?? "-"}`);
-                      comments.refetch();
                     },
                     onError: (error) => setActionResult(error.message),
                   },

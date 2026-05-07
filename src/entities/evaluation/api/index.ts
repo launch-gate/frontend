@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   DetailsError,
@@ -148,17 +148,53 @@ export const useGetExpertReviewSubmission = (
     enabled,
   });
 
-export const useSaveExpertReviewDraft = () =>
-  useMutation<IReviewResponse, DetailsError, ISaveExpertReviewDraftVariables>({
+export const useSaveExpertReviewDraft = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IReviewResponse, DetailsError, ISaveExpertReviewDraftVariables>({
     mutationKey: [saveExpertReviewDraftKey],
     mutationFn: saveExpertReviewDraft,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<IAssignmentListResponse>(
+        [getExpertReviewsKey],
+        (current) =>
+          current
+            ? {
+                assignments: (current.assignments ?? []).map((assignment) =>
+                  assignment.id === variables.assignmentId
+                    ? { ...assignment, status: data.status }
+                    : assignment,
+                ),
+              }
+            : current,
+      );
+    },
   });
+};
 
-export const usePublishExpertReview = () =>
-  useMutation<IReviewResponse, DetailsError, IAssignmentIdVariables>({
+export const usePublishExpertReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IReviewResponse, DetailsError, IAssignmentIdVariables>({
     mutationKey: [publishExpertReviewKey],
     mutationFn: publishExpertReview,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<IAssignmentListResponse>(
+        [getExpertReviewsKey],
+        (current) =>
+          current
+            ? {
+                assignments: (current.assignments ?? []).map((assignment) =>
+                  assignment.id === variables.assignmentId
+                    ? { ...assignment, status: data.status }
+                    : assignment,
+                ),
+              }
+            : current,
+      );
+    },
   });
+};
 
 export const useAssignExpert = () =>
   useMutation<IAssignmentResponse, DetailsError, IAssignmentRequest>({

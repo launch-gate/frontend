@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 import { useGetMyProjects } from "@/entities/project";
 import {
   AccountType,
+  IUserProfileResponse,
   UserContactType,
   useGetUserProfile,
   useUpdateUserProfile,
 } from "@/entities/user";
 import { Button } from "@/shared/components";
+import { routes } from "@/shared/config";
 import {
   SActions,
   SField,
@@ -36,6 +39,12 @@ import {
   SAccountLabel,
   SAccountRow,
   SAccountValue,
+  SContactEmpty,
+  SContactHeader,
+  SContactList,
+  SContactPrimaryLabel,
+  SContactRow,
+  SContactSection,
   SFieldLabelRow,
   SPencilHint,
   SRoleBadge,
@@ -68,21 +77,64 @@ const PencilIcon = () => (
   </svg>
 );
 
+type EditableContact = {
+  type: UserContactType;
+  value: string;
+  primaryContact: boolean;
+};
+
 type SavedValues = {
   fullName: string;
   nickname: string;
   bio: string;
-  contactType: UserContactType;
-  contactValue: string;
+  contacts: EditableContact[];
 };
 
 const defaultSaved: SavedValues = {
   fullName: "",
   nickname: "",
   bio: "",
-  contactType: "TELEGRAM",
-  contactValue: "",
+  contacts: [],
 };
+
+const normalizeContacts = (contacts: EditableContact[]): EditableContact[] =>
+  contacts
+    .map((contact) => ({
+      type: contact.type,
+      value: contact.value.trim(),
+      primaryContact: contact.primaryContact,
+    }))
+    .filter((contact) => Boolean(contact.value));
+
+const getSavedValues = (profileData: IUserProfileResponse): SavedValues => ({
+  fullName: profileData.fullName ?? "",
+  nickname: profileData.nickname ?? "",
+  bio: profileData.bio ?? "",
+  contacts:
+    profileData.contacts?.flatMap((contact) =>
+      contact.type && contact.value
+        ? [
+            {
+              type: contact.type,
+              value: contact.value,
+              primaryContact: Boolean(contact.primaryContact),
+            },
+          ]
+        : [],
+    ) ?? [],
+});
+
+const areContactsEqual = (
+  left: EditableContact[],
+  right: EditableContact[],
+) =>
+  left.length === right.length &&
+  left.every(
+    (contact, index) =>
+      contact.type === right[index]?.type &&
+      contact.value === right[index]?.value &&
+      contact.primaryContact === right[index]?.primaryContact,
+  );
 
 export const ProfilePage = () => {
   const profile = useGetUserProfile();
@@ -92,36 +144,69 @@ export const ProfilePage = () => {
   const [fullName, setFullName] = useState("");
   const [nickname, setNickname] = useState("");
   const [bio, setBio] = useState("");
-  const [contactType, setContactType] = useState<UserContactType>("TELEGRAM");
-  const [contactValue, setContactValue] = useState("");
+  const [contacts, setContacts] = useState<EditableContact[]>([]);
   const [savedValues, setSavedValues] = useState<SavedValues>(defaultSaved);
 
   useEffect(() => {
     if (!profile.data) return;
-    const primaryContact =
-      profile.data.contacts?.find((c) => c.primaryContact) ??
-      profile.data.contacts?.[0];
-    const values: SavedValues = {
-      fullName: profile.data.fullName ?? "",
-      nickname: profile.data.nickname ?? "",
-      bio: profile.data.bio ?? "",
-      contactType: (primaryContact?.type ?? "TELEGRAM") as UserContactType,
-      contactValue: primaryContact?.value ?? "",
-    };
+    const values = getSavedValues(profile.data);
     setFullName(values.fullName);
     setNickname(values.nickname);
     setBio(values.bio);
-    setContactType(values.contactType);
-    setContactValue(values.contactValue);
+    setContacts(values.contacts);
     setSavedValues(values);
   }, [profile.data]);
+
+  const preparedContacts = normalizeContacts(contacts);
 
   const isDirty =
     fullName !== savedValues.fullName ||
     nickname !== savedValues.nickname ||
     bio !== savedValues.bio ||
-    contactType !== savedValues.contactType ||
-    contactValue !== savedValues.contactValue;
+    !areContactsEqual(preparedContacts, savedValues.contacts);
+
+  const handleAddContact = () => {
+    setContacts((current) => [
+      ...current,
+      {
+        type: "TELEGRAM",
+        value: "",
+        primaryContact: current.length === 0,
+      },
+    ]);
+  };
+
+  const handleContactChange = (
+    index: number,
+    patch: Partial<EditableContact>,
+  ) => {
+    setContacts((current) =>
+      current.map((contact, contactIndex) =>
+        contactIndex === index ? { ...contact, ...patch } : contact,
+      ),
+    );
+  };
+
+  const handlePrimaryContactChange = (index: number) => {
+    setContacts((current) =>
+      current.map((contact, contactIndex) => ({
+        ...contact,
+        primaryContact: contactIndex === index,
+      })),
+    );
+  };
+
+  const handleRemoveContact = (index: number) => {
+    setContacts((current) => {
+      const next = current.filter((_, contactIndex) => contactIndex !== index);
+      if (!current[index]?.primaryContact || next.length === 0) return next;
+
+      return next.map((contact, contactIndex) => ({
+        ...contact,
+        primaryContact: contactIndex === 0,
+      }));
+    });
+  };
 
   const handleSave = () => {
     updateProfile.mutate(
@@ -129,26 +214,16 @@ export const ProfilePage = () => {
         fullName,
         nickname,
         bio,
-        contacts: contactValue.trim()
-          ? [
-              {
-                type: contactType,
-                value: contactValue.trim(),
-                primaryContact: true,
-              },
-            ]
-          : undefined,
+        contacts: preparedContacts,
       },
       {
-        onSuccess: () => {
-          setSavedValues({
-            fullName,
-            nickname,
-            bio,
-            contactType,
-            contactValue,
-          });
-          profile.refetch();
+        onSuccess: (data) => {
+          const values = getSavedValues(data);
+          setFullName(values.fullName);
+          setNickname(values.nickname);
+          setBio(values.bio);
+          setContacts(values.contacts);
+          setSavedValues(values);
         },
       },
     );
@@ -157,6 +232,7 @@ export const ProfilePage = () => {
   const activeProjects = projects.data?.activeProjects ?? [];
   const archivedProjects = projects.data?.archivedProjects ?? [];
   const accountType = profile.data?.accountType;
+  const isOrganizer = accountType === "ORGANIZER";
 
   return (
     <SWorkspacePage>
@@ -166,6 +242,29 @@ export const ProfilePage = () => {
           Личные данные, контакты и список рабочих пространств участника или
           команды.
         </SWorkspaceSubtitle>
+        {profile.data && (
+          <SActions>
+            <Link href={routes.COMPETITIONS_PAGE}>
+              <Button>Конкурсы</Button>
+            </Link>
+            <Link href={routes.CREATE_PAGE}>
+              <Button>Создать</Button>
+            </Link>
+            {isOrganizer && (
+              <>
+                <Link href={routes.ORGANIZER_PAGE}>
+                  <Button>Панель организатора</Button>
+                </Link>
+                <Link href={routes.MENTOR_PAGE}>
+                  <Button>Кабинет ментора</Button>
+                </Link>
+                <Link href={routes.EXPERT_PAGE}>
+                  <Button>Кабинет эксперта</Button>
+                </Link>
+              </>
+            )}
+          </SActions>
+        )}
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>
@@ -197,36 +296,6 @@ export const ProfilePage = () => {
                 onChange={(e) => setNickname(e.target.value)}
               />
             </SField>
-            <SField>
-              <SFieldLabelRow>
-                Контакт
-                <SPencilHint>
-                  <PencilIcon />
-                </SPencilHint>
-              </SFieldLabelRow>
-              <SSelect
-                value={contactType}
-                onChange={(e) =>
-                  setContactType(e.target.value as UserContactType)
-                }
-              >
-                <option value="TELEGRAM">Telegram</option>
-                <option value="VK">VK</option>
-                <option value="EMAIL">Email</option>
-              </SSelect>
-            </SField>
-            <SField>
-              <SFieldLabelRow>
-                Значение контакта
-                <SPencilHint>
-                  <PencilIcon />
-                </SPencilHint>
-              </SFieldLabelRow>
-              <SInput
-                value={contactValue}
-                onChange={(e) => setContactValue(e.target.value)}
-              />
-            </SField>
           </SFormGrid>
 
           <SField>
@@ -239,6 +308,73 @@ export const ProfilePage = () => {
             <STextarea value={bio} onChange={(e) => setBio(e.target.value)} />
           </SField>
 
+          <SContactSection>
+            <SContactHeader>
+              <SFieldLabelRow>
+                Контакты
+                <SPencilHint>
+                  <PencilIcon />
+                </SPencilHint>
+              </SFieldLabelRow>
+              <Button color="gray" htmlType="button" onClick={handleAddContact}>
+                Добавить контакт
+              </Button>
+            </SContactHeader>
+
+            {contacts.length > 0 ? (
+              <SContactList>
+                {contacts.map((contact, index) => (
+                  <SContactRow key={index}>
+                    <SField>
+                      <span>Тип</span>
+                      <SSelect
+                        value={contact.type}
+                        onChange={(e) =>
+                          handleContactChange(index, {
+                            type: e.target.value as UserContactType,
+                          })
+                        }
+                      >
+                        <option value="TELEGRAM">Telegram</option>
+                        <option value="VK">VK</option>
+                        <option value="EMAIL">Email</option>
+                      </SSelect>
+                    </SField>
+                    <SField>
+                      <span>Значение</span>
+                      <SInput
+                        value={contact.value}
+                        onChange={(e) =>
+                          handleContactChange(index, {
+                            value: e.target.value,
+                          })
+                        }
+                      />
+                    </SField>
+                    <SContactPrimaryLabel>
+                      <input
+                        type="radio"
+                        name="profile-primary-contact"
+                        checked={contact.primaryContact}
+                        onChange={() => handlePrimaryContactChange(index)}
+                      />
+                      Основной
+                    </SContactPrimaryLabel>
+                    <Button
+                      color="gray"
+                      htmlType="button"
+                      onClick={() => handleRemoveContact(index)}
+                    >
+                      Удалить
+                    </Button>
+                  </SContactRow>
+                ))}
+              </SContactList>
+            ) : (
+              <SContactEmpty>Контакты не добавлены.</SContactEmpty>
+            )}
+          </SContactSection>
+
           {isDirty && (
             <SActions>
               <Button
@@ -247,12 +383,6 @@ export const ProfilePage = () => {
                 onClick={handleSave}
               >
                 Сохранить
-              </Button>
-              <Button
-                loading={profile.isFetching}
-                onClick={() => profile.refetch()}
-              >
-                Обновить
               </Button>
             </SActions>
           )}

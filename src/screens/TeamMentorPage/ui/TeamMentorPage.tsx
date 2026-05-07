@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useParams } from "next/navigation";
 
@@ -7,7 +8,10 @@ import {
   useGetStageSubmissionMentorComments,
   useGetTeamMentorCalls,
 } from "@/entities/mentor";
+import { Button } from "@/shared/components";
+import { routes } from "@/shared/config";
 import {
+  SActions,
   SField,
   SInput,
   SItemMeta,
@@ -56,6 +60,11 @@ export const TeamMentorPage = () => {
         <SWorkspaceSubtitle>
           Созвоны команды с ментором и комментарии ментора по stage submission.
         </SWorkspaceSubtitle>
+        <SActions>
+          <Link href={routes.MENTOR_PAGE}>
+            <Button>Кабинет ментора</Button>
+          </Link>
+        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>

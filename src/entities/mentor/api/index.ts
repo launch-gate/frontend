@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   DetailsError,
@@ -179,11 +179,40 @@ export const useGetMentorCalls = () =>
     queryFn: getMentorCalls,
   });
 
-export const useCreateMentorCall = () =>
-  useMutation<IMentorCallCreatedResponse, DetailsError, IScheduleCallRequest>({
+export const useCreateMentorCall = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IMentorCallCreatedResponse, DetailsError, IScheduleCallRequest>({
     mutationKey: [createMentorCallKey],
     mutationFn: createMentorCall,
+    onSuccess: (data, variables) => {
+      const createdCall = {
+        id: data.callId,
+        teamId: variables.teamId,
+        startsAt: variables.startsAt,
+        endsAt: variables.endsAt,
+        link: variables.link,
+        notes: variables.notes,
+      };
+
+      queryClient.setQueryData<IMentorCallListResponse>(
+        [getMentorCallsKey],
+        (current) => ({
+          calls: [...(current?.calls ?? []), createdCall],
+        }),
+      );
+      queryClient.setQueryData<IMentorCallListResponse>(
+        [getTeamMentorCallsKey, variables.teamId],
+        (current) =>
+          current
+            ? {
+                calls: [...(current.calls ?? []), createdCall],
+              }
+            : current,
+      );
+    },
   });
+};
 
 export const useGetTeamMentorCalls = (teamId: number, enabled = true) =>
   useQuery<IMentorCallListResponse, DetailsError>({
@@ -212,14 +241,33 @@ export const useGetStageSubmissionMentorComments = (
     enabled,
   });
 
-export const useCreateMentorComment = () =>
-  useMutation<
+export const useCreateMentorComment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
     IMentorCommentCreatedResponse,
     DetailsError,
     IMentorCommentRequest
   >({
     mutationKey: [createMentorCommentKey],
     mutationFn: createMentorComment,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<IMentorCommentListResponse>(
+        [getStageSubmissionMentorCommentsKey, variables.stageSubmissionId],
+        (current) => ({
+          comments: [
+            ...(current?.comments ?? []),
+            {
+              id: data.commentId,
+              stageSubmissionId: variables.stageSubmissionId,
+              text: variables.text,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        }),
+      );
+    },
   });
+};
 
 export * from "../model/mentor.types";

@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   DetailsError,
@@ -338,29 +338,119 @@ export const useGetOrganizerContests = () =>
     queryFn: getOrganizerContests,
   });
 
-export const useCreateOrganizerContest = () =>
-  useMutation<IContestInfoResponse, DetailsError, IContestRequest>({
+export const useCreateOrganizerContest = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IContestInfoResponse, DetailsError, IContestRequest>({
     mutationKey: [createOrganizerContestKey],
     mutationFn: createOrganizerContest,
-  });
+    onSuccess: (data) => {
+      queryClient.setQueryData<IContestListInfoResponse>(
+        [getOrganizerContestsKey],
+        (current) => ({
+          contests: [...(current?.contests ?? []), data],
+        }),
+      );
 
-export const useUpdateOrganizerContest = () =>
-  useMutation<IContestInfoResponse, DetailsError, IUpdateContestVariables>({
+      if (data.id) queryClient.setQueryData([getContestKey, data.id], data);
+    },
+  });
+};
+
+export const useUpdateOrganizerContest = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IContestInfoResponse, DetailsError, IUpdateContestVariables>({
     mutationKey: [updateOrganizerContestKey],
     mutationFn: updateOrganizerContest,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData([getContestKey, variables.contestId], data);
+      queryClient.setQueryData<IContestListInfoResponse>(
+        [getOrganizerContestsKey],
+        (current) => ({
+          contests: (current?.contests ?? []).map((contest) =>
+            contest.id === variables.contestId ? data : contest,
+          ),
+        }),
+      );
+      queryClient.setQueryData<IContestListInfoResponse>(
+        [getContestsKey],
+        (current) =>
+          current
+            ? {
+                contests: (current.contests ?? []).map((contest) =>
+                  contest.id === variables.contestId ? data : contest,
+                ),
+              }
+            : current,
+      );
+    },
   });
+};
 
-export const usePublishOrganizerContest = () =>
-  useMutation<IContestInfoResponse, DetailsError, IContestIdVariables>({
+export const usePublishOrganizerContest = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IContestInfoResponse, DetailsError, IContestIdVariables>({
     mutationKey: [publishOrganizerContestKey],
     mutationFn: publishOrganizerContest,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData([getContestKey, variables.contestId], data);
+      queryClient.setQueryData<IContestListInfoResponse>(
+        [getOrganizerContestsKey],
+        (current) => ({
+          contests: (current?.contests ?? []).map((contest) =>
+            contest.id === variables.contestId ? data : contest,
+          ),
+        }),
+      );
+      queryClient.setQueryData<IContestListInfoResponse>(
+        [getContestsKey],
+        (current) =>
+          current
+            ? {
+                contests: (current.contests ?? []).map((contest) =>
+                  contest.id === variables.contestId ? data : contest,
+                ),
+              }
+            : current,
+      );
+    },
   });
+};
 
-export const useDeleteOrganizerContest = () =>
-  useMutation<IDeletedResponse, DetailsError, IContestIdVariables>({
+export const useDeleteOrganizerContest = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IDeletedResponse, DetailsError, IContestIdVariables>({
     mutationKey: [deleteOrganizerContestKey],
     mutationFn: deleteOrganizerContest,
+    onSuccess: (_, variables) => {
+      queryClient.removeQueries({
+        queryKey: [getContestKey, variables.contestId],
+      });
+      queryClient.setQueryData<IContestListInfoResponse>(
+        [getOrganizerContestsKey],
+        (current) => ({
+          contests: (current?.contests ?? []).filter(
+            (contest) => contest.id !== variables.contestId,
+          ),
+        }),
+      );
+      queryClient.setQueryData<IContestListInfoResponse>(
+        [getContestsKey],
+        (current) =>
+          current
+            ? {
+                contests: (current.contests ?? []).filter(
+                  (contest) => contest.id !== variables.contestId,
+                ),
+              }
+            : current,
+      );
+    },
   });
+};
 
 export const useGetOrganizerContestParticipants = (contestId: number) =>
   useQuery<IContestParticipantOrganizerListResponse, DetailsError>({
@@ -374,19 +464,43 @@ export const useGetContestOrganizers = (contestId: number) =>
     queryFn: () => getContestOrganizers({ contestId }),
   });
 
-export const useAddContestOrganizer = () =>
-  useMutation<IOrganizerResponse, DetailsError, IAddContestOrganizerVariables>({
+export const useAddContestOrganizer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IOrganizerResponse, DetailsError, IAddContestOrganizerVariables>({
     mutationKey: [addContestOrganizerKey],
     mutationFn: addContestOrganizer,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<IOrganizerListResponse>(
+        [getContestOrganizersKey, variables.contestId],
+        (current) => ({
+          organizers: [...(current?.organizers ?? []), data],
+        }),
+      );
+    },
   });
+};
 
-export const useDeleteContestOrganizer = () =>
-  useMutation<IDeletedResponse, DetailsError, IDeleteContestOrganizerVariables>(
+export const useDeleteContestOrganizer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IDeletedResponse, DetailsError, IDeleteContestOrganizerVariables>(
     {
       mutationKey: [deleteContestOrganizerKey],
       mutationFn: deleteContestOrganizer,
+      onSuccess: (_, variables) => {
+        queryClient.setQueryData<IOrganizerListResponse>(
+          [getContestOrganizersKey, variables.contestId],
+          (current) => ({
+            organizers: (current?.organizers ?? []).filter(
+              (organizer) => organizer.id !== variables.organizerId,
+            ),
+          }),
+        );
+      },
     },
   );
+};
 
 export const useGetContestAnalytics = (contestId: number) =>
   useQuery<IContestAnalyticsResponse, DetailsError>({

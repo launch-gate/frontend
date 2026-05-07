@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   DetailsError,
@@ -166,11 +166,22 @@ export const useGetContestTeams = (contestId: number, enabled = true) =>
     enabled,
   });
 
-export const useCreateContestTeam = () =>
-  useMutation<ITeamResponse, DetailsError, ICreateContestTeamVariables>({
+export const useCreateContestTeam = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<ITeamResponse, DetailsError, ICreateContestTeamVariables>({
     mutationKey: [createContestTeamKey],
     mutationFn: createContestTeam,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<IAllTeamsResponse>(
+        [getContestTeamsKey, variables.contestId],
+        (current) => ({
+          teams: [...(current?.teams ?? []), data],
+        }),
+      );
+    },
   });
+};
 
 export const useRegisterTeamContest = () =>
   useMutation<
@@ -182,11 +193,29 @@ export const useRegisterTeamContest = () =>
     mutationFn: registerTeamContest,
   });
 
-export const useJoinTeamByInvite = () =>
-  useMutation<ITeamResponse, DetailsError, IInviteTokenVariables>({
+export const useJoinTeamByInvite = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<ITeamResponse, DetailsError, IInviteTokenVariables>({
     mutationKey: [joinTeamByInviteKey],
     mutationFn: joinTeamByInvite,
+    onSuccess: (data) => {
+      if (!data.contestId) return;
+
+      queryClient.setQueryData<IAllTeamsResponse>(
+        [getContestTeamsKey, data.contestId],
+        (current) =>
+          current
+            ? {
+                teams: (current.teams ?? []).map((team) =>
+                  team.id === data.id ? data : team,
+                ),
+              }
+            : current,
+      );
+    },
   });
+};
 
 export const useRequestJoinTeam = () =>
   useMutation<ITeamRequestJoinResponse, DetailsError, ITeamIdVariables>({

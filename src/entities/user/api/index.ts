@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   DetailsError,
@@ -51,10 +51,16 @@ export const useGetUserProfile = (enabled = true) =>
     enabled,
   });
 
-export const useUpdateUserProfile = () =>
-  useMutation<IUserProfileResponse, DetailsError, IUpdateProfileRequest>({
+export const useUpdateUserProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IUserProfileResponse, DetailsError, IUpdateProfileRequest>({
     mutationKey: [updateUserProfileKey],
     mutationFn: updateUserProfile,
+    onSuccess: (data) => {
+      queryClient.setQueryData([getUserProfileKey], data);
+    },
   });
+};
 
 export * from "../model/user.types";

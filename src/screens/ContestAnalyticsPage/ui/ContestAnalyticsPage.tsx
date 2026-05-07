@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 
 import {
@@ -10,6 +11,7 @@ import {
   useGetContestAnalytics,
 } from "@/entities/contest";
 import { Button } from "@/shared/components";
+import { routes } from "@/shared/config";
 import {
   SActions,
   SField,
@@ -59,6 +61,14 @@ export const ContestAnalyticsPage = () => {
         <SWorkspaceSubtitle>
           Метрики конкурса, экспорт рейтинга и создание кастомной выгрузки.
         </SWorkspaceSubtitle>
+        <SActions>
+          <Link href={`/organizer/contests/${contestId}`}>
+            <Button>Настройки конкурса</Button>
+          </Link>
+          <Link href={routes.ORGANIZER_PAGE}>
+            <Button>Все конкурсы</Button>
+          </Link>
+        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>
@@ -94,9 +104,6 @@ export const ContestAnalyticsPage = () => {
               <SStatus>{analytics.data?.submittedWorks ?? 0}</SStatus>
             </SListItem>
           </SList>
-          <SActions>
-            <Button onClick={() => analytics.refetch()}>Обновить</Button>
-          </SActions>
         </SWorkspacePanel>
 
         <SWorkspacePanel>

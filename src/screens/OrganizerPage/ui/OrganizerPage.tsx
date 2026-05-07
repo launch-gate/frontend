@@ -10,6 +10,7 @@ import {
   useGetOrganizerContests,
 } from "@/entities/contest";
 import { Button } from "@/shared/components";
+import { routes } from "@/shared/config";
 import {
   SActions,
   SField,
@@ -53,9 +54,7 @@ export const OrganizerPage = () => {
       endsAt,
     };
 
-    createContest.mutate(data, {
-      onSuccess: () => contests.refetch(),
-    });
+    createContest.mutate(data);
   };
 
   return (
@@ -65,6 +64,17 @@ export const OrganizerPage = () => {
         <SWorkspaceSubtitle>
           Список конкурсов, создание черновика и быстрый переход к настройке.
         </SWorkspaceSubtitle>
+        <SActions>
+          <Link href={routes.ORGANIZER_EVALUATIONS_PAGE}>
+            <Button>Назначения</Button>
+          </Link>
+          <Link href={routes.MENTOR_PAGE}>
+            <Button>Кабинет ментора</Button>
+          </Link>
+          <Link href={routes.EXPERT_PAGE}>
+            <Button>Кабинет эксперта</Button>
+          </Link>
+        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>
@@ -124,7 +134,6 @@ export const OrganizerPage = () => {
             >
               Создать конкурс
             </Button>
-            <Button onClick={() => contests.refetch()}>Обновить список</Button>
           </SActions>
         </SWorkspacePanel>
 

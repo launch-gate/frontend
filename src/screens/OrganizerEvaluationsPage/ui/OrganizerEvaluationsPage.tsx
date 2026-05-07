@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { useAssignExpert, useCreateAiReview } from "@/entities/evaluation";
 import { useAssignMentor } from "@/entities/mentor";
 import { Button } from "@/shared/components";
+import { routes } from "@/shared/config";
 import {
   SActions,
   SField,
@@ -40,6 +42,17 @@ export const OrganizerEvaluationsPage = () => {
           Панель организатора для назначения экспертов на submission, запуска AI
           review и назначения менторов на команды.
         </SWorkspaceSubtitle>
+        <SActions>
+          <Link href={routes.ORGANIZER_PAGE}>
+            <Button>Конкурсы</Button>
+          </Link>
+          <Link href={routes.EXPERT_PAGE}>
+            <Button>Кабинет эксперта</Button>
+          </Link>
+          <Link href={routes.MENTOR_PAGE}>
+            <Button>Кабинет ментора</Button>
+          </Link>
+        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>

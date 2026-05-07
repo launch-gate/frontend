@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useParams } from "next/navigation";
 
@@ -9,6 +10,7 @@ import {
   useSaveExpertReviewDraft,
 } from "@/entities/evaluation";
 import { Button } from "@/shared/components";
+import { routes } from "@/shared/config";
 import {
   SActions,
   SField,
@@ -57,6 +59,11 @@ export const ExpertReviewPage = () => {
           Просмотр submission, сохранение draft-оценки и публикация итоговой
           экспертной проверки.
         </SWorkspaceSubtitle>
+        <SActions>
+          <Link href={routes.EXPERT_PAGE}>
+            <Button>Кабинет эксперта</Button>
+          </Link>
+        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>

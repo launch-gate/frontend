@@ -231,7 +231,6 @@ export const ContestPublicPage = () => {
                       setActionResult(
                         `Регистрация создана: #${data.registrationId ?? "-"}`,
                       );
-                      participants.refetch();
                     },
                     onError: handleError,
                   },
@@ -254,7 +253,6 @@ export const ContestPublicPage = () => {
                               data.registrationId ?? "-"
                             }`,
                           );
-                          participants.refetch();
                         },
                         onError: handleError,
                       },
@@ -275,7 +273,6 @@ export const ContestPublicPage = () => {
                           setActionResult(
                             `Команда создана: #${data.id ?? "-"}`,
                           );
-                          teams.refetch();
                         },
                         onError: handleError,
                       },
@@ -317,7 +314,6 @@ export const ContestPublicPage = () => {
                           setActionResult(
                             `Вы присоединились к команде #${data.id ?? "-"}`,
                           );
-                          teams.refetch();
                         },
                         onError: handleError,
                       },

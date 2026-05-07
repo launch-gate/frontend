@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import { ReviewStatus, useGetExpertReviews } from "@/entities/evaluation";
 import { Button } from "@/shared/components";
+import { routes } from "@/shared/config";
 import {
   SActions,
   SItemMeta,
@@ -43,6 +44,14 @@ export const ExpertPage = () => {
           Назначенные проверки, фильтр по статусу и переход к конкретной сдаче
           для draft-оценки и публикации.
         </SWorkspaceSubtitle>
+        <SActions>
+          <Link href={routes.MENTOR_PAGE}>
+            <Button>Кабинет ментора</Button>
+          </Link>
+          <Link href={routes.ORGANIZER_EVALUATIONS_PAGE}>
+            <Button>Назначения</Button>
+          </Link>
+        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>
@@ -57,9 +66,6 @@ export const ExpertPage = () => {
             <option value="DRAFT">Draft</option>
             <option value="COMPLETED">Завершённые</option>
           </SSelect>
-          <SActions>
-            <Button onClick={() => reviews.refetch()}>Обновить</Button>
-          </SActions>
         </SWorkspacePanel>
 
         <SWorkspacePanel>

@@ -105,11 +105,6 @@ export const FilesPage = () => {
               />
             </SField>
           </SFormGrid>
-          <SActions>
-            <Button disabled={!fileId} onClick={() => downloadUrl.refetch()}>
-              Получить ссылку
-            </Button>
-          </SActions>
           {downloadUrl.data?.url ? (
             <a href={downloadUrl.data.url} target="_blank" rel="noreferrer">
               {downloadUrl.data.url}

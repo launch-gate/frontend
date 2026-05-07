@@ -1,13 +1,14 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
 import { IAuthResponse, useLogin, useRegister } from "@/entities/auth";
 import {
   AccountType,
+  getUserProfileKey,
   UserContactType,
-  useGetUserProfile,
 } from "@/entities/user";
 import { Button, Segmented } from "@/shared/components";
 import { routes } from "@/shared/config";
@@ -72,11 +73,11 @@ export const AuthPage = () => {
 
   const login = useLogin();
   const register = useRegister();
-  const profile = useGetUserProfile(false);
+  const queryClient = useQueryClient();
 
   const profileData = useMemo(
-    () => profile.data ?? login.data?.user ?? register.data?.user,
-    [login.data?.user, profile.data, register.data?.user],
+    () => login.data?.user ?? register.data?.user,
+    [login.data?.user, register.data?.user],
   );
 
   const isPending = login.isPending || register.isPending;
@@ -84,13 +85,14 @@ export const AuthPage = () => {
 
   const handleSuccess = (data: IAuthResponse) => {
     persistAuthResponse(data);
+    if (data.user) queryClient.setQueryData([getUserProfileKey], data.user);
+    window.dispatchEvent(new Event("auth-session-changed"));
     setErrorMessage(null);
     setMessage(
       mode === "login"
         ? "Вы вошли в аккаунт."
         : "Аккаунт создан, токен сохранён.",
     );
-    profile.refetch();
   };
 
   const handleError = (error: Error) => {
@@ -151,6 +153,8 @@ export const AuthPage = () => {
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("tokenType");
+    queryClient.removeQueries({ queryKey: [getUserProfileKey] });
+    window.dispatchEvent(new Event("auth-session-changed"));
     setMessage("Локальная сессия очищена.");
     setErrorMessage(null);
   };
@@ -290,14 +294,6 @@ export const AuthPage = () => {
             <SActions>
               <Button color="violet" htmlType="submit" loading={isPending}>
                 {submitTitle}
-              </Button>
-              <Button
-                color="gray"
-                htmlType="button"
-                loading={profile.isFetching}
-                onClick={() => profile.refetch()}
-              >
-                Обновить профиль
               </Button>
               <Button color="gray" htmlType="button" onClick={handleLogout}>
                 Выйти

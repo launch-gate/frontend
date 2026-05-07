@@ -9,7 +9,6 @@ import axios, {
 
 import { env } from "@/shared/config";
 
-const controller = new AbortController();
 const isServer = typeof window === "undefined";
 const API_PREFIX = "/api/v1";
 const DEFAULT_BASE_API_URL = "http://157.22.252.122:8090";
@@ -49,7 +48,6 @@ export const API: AxiosInstance = axios.create({
   baseURL: getApiBaseUrl(env.BASE_API_URL),
   headers: { "Content-Type": "application/json" },
   paramsSerializer,
-  signal: controller.signal,
   timeout: isServer ? 1500 : 0,
 });
 
@@ -94,12 +92,7 @@ const handlerError = async (error: AxiosError | Error): Promise<AxiosError> => {
       `🚨 [API] ${method?.toUpperCase()} ${url} | Error ${status} ${message}`,
     );
 
-    const isAuthError = url?.startsWith("/auth/");
-
-    if (error.response?.status === 401 && !isAuthError && !isServer) {
-      controller.abort();
-      // await refreshSession();
-    }
+    // Session cleanup is handled by consumers that know the current route.
   }
 
   logOnDev(`${JSON.stringify(error)}`);

@@ -9,7 +9,11 @@ export function TanstackClientProvider({ children }: PropsWithChildren) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000,
+            staleTime: Infinity,
+            refetchOnMount: false,
+            refetchOnReconnect: false,
+            refetchOnWindowFocus: false,
+            retry: false,
           },
         },
       }),

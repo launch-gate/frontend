@@ -137,13 +137,13 @@ const getStagePercent = (
   switch (stageIndex) {
     case 0: {
       const checks = [
-        values.name.trim().length >= 3,
+        values.name.length >= 3,
         values.registrationDateRange[0] != null &&
           values.registrationDateRange[1] != null,
         values.competitionDateRange[0] != null &&
           values.competitionDateRange[1] != null,
         values.resultDateRange[0] != null && values.resultDateRange[1] != null,
-        values.shortDescription.trim().length >= 6,
+        values.shortDescription.length >= 6,
         values.tagInfos.length > 0,
         values.competitionType != null,
         values.competitionFormat != null,
@@ -155,7 +155,7 @@ const getStagePercent = (
         true, // isPublic всегда выбран
         values.participantAgeRange[0] >= 0 &&
           values.participantAgeRange[1] > values.participantAgeRange[0],
-        values.targetAudience.trim().length > 0,
+        values.targetAudience.length > 0,
         true, // isTeamRequired всегда выбран
         ...(values.isTeamRequired
           ? [
@@ -170,20 +170,20 @@ const getStagePercent = (
     case 2: {
       const checks = [
         values.eventContacts.length > 0 &&
-          values.eventContacts[0].contactInfo.trim().length > 0,
+          values.eventContacts[0].contactInfo.length > 0,
         values.eventContacts.length > 0 &&
-          values.eventContacts[0].description.trim().length > 0,
+          values.eventContacts[0].description.length > 0,
         values.managers.length > 0 && values.managers[0].userId > 0,
         values.managers.length > 0 &&
-          values.managers[0].contacts[0]?.contactInfo.source.trim().length > 0,
+          values.managers[0].contacts[0]?.contactInfo.source.length > 0,
       ];
       return Math.round((checks.filter(Boolean).length / checks.length) * 100);
     }
     case 3: {
       const checks = [
-        values.prize.description.trim().length > 0,
+        values.prize.description.length > 0,
         values.prize.prizes.length > 0 &&
-          values.prize.prizes.every((p) => p.source.trim().length > 0),
+          values.prize.prizes.every((p) => p.source.length > 0),
       ];
       return Math.round((checks.filter(Boolean).length / checks.length) * 100);
     }

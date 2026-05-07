@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   DetailsError,
@@ -350,11 +350,24 @@ export const useGetOrganizerContestStages = (contestId: number) =>
     queryFn: () => getOrganizerContestStages({ contestId }),
   });
 
-export const useCreateOrganizerContestStage = () =>
-  useMutation<IStageOrganizesResponse, DetailsError, ICreateStageVariables>({
+export const useCreateOrganizerContestStage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IStageOrganizesResponse, DetailsError, ICreateStageVariables>({
     mutationKey: [createOrganizerContestStageKey],
     mutationFn: createOrganizerContestStage,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<IStageOrganizesListResponse>(
+        [getOrganizerContestStagesKey, variables.contestId],
+        (current) => ({
+          stages: [...(current?.stages ?? []), data],
+        }),
+      );
+
+      if (data.id) queryClient.setQueryData([getOrganizerStageKey, data.id], data);
+    },
   });
+};
 
 export const useGetOrganizerStage = (stageId: number) =>
   useQuery<IStageOrganizesResponse, DetailsError>({
@@ -362,11 +375,17 @@ export const useGetOrganizerStage = (stageId: number) =>
     queryFn: () => getOrganizerStage({ stageId }),
   });
 
-export const useUpdateOrganizerStage = () =>
-  useMutation<IStageOrganizesResponse, DetailsError, IUpdateStageVariables>({
+export const useUpdateOrganizerStage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IStageOrganizesResponse, DetailsError, IUpdateStageVariables>({
     mutationKey: [updateOrganizerStageKey],
     mutationFn: updateOrganizerStage,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData([getOrganizerStageKey, variables.stageId], data);
+    },
   });
+};
 
 export const useDeleteOrganizerStage = () =>
   useMutation<IDeletedResponse, DetailsError, IStageIdVariables>({
@@ -401,17 +420,41 @@ export const useGetContestStageFields = (stageId: number, enabled = true) =>
     enabled,
   });
 
-export const useCreateStageField = () =>
-  useMutation<IFieldResponse, DetailsError, ICreateStageFieldVariables>({
+export const useCreateStageField = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IFieldResponse, DetailsError, ICreateStageFieldVariables>({
     mutationKey: [createStageFieldKey],
     mutationFn: createStageField,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<IFieldListResponse>(
+        [getOrganizerStageFieldsKey, variables.stageId],
+        (current) => ({
+          fields: [...(current?.fields ?? []), data],
+        }),
+      );
+    },
   });
+};
 
-export const useUpdateStageField = () =>
-  useMutation<IFieldResponse, DetailsError, IUpdateStageFieldVariables>({
+export const useUpdateStageField = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IFieldResponse, DetailsError, IUpdateStageFieldVariables>({
     mutationKey: [updateStageFieldKey],
     mutationFn: updateStageField,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<IFieldListResponse>(
+        [getOrganizerStageFieldsKey, variables.stageId],
+        (current) => ({
+          fields: (current?.fields ?? []).map((field) =>
+            field.id === variables.fieldId ? data : field,
+          ),
+        }),
+      );
+    },
   });
+};
 
 export const useDeleteStageField = () =>
   useMutation<IDeletedResponse, DetailsError, IStageFieldVariables>({
@@ -426,17 +469,41 @@ export const useGetStageResources = (stageId: number, enabled = true) =>
     enabled,
   });
 
-export const useCreateStageResource = () =>
-  useMutation<IResourceResponse, DetailsError, ICreateStageResourceVariables>({
+export const useCreateStageResource = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IResourceResponse, DetailsError, ICreateStageResourceVariables>({
     mutationKey: [createStageResourceKey],
     mutationFn: createStageResource,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<IResourceListResponse>(
+        [getStageResourcesKey, variables.stageId],
+        (current) => ({
+          resources: [...(current?.resources ?? []), data],
+        }),
+      );
+    },
   });
+};
 
-export const useUpdateStageResource = () =>
-  useMutation<IResourceResponse, DetailsError, IUpdateStageResourceVariables>({
+export const useUpdateStageResource = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IResourceResponse, DetailsError, IUpdateStageResourceVariables>({
     mutationKey: [updateStageResourceKey],
     mutationFn: updateStageResource,
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<IResourceListResponse>(
+        [getStageResourcesKey, variables.stageId],
+        (current) => ({
+          resources: (current?.resources ?? []).map((resource) =>
+            resource.id === variables.resourceId ? data : resource,
+          ),
+        }),
+      );
+    },
   });
+};
 
 export const useDeleteStageResource = () =>
   useMutation<IDeletedResponse, DetailsError, IStageResourceVariables>({

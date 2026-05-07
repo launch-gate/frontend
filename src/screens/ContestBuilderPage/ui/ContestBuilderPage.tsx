@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
@@ -24,6 +25,7 @@ import {
   useGetStageResources,
 } from "@/entities/stage";
 import { Button } from "@/shared/components";
+import { routes } from "@/shared/config";
 import {
   SActions,
   SDataBox,
@@ -97,7 +99,6 @@ export const ContestBuilderPage = () => {
           maxTeamSize: contest.data?.maxTeamSize,
         },
       },
-      { onSuccess: () => contest.refetch() },
     );
   };
 
@@ -109,6 +110,17 @@ export const ContestBuilderPage = () => {
           Общие настройки, публикация, роли, участники, этапы, поля формы и
           материалы.
         </SWorkspaceSubtitle>
+        <SActions>
+          <Link href={routes.ORGANIZER_PAGE}>
+            <Button>Все конкурсы</Button>
+          </Link>
+          <Link href={`/organizer/contests/${contestId}/analytics`}>
+            <Button>Аналитика</Button>
+          </Link>
+          <Link href={routes.ORGANIZER_EVALUATIONS_PAGE}>
+            <Button>Назначения</Button>
+          </Link>
+        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>
@@ -136,9 +148,7 @@ export const ContestBuilderPage = () => {
             </Button>
             <Button
               loading={publishContest.isPending}
-              onClick={() =>
-                publishContest.mutate({ contestId }, { onSuccess: () => contest.refetch() })
-              }
+              onClick={() => publishContest.mutate({ contestId })}
             >
               Опубликовать
             </Button>
@@ -197,7 +207,6 @@ export const ContestBuilderPage = () => {
                       scoreScale,
                     },
                   },
-                  { onSuccess: () => stages.refetch() },
                 )
               }
             >
@@ -248,10 +257,7 @@ export const ContestBuilderPage = () => {
               color="violet"
               loading={addOrganizer.isPending}
               onClick={() =>
-                addOrganizer.mutate(
-                  { contestId, data: { userId, role } },
-                  { onSuccess: () => organizers.refetch() },
-                )
+                addOrganizer.mutate({ contestId, data: { userId, role } })
               }
             >
               Добавить роль
@@ -326,15 +332,14 @@ export const ContestBuilderPage = () => {
               color="violet"
               loading={createField.isPending}
               onClick={() =>
-                createField.mutate(
-                  { stageId, data: { title: fieldTitle, type: fieldType } },
-                  { onSuccess: () => fields.refetch() },
-                )
+                createField.mutate({
+                  stageId,
+                  data: { title: fieldTitle, type: fieldType },
+                })
               }
             >
               Добавить поле
             </Button>
-            <Button onClick={() => fields.refetch()}>Обновить</Button>
           </SActions>
           <SDataBox>{JSON.stringify(fields.data ?? null, null, 2)}</SDataBox>
         </SWorkspacePanel>
@@ -369,13 +374,11 @@ export const ContestBuilderPage = () => {
                       linkUrl: resourceLink,
                     },
                   },
-                  { onSuccess: () => resources.refetch() },
                 )
               }
             >
               Добавить ресурс
             </Button>
-            <Button onClick={() => resources.refetch()}>Обновить</Button>
           </SActions>
           <SDataBox>{JSON.stringify(resources.data ?? null, null, 2)}</SDataBox>
         </SWorkspacePanel>
