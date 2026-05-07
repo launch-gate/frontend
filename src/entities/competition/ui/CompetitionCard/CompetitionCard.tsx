@@ -13,11 +13,12 @@ import { Tag } from "@/shared/components";
 import {
   SCardImage,
   SCompetitionCard,
+  SDescriptionText,
   SGeneral,
   SGeneralInfo,
-  SGeneralText,
   SMainContent,
   SMainInfo,
+  SOrganizerText,
   SParticipantsNumber,
   SSubTitle,
   SSubtitleText,
@@ -39,12 +40,25 @@ const participationModeLabels: Record<ParticipationMode, string> = {
 
 const formatDate = (date?: string) => {
   if (!date) return "-";
-
   return new Intl.DateTimeFormat("ru-RU", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   }).format(new Date(date));
+};
+
+/** Извлекает «Имя Фамилия» и email из строки контактов.
+ *  Ожидаемый формат: "...Имя Фамилия <email@domain.com>..."
+ */
+const parseOrganizer = (
+  contacts?: string,
+): { name: string; email: string } | null => {
+  if (!contacts) return null;
+  const match = contacts.match(
+    /([A-Za-zА-Яа-яёЁ][a-zа-яёЁ]+ [A-Za-zА-Яа-яёЁ][a-zа-яёЁ]+)\s*<([^>]+@[^>]+)>/,
+  );
+  if (match) return { name: match[1].trim(), email: match[2].trim() };
+  return null;
 };
 
 export const CompetitionCard: FC<IContestInfoResponse> = ({
@@ -59,6 +73,7 @@ export const CompetitionCard: FC<IContestInfoResponse> = ({
   contacts,
 }) => {
   const cardHref = id ? `/contests/${id}` : "/contests";
+  const organizer = parseOrganizer(contacts);
 
   return (
     <Link href={cardHref} prefetch={false}>
@@ -74,26 +89,26 @@ export const CompetitionCard: FC<IContestInfoResponse> = ({
             Регистрация до {formatDate(registrationEndsAt)}
           </SParticipantsNumber>
         </SCardImage>
+
         <SMainContent>
           <SMainInfo>
             <STitle>{title ?? `Конкурс #${id ?? "-"}`}</STitle>
             <SSubTitle>
-              <SSubtitleText>
-                Старт: {formatDate(startsAt)}
-              </SSubtitleText>
-              <SSubtitleText>
-                Финиш: {formatDate(endsAt)}
-              </SSubtitleText>
+              <SSubtitleText>Старт: {formatDate(startsAt)}</SSubtitleText>
+              <SSubtitleText>Финиш: {formatDate(endsAt)}</SSubtitleText>
             </SSubTitle>
           </SMainInfo>
+
           <SGeneralInfo>
             <SGeneral>
-              <SGeneralText>
+              {organizer && (
+                <SOrganizerText>
+                  Организатор: {organizer.name} · {organizer.email}
+                </SOrganizerText>
+              )}
+              <SDescriptionText>
                 {description || "Описание конкурса пока не заполнено."}
-              </SGeneralText>
-              <SGeneralText>
-                Контакты организатора: {contacts || "-"}
-              </SGeneralText>
+              </SDescriptionText>
             </SGeneral>
           </SGeneralInfo>
         </SMainContent>

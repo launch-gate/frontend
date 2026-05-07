@@ -8,10 +8,12 @@ import { Input } from "@/shared/components";
 import { CompetitionsList } from "@/widgets/CompetitionsList";
 
 import {
-  SBanner,
+  SBannerWord,
   SBannerWrapper,
   SCompetitionsListPage,
   SMainContent,
+  SSearchBanner,
+  SSearchButton,
 } from "./competitionListPage.styles";
 
 export const CompetitionListPage = () => {
@@ -20,7 +22,6 @@ export const CompetitionListPage = () => {
 
   const handleChangeInputSearch = (event: ChangeEvent<HTMLInputElement>) => {
     const search = event.target.value;
-
     setInputSearch(search);
     setFilters({ search });
   };
@@ -28,15 +29,21 @@ export const CompetitionListPage = () => {
   return (
     <SCompetitionsListPage>
       <SBannerWrapper>
-        <SBanner />
+        <SSearchBanner>
+          <SBannerWord $left={103} $top={10}>Найти</SBannerWord>
+          <SBannerWord $left={660} $top={10}>Конкурс</SBannerWord>
+          <SBannerWord $left={424} $top={176}>Событие</SBannerWord>
+        </SSearchBanner>
       </SBannerWrapper>
 
       <CompetitionFilters />
+
       <SMainContent>
         <Input
           onChange={handleChangeInputSearch}
           value={inputSearch}
           placeholder="Например, конкурс для биологов..."
+          suffix={<SSearchButton>Найти</SSearchButton>}
         />
         <CompetitionsList />
       </SMainContent>

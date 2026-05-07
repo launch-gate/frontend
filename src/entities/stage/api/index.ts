@@ -374,10 +374,11 @@ export const useDeleteOrganizerStage = () =>
     mutationFn: deleteOrganizerStage,
   });
 
-export const useGetContestStages = (contestId: number) =>
+export const useGetContestStages = (contestId: number, enabled = true) =>
   useQuery<IStageParticipantListResponse, DetailsError>({
     queryKey: [getContestStagesKey, contestId],
     queryFn: () => getContestStages({ contestId }),
+    enabled,
   });
 
 export const useGetContestStage = (stageId: number, enabled = true) =>

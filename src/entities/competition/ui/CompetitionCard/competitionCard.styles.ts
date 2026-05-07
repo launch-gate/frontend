@@ -29,8 +29,7 @@ export const SParticipantsNumber = styled.div`
 export const SMainContent = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 74px;
+  gap: 16px;
   padding: 24px;
   background: ${({ theme }) => theme.colors.white};
 `;
@@ -57,15 +56,25 @@ export const SSubtitleText = styled.div`
 export const SGeneralInfo = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 38px;
+  gap: 8px;
 `;
 
 export const SGeneral = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 `;
 
-export const SGeneralText = styled.div`
-  ${({ theme }) => theme.font.body}
+export const SOrganizerText = styled.div`
+  ${({ theme }) => theme.font.body};
+  color: ${({ theme }) => theme.colors.gray.mid};
+`;
+
+export const SDescriptionText = styled.div`
+  ${({ theme }) => theme.font.body};
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;

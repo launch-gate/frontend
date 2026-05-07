@@ -34,6 +34,7 @@ import {
   SAuthProfileGrid,
   SAuthStatus,
   SAuthValue,
+  SRequiredMark,
 } from "./authPage.styles";
 
 type AuthMode = "login" | "register";
@@ -48,8 +49,6 @@ const contactTypeLabels: Record<UserContactType, string> = {
   TELEGRAM: "Telegram",
   VK: "VK",
 };
-
-const getOptionalValue = (value: string) => value.trim() || undefined;
 
 const persistAuthResponse = (data: IAuthResponse) => {
   if (!data.accessToken) return;
@@ -96,7 +95,20 @@ export const AuthPage = () => {
 
   const handleError = (error: Error) => {
     setMessage(null);
-    setErrorMessage(error.message || "Не удалось выполнить запрос.");
+    const details = (error as { details?: Record<string, unknown> }).details;
+    if (details) {
+      const errorInfo = details.error as { message?: string } | undefined;
+      const validation = details.validation as string[] | undefined;
+      if (validation?.length) {
+        setErrorMessage(validation.join(" "));
+      } else if (errorInfo?.message) {
+        setErrorMessage(errorInfo.message);
+      } else {
+        setErrorMessage("Не удалось выполнить запрос.");
+      }
+    } else {
+      setErrorMessage(error.message || "Не удалось выполнить запрос.");
+    }
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -118,18 +130,16 @@ export const AuthPage = () => {
         email,
         password,
         accountType,
-        fullName: getOptionalValue(fullName),
-        nickname: getOptionalValue(nickname),
-        bio: getOptionalValue(bio),
-        contacts: contactValue.trim()
-          ? [
-              {
-                type: contactType,
-                value: contactValue.trim(),
-                primaryContact: true,
-              },
-            ]
-          : undefined,
+        fullName,
+        nickname,
+        bio,
+        contacts: [
+          {
+            type: contactType,
+            value: contactValue.trim(),
+            primaryContact: true,
+          },
+        ],
       },
       {
         onSuccess: handleSuccess,
@@ -149,10 +159,6 @@ export const AuthPage = () => {
     <SWorkspacePage>
       <SWorkspaceHeader>
         <SWorkspaceTitle>Вход и регистрация</SWorkspaceTitle>
-        <SWorkspaceSubtitle>
-          Авторизация пользователей через новые ручки Swagger:
-          POST /auth/login и POST /auth/register.
-        </SWorkspaceSubtitle>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>
@@ -172,8 +178,11 @@ export const AuthPage = () => {
           <SAuthForm onSubmit={handleSubmit}>
             <SFormGrid>
               <SField>
-                Email
+                <span>
+                  Email <SRequiredMark>*</SRequiredMark>
+                </span>
                 <SInput
+                  required
                   autoComplete="email"
                   type="email"
                   value={email}
@@ -181,8 +190,11 @@ export const AuthPage = () => {
                 />
               </SField>
               <SField>
-                Пароль
+                <span>
+                  Пароль <SRequiredMark>*</SRequiredMark>
+                </span>
                 <SInput
+                  required
                   autoComplete={
                     mode === "login" ? "current-password" : "new-password"
                   }
@@ -195,9 +207,21 @@ export const AuthPage = () => {
 
             {mode === "register" && (
               <>
+                <SField>
+                  <span>
+                    ФИО <SRequiredMark>*</SRequiredMark>
+                  </span>
+                  <SInput
+                    required
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
+                  />
+                </SField>
                 <SFormGrid>
                   <SField>
-                    Тип аккаунта
+                    <span>
+                      Тип аккаунта <SRequiredMark>*</SRequiredMark>
+                    </span>
                     <SSelect
                       value={accountType}
                       onChange={(event) =>
@@ -209,21 +233,19 @@ export const AuthPage = () => {
                     </SSelect>
                   </SField>
                   <SField>
-                    ФИО
+                    <span>
+                      Никнейм <SRequiredMark>*</SRequiredMark>
+                    </span>
                     <SInput
-                      value={fullName}
-                      onChange={(event) => setFullName(event.target.value)}
-                    />
-                  </SField>
-                  <SField>
-                    Никнейм
-                    <SInput
+                      required
                       value={nickname}
                       onChange={(event) => setNickname(event.target.value)}
                     />
                   </SField>
                   <SField>
-                    Контакт
+                    <span>
+                      Контакт <SRequiredMark>*</SRequiredMark>
+                    </span>
                     <SSelect
                       value={contactType}
                       onChange={(event) =>
@@ -235,17 +257,23 @@ export const AuthPage = () => {
                       <option value="EMAIL">Email</option>
                     </SSelect>
                   </SField>
+                  <SField>
+                    <span>
+                      Значение контакта <SRequiredMark>*</SRequiredMark>
+                    </span>
+                    <SInput
+                      required
+                      value={contactValue}
+                      onChange={(event) => setContactValue(event.target.value)}
+                    />
+                  </SField>
                 </SFormGrid>
                 <SField>
-                  Значение контакта
-                  <SInput
-                    value={contactValue}
-                    onChange={(event) => setContactValue(event.target.value)}
-                  />
-                </SField>
-                <SField>
-                  Bio
+                  <span>
+                    Bio <SRequiredMark>*</SRequiredMark>
+                  </span>
                   <STextarea
+                    required
                     value={bio}
                     onChange={(event) => setBio(event.target.value)}
                   />

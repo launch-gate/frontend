@@ -15,6 +15,8 @@ import {
   CompetitionType,
   ICreateCompetition,
   ICreateCompetitionFormik,
+  IEventContact,
+  IManager,
   IPrize,
   Pair,
 } from "../model/createCompetitionFilters.types";
@@ -180,6 +182,12 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
       prize: { ...prev.prize, prizes: prizes },
     }));
   };
+  const onManagersChange = (managers: IManager[]) => {
+    setValues((prev) => ({ ...prev, managers }));
+  };
+  const onEventContactsChange = (eventContacts: IEventContact[]) => {
+    setValues((prev) => ({ ...prev, eventContacts }));
+  };
 
   return {
     currentStage: {
@@ -301,6 +309,52 @@ export const useCreateCompetitionForm = (): ICreateCompetitionFormik => {
         placeHolder: "Информация о призе",
       },
     },
+    managers: {
+      value: values.managers,
+      onChange: onManagersChange,
+    },
+    eventContacts: {
+      value: values.eventContacts,
+      onChange: onEventContactsChange,
+    },
     submitForm: submitForm,
+    values,
+    onClearStage: () => {
+      const stage = values.currentStage;
+      if (stage === 0) {
+        setValues((prev) => ({
+          ...prev,
+          name: "",
+          registrationDateRange: [null, null],
+          competitionDateRange: [null, null],
+          resultDateRange: [null, null],
+          shortDescription: "",
+          tagInfos: [],
+          competitionType: null,
+          competitionFormat: null,
+        }));
+      } else if (stage === 1) {
+        setValues((prev) => ({
+          ...prev,
+          participantAgeRange: [14, 45],
+          targetAudience: "",
+          isPublic: false,
+          isTeamRequired: true,
+          teamSizeRange: [2, 5],
+          isCountry: true,
+        }));
+      } else if (stage === 2) {
+        setValues((prev) => ({
+          ...prev,
+          managers: [],
+          eventContacts: [],
+        }));
+      } else if (stage === 3) {
+        setValues((prev) => ({
+          ...prev,
+          prize: { description: "", prizes: [] },
+        }));
+      }
+    },
   };
 };

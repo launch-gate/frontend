@@ -77,10 +77,33 @@ export const SSteps = styled(Steps)`
     background: ${({ theme }) => theme.colors.violet};
   }
 
-  .ant-steps-item-wait > .ant-steps-item-container > .ant-steps-item-content {
-    & > .ant-steps-item-title {
-      color: initial;
-    }
+  &.ant-steps .ant-steps-item-custom .ant-steps-item-icon {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: auto !important;
+    height: auto !important;
+    line-height: 1 !important;
+  }
+
+  &.ant-steps
+    .ant-steps-item-active.ant-steps-item-custom
+    .ant-steps-item-icon {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  &.ant-steps .ant-steps-item-wait .ant-steps-item-title,
+  &.ant-steps .ant-steps-item-wait .ant-steps-item-description,
+  &.ant-steps .ant-steps-item-finish .ant-steps-item-title,
+  &.ant-steps .ant-steps-item-finish .ant-steps-item-description {
+    color: rgba(152, 152, 152, 1) !important;
+  }
+
+  &.ant-steps .ant-steps-item-process .ant-steps-item-title,
+  &.ant-steps .ant-steps-item-process .ant-steps-item-description {
+    color: rgba(19, 19, 19, 1) !important;
   }
 
   &.ant-steps .ant-steps-item-wait .ant-steps-item-icon {

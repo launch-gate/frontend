@@ -4,7 +4,15 @@ export const SWorkspacePage = styled.div`
   display: flex;
   flex-direction: column;
   gap: 28px;
-  padding: 104px 206px 72px;
+  padding: 48px 206px 72px;
+
+  @media (max-width: 1200px) {
+    padding: 40px 80px 60px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 32px 24px 48px;
+  }
 `;
 
 export const SWorkspaceHeader = styled.div`
@@ -30,6 +38,10 @@ export const SWorkspaceGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const SWorkspacePanel = styled.section`
@@ -52,6 +64,7 @@ export const SPanelHeader = styled.div`
   justify-content: space-between;
   gap: 16px;
   align-items: flex-start;
+  flex-wrap: wrap;
 `;
 
 export const SPanelTitle = styled.h2`
@@ -70,6 +83,10 @@ export const SFormGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const SField = styled.label`

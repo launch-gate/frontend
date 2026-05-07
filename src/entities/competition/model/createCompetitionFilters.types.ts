@@ -181,7 +181,17 @@ export interface ICreateCompetitionFormik {
       onChange: (prizesInfo: IPrize[]) => void;
     };
   };
+  managers: {
+    value: IManager[];
+    onChange: (managers: IManager[]) => void;
+  };
+  eventContacts: {
+    value: IEventContact[];
+    onChange: (contacts: IEventContact[]) => void;
+  };
   submitForm: (form: ICreateCompetitionRequest) => void;
+  values: ICreateCompetition;
+  onClearStage: () => void;
 }
 
 export interface ICreateCompetitionStore {

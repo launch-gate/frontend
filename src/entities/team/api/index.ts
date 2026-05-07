@@ -159,10 +159,11 @@ export const rejectTeamJoinRequest = ({
     "/contests/teams/team-join-requests/{requestId}/reject",
   );
 
-export const useGetContestTeams = (contestId: number) =>
+export const useGetContestTeams = (contestId: number, enabled = true) =>
   useQuery<IAllTeamsResponse, DetailsError>({
     queryKey: [getContestTeamsKey, contestId],
     queryFn: () => getContestTeams({ contestId }),
+    enabled,
   });
 
 export const useCreateContestTeam = () =>

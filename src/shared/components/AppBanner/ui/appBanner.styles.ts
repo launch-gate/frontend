@@ -34,6 +34,8 @@ export const SBannerContent = styled.div`
   width: 100%;
   justify-content: center;
   z-index: 1;
+  transform: scale(0.9);
+  transform-origin: top center;
 `;
 
 export const SColumnFlex = styled.div`

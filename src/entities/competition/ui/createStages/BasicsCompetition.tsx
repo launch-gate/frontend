@@ -2,7 +2,13 @@ import { SelectProps } from "antd";
 import { FC } from "react";
 import dayjs, { Dayjs } from "dayjs";
 
-import { Input, Select, TextArea, DateRangePicker } from "@/shared/components";
+import {
+  Button,
+  Input,
+  Select,
+  TextArea,
+  DateRangePicker,
+} from "@/shared/components";
 import { ITag, useGetTags } from "@/entities/tags";
 
 import {
@@ -10,7 +16,7 @@ import {
   ICreateCompetitionFormik,
   Pair,
 } from "../../model/createCompetitionFilters.types";
-import { SFormItem, SFormTitle } from "./createStages.styles";
+import { SFormItem, SFormTitle, SRequiredStar } from "./createStages.styles";
 
 const organisationsOptions: SelectProps["options"] = [
   { label: "Компания1", value: 1 },
@@ -48,6 +54,7 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
   tagInfos,
   competitionType,
   competitionFormat,
+  onClearStage,
 }) => {
   const { data: tagOptions } = useGetTags();
   const coversedTags = transformTagsToOptions(tagOptions || []);
@@ -62,18 +69,20 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
   return (
     <>
       <SFormItem>
-        <SFormTitle>Название</SFormTitle>
+        <SFormTitle>
+          Название<SRequiredStar>*</SRequiredStar>
+        </SFormTitle>
         <Input
           placeholder={name.placeHolder}
           value={name.value}
           onChange={name.onChange}
-          help={name.help}
-          validateStatus={name.validateStatus}
         />
       </SFormItem>
 
       <SFormItem>
-        <SFormTitle>Даты регистрации</SFormTitle>
+        <SFormTitle>
+          Даты регистрации<SRequiredStar>*</SRequiredStar>
+        </SFormTitle>
         <DateRangePicker
           placeholder={registrationDateRange.placeholder}
           value={timestampsToDayjs(registrationDateRange.value)}
@@ -82,7 +91,9 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
       </SFormItem>
 
       <SFormItem>
-        <SFormTitle>Даты конкурса</SFormTitle>
+        <SFormTitle>
+          Даты конкурса<SRequiredStar>*</SRequiredStar>
+        </SFormTitle>
         <DateRangePicker
           placeholder={competitionDateRange.placeholder}
           value={timestampsToDayjs(competitionDateRange.value)}
@@ -91,7 +102,9 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
       </SFormItem>
 
       <SFormItem>
-        <SFormTitle>Даты подведения итогов</SFormTitle>
+        <SFormTitle>
+          Даты подведения итогов<SRequiredStar>*</SRequiredStar>
+        </SFormTitle>
         <DateRangePicker
           placeholder={resultDateRange.placeholder}
           value={timestampsToDayjs(resultDateRange.value)}
@@ -100,19 +113,21 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
       </SFormItem>
 
       <SFormItem>
-        <SFormTitle>Краткое описание</SFormTitle>
+        <SFormTitle>
+          Краткое описание<SRequiredStar>*</SRequiredStar>
+        </SFormTitle>
         <TextArea
           size="large"
           placeholder={shortDescription.placeHolder}
           value={shortDescription.value}
           onChange={shortDescription.onChange}
-          validateStatus={shortDescription.validateStatus}
-          help={shortDescription.help}
         />
       </SFormItem>
 
       <SFormItem>
-        <SFormTitle>Теги конкурса</SFormTitle>
+        <SFormTitle>
+          Теги конкурса<SRequiredStar>*</SRequiredStar>
+        </SFormTitle>
         <Select
           mode="multiple"
           options={coversedTags}
@@ -131,28 +146,32 @@ export const BasicsCompetition: FC<ICreateCompetitionFormik> = ({
       </SFormItem>
 
       <SFormItem>
-        <SFormTitle>Тип конкурса</SFormTitle>
+        <SFormTitle>
+          Тип конкурса<SRequiredStar>*</SRequiredStar>
+        </SFormTitle>
         <Select
           options={competitionTypeOptions}
           placeholder={competitionType.placeholder}
           value={competitionType.value}
           onChange={competitionType.onChange}
-          help={competitionType.help}
-          validateStatus={competitionType.validateStatus}
         />
       </SFormItem>
 
       <SFormItem>
-        <SFormTitle>Формат конкурса</SFormTitle>
+        <SFormTitle>
+          Формат конкурса<SRequiredStar>*</SRequiredStar>
+        </SFormTitle>
         <Select
           options={competitionFormatOptions}
           placeholder={competitionFormat.placeholder}
           value={competitionFormat.value}
           onChange={competitionFormat.onChange}
-          help={competitionFormat.help}
-          validateStatus={competitionFormat.validateStatus}
         />
       </SFormItem>
+
+      <Button color="gray" onClick={onClearStage}>
+        Очистить все
+      </Button>
     </>
   );
 };

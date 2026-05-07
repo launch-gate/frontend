@@ -11,11 +11,15 @@ import {
   SPrizeFields,
   SPrizeHeader,
   SPrizeItem,
+  SRequiredStar,
 } from "./createStages.styles";
 import { medalTypesOptions, Prize } from "../../model/prizesTypes.types";
 import { ICreateCompetitionFormik } from "../../model/createCompetitionFilters.types";
 
-export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({ prize }) => {
+export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({
+  prize,
+  onClearStage,
+}) => {
   const addPrize = () => {
     const newPlace = prize.prizesInfo.value.length + 1;
     prize.prizesInfo.onChange([
@@ -69,17 +73,20 @@ export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({ prize }) => {
   return (
     <>
       <SFormItem>
-        <SFormTitle>Призовой фонд</SFormTitle>
+        <SFormTitle>
+          Призовой фонд<SRequiredStar>*</SRequiredStar>
+        </SFormTitle>
         <TextArea
+          value={prize.description.value}
           onChange={updateDescription}
           placeholder="Описание призового фонда"
-          validateStatus={prize.description.validateStatus}
-          help={prize.description.help}
         />
       </SFormItem>
 
       <SFormItem>
-        <SFormTitle>Призы</SFormTitle>
+        <SFormTitle>
+          Призы<SRequiredStar>*</SRequiredStar>
+        </SFormTitle>
         <SPrizeContainer>
           {prize.prizesInfo.value.map((prize, index) => (
             <SPrizeItem key={index}>
@@ -113,6 +120,10 @@ export const PrizesCompetition: FC<ICreateCompetitionFormik> = ({ prize }) => {
           </Button>
         </SPrizeActions>
       </SFormItem>
+
+      <Button color="gray" onClick={onClearStage}>
+        Очистить все
+      </Button>
     </>
   );
 };

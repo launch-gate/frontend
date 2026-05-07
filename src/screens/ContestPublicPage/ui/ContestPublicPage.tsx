@@ -81,9 +81,9 @@ export const ContestPublicPage = () => {
   const isContestIdValid = Number.isFinite(contestId) && contestId > 0;
 
   const contest = useGetContest(contestId);
-  const stages = useGetContestStages(contestId);
-  const participants = useGetContestParticipants(contestId);
-  const teams = useGetContestTeams(contestId);
+  const stages = useGetContestStages(contestId, isContestIdValid);
+  const participants = useGetContestParticipants(contestId, isContestIdValid);
+  const teams = useGetContestTeams(contestId, isContestIdValid);
   const registerContest = useRegisterContest();
   const registerTeamContest = useRegisterTeamContest();
   const createTeam = useCreateContestTeam();

@@ -1,5 +1,6 @@
-import createNextIntlPlugin from "next-intl/plugin";
 import path from "node:path";
+
+import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin(
   "./src/entities/locale/lib/request.ts",
@@ -64,5 +65,15 @@ const nextConfig = {
 };
 
 const configWithIntl = withNextIntl(nextConfig);
+
+// next-intl uses experimental.turbo for the alias, but Next.js 16 moved
+// Turbopack config to the top-level `turbopack` key — add it manually.
+configWithIntl.turbopack = {
+  ...configWithIntl.turbopack,
+  resolveAlias: {
+    ...configWithIntl.turbopack?.resolveAlias,
+    "next-intl/config": "./src/entities/locale/lib/request.ts",
+  },
+};
 
 export default configWithIntl;

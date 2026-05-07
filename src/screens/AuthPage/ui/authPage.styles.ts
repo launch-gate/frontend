@@ -11,8 +11,7 @@ export const SAuthStatus = styled.div<{ $tone: "success" | "error" }>`
   border-radius: 8px;
   border: 1px solid
     ${({ $tone }) => ($tone === "success" ? "#9ad7ad" : "#f1a6a6")};
-  background: ${({ $tone }) =>
-    $tone === "success" ? "#f1fbf4" : "#fff4f4"};
+  background: ${({ $tone }) => ($tone === "success" ? "#f1fbf4" : "#fff4f4")};
   color: ${({ $tone }) => ($tone === "success" ? "#236b36" : "#9b2d2d")};
   ${({ theme }) => theme.font.body};
 `;
@@ -30,4 +29,9 @@ export const SAuthValue = styled.strong`
   color: ${({ theme }) => theme.colors.gray.dark};
   font-weight: 500;
   word-break: break-word;
+`;
+
+export const SRequiredMark = styled.span`
+  color: #c0392b;
+  margin-left: 2px;
 `;

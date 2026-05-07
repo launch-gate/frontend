@@ -4,8 +4,8 @@ export const Cross = () => {
       <path
         d="M1 1L19 19M19 1L1 19"
         stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
+        strokeWidth="2"
+        strokeLinecap="round"
       />
     </svg>
   );

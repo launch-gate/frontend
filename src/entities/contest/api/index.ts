@@ -5,9 +5,7 @@ import {
   requestWithValidation,
   validateWithSchema,
 } from "@/shared/api";
-import { IDeletedResponse } from "@/entities/stage";
-import { deletedSchema } from "@/entities/stage/model/stage.validation";
-
+import { deletedSchema, IDeletedResponse } from "@/entities/stage";
 import {
   IAddOrganizerRequest,
   IContestAnalyticsResponse,
@@ -22,7 +20,8 @@ import {
   IOrganizerListResponse,
   IOrganizerResponse,
   IParticipantContestRegistrationResponse,
-} from "../model/contest.types";
+} from "@/entities/contest";
+
 import {
   addOrganizerRequestSchema,
   contestAnalyticsSchema,
@@ -326,10 +325,11 @@ export const useRegisterContest = () =>
     mutationFn: registerContest,
   });
 
-export const useGetContestParticipants = (contestId: number) =>
+export const useGetContestParticipants = (contestId: number, enabled = true) =>
   useQuery<IContestParticipantListResponse, DetailsError>({
     queryKey: [getContestParticipantsKey, contestId],
     queryFn: () => getContestParticipants({ contestId }),
+    enabled,
   });
 
 export const useGetOrganizerContests = () =>
