@@ -1,16 +1,44 @@
-"use server";
-
-import { getTranslations } from "next-intl/server";
-
 import { ContestPublicPage } from "@/screens/ContestPublicPage";
+import { fetchPublicApi } from "@/shared/api/publicApi";
+import {
+  BRAND_NAME,
+  cleanSeoText,
+  createPageMetadata,
+  getLocalizedPageSeo,
+  truncateSeoText,
+} from "@/shared/config/seo";
 
-export async function generateMetadata() {
-  const t = await getTranslations();
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
 
-  return {
-    title: t("metadata.title.competition"),
-    description: t("metadata.description"),
-  };
+type ContestSeoInfo = {
+  title?: string;
+  description?: string;
+};
+
+const fetchContestSeo = (contestId: string) =>
+  fetchPublicApi<ContestSeoInfo>(`/contests/${contestId}`);
+
+export async function generateMetadata({ params }: PageProps) {
+  const { id } = await params;
+  const pageSeo = await getLocalizedPageSeo("seo.pages.legacyContest", {
+    index: false,
+    follow: true,
+  });
+  const contest = await fetchContestSeo(id);
+  const title = cleanSeoText(contest?.title);
+  const description = truncateSeoText(
+    cleanSeoText(contest?.description, pageSeo.description),
+  );
+
+  return createPageMetadata({
+    ...pageSeo,
+    path: `/competition/${id}`,
+    canonicalPath: `/contests/${id}`,
+    title: title ? `${title} | ${BRAND_NAME}` : pageSeo.title,
+    description,
+  });
 }
 
 export default async function Competition() {

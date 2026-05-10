@@ -1,17 +1,12 @@
-"use server";
-
-import { getTranslations } from "next-intl/server";
-
 import { HomePage } from "@/screens/HomePage";
+import { createLocalizedPageMetadata } from "@/shared/config/seo";
 
-export async function generateMetadata() {
-  const t = await getTranslations();
-
-  return {
-    title: t("metadata.title.homePage"),
-    description: t("metadata.description"),
-  };
-}
+export const generateMetadata = () =>
+  createLocalizedPageMetadata("seo.pages.homePage", {
+    path: "/home-page",
+    index: true,
+    follow: true,
+  });
 
 export default async function Home() {
   return <HomePage />;

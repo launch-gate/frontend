@@ -1,17 +1,12 @@
-"use server";
-
-import { getTranslations } from "next-intl/server";
-
 import { CompetitionListPage } from "@/screens/CompetitionListPage";
+import { createLocalizedPageMetadata } from "@/shared/config/seo";
 
-export async function generateMetadata() {
-  const t = await getTranslations();
-
-  return {
-    title: t("metadata.title.competition"),
-    description: t("metadata.description"),
-  };
-}
+export const generateMetadata = () =>
+  createLocalizedPageMetadata("seo.pages.contests", {
+    path: "/contests",
+    index: true,
+    follow: true,
+  });
 
 export default async function ContestList() {
   return <CompetitionListPage />;

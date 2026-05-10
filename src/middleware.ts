@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 
 import { locales } from "@/entities/locale";
-import { publicRoutes, routes } from "@/shared/config";
+import { publicRoutes } from "@/shared/config";
 
 const intlMiddleware = createMiddleware({
   locales,
@@ -22,9 +22,9 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/assets/") ||
     pathname === "/changelog.json" ||
     pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
     pathname === "/service-worker.js" ||
-    pathname === "/favicon-dark.ico" ||
-    pathname === "/favicon-light.ico";
+    pathname === "/favicon.ico";
 
   if (pathIgnoreName) {
     return NextResponse.next();

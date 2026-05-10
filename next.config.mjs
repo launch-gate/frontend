@@ -58,7 +58,7 @@ const nextConfig = {
       {
         source: "/",
         destination: "/home-page",
-        permanent: false,
+        permanent: true,
       },
     ];
   },
