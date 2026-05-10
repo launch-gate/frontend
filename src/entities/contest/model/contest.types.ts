@@ -3,11 +3,13 @@ export type ContestStatus = "DRAFT" | "PUBLISHED" | "RUNNING" | "FINISHED";
 export type OrganizerRole = "CREATOR" | "ADMIN" | "EXPERT" | "MENTOR";
 export type ExportFormat = "CSV" | "XLSX";
 
-export interface IContestRequest {
-  title: string;
+export interface IContestInfoResponse {
+  id?: number;
+  title?: string;
   description?: string;
   rules?: string;
-  participationMode: ParticipationMode;
+  status?: ContestStatus;
+  participationMode?: ParticipationMode;
   minTeamSize?: number;
   maxTeamSize?: number;
   registrationEndsAt?: string;

@@ -43,18 +43,19 @@ export const contestRequestSchema = object({
 });
 
 export const contestInfoSchema = object({
-  id: number().integer().optional(),
-  title: string().optional(),
-  description: string().optional(),
-  status: contestStatusSchema.optional(),
-  participationMode: participationModeSchema.optional(),
-  minTeamSize: number().integer().optional(),
-  maxTeamSize: number().integer().optional(),
-  registrationEndsAt: string().optional(),
-  teamBuildingEndsAt: string().optional(),
-  startsAt: string().optional(),
-  endsAt: string().optional(),
-  contacts: string().optional(),
+  id: number().integer().nullable().optional(),
+  title: string().nullable().optional(),
+  description: string().nullable().optional(),
+  rules: string().nullable().optional(),
+  status: contestStatusSchema.nullable().optional(),
+  participationMode: participationModeSchema.nullable().optional(),
+  minTeamSize: number().integer().nullable().optional(),
+  maxTeamSize: number().integer().nullable().optional(),
+  registrationEndsAt: string().nullable().optional(),
+  teamBuildingEndsAt: string().nullable().optional(),
+  startsAt: string().nullable().optional(),
+  endsAt: string().nullable().optional(),
+  contacts: string().nullable().optional(),
 }).required();
 
 export const contestListInfoSchema = object({

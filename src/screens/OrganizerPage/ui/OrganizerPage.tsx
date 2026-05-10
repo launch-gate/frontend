@@ -64,17 +64,6 @@ export const OrganizerPage = () => {
         <SWorkspaceSubtitle>
           Список конкурсов, создание черновика и быстрый переход к настройке.
         </SWorkspaceSubtitle>
-        <SActions>
-          <Link href={routes.ORGANIZER_EVALUATIONS_PAGE}>
-            <Button>Назначения</Button>
-          </Link>
-          <Link href={routes.MENTOR_PAGE}>
-            <Button>Кабинет ментора</Button>
-          </Link>
-          <Link href={routes.EXPERT_PAGE}>
-            <Button>Кабинет эксперта</Button>
-          </Link>
-        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>
@@ -83,7 +72,10 @@ export const OrganizerPage = () => {
           <SFormGrid>
             <SField>
               Название
-              <SInput value={title} onChange={(e) => setTitle(e.target.value)} />
+              <SInput
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
             </SField>
             <SField>
               Формат участия
@@ -124,6 +116,11 @@ export const OrganizerPage = () => {
             <STextarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              onInput={(e) => {
+                const el = e.currentTarget;
+                el.style.height = "auto";
+                el.style.height = `${el.scrollHeight}px`;
+              }}
             />
           </SField>
           <SActions>
@@ -143,19 +140,26 @@ export const OrganizerPage = () => {
             {(contests.data?.contests ?? []).map((contest) => (
               <SListItem key={contest.id}>
                 <div>
-                  <SItemTitle>{contest.title ?? `Конкурс #${contest.id}`}</SItemTitle>
+                  <SItemTitle>
+                    {contest.title ?? `Конкурс #${contest.id}`}
+                  </SItemTitle>
                   <SItemMeta>
-                    {contest.participationMode ?? "-"} · {contest.startsAt ?? "-"}{" "}
-                    - {contest.endsAt ?? "-"}
+                    {contest.participationMode ?? "-"} ·{" "}
+                    {contest.startsAt ?? "-"} - {contest.endsAt ?? "-"}
                   </SItemMeta>
                 </div>
                 <SActions>
                   <SStatus>{contest.status ?? "DRAFT"}</SStatus>
-                  <Button>
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                  >
                     <Link href={`/organizer/contests/${contest.id}`}>
-                      Настроить
+                      <Button>Настроить</Button>
                     </Link>
-                  </Button>
+                    <Link href={`/organizer/contests/${contest.id}/analytics`}>
+                      <Button color="gray">Аналитика</Button>
+                    </Link>
+                  </div>
                 </SActions>
               </SListItem>
             ))}

@@ -4,6 +4,7 @@ export const SFieldLabelRow = styled.span`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 6px;
 `;
 
 export const SPencilHint = styled.span`

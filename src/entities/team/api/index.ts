@@ -82,7 +82,7 @@ export const createContestTeam = async ({
       method: "POST",
       data,
     },
-    teamSchema,
+    null,
     "/contests/teams/{contestId}",
   );
 };

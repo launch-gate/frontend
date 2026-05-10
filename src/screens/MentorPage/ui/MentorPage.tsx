@@ -79,14 +79,6 @@ export const MentorPage = () => {
           Команды ментора, календарь созвонов, чтение submission команды и
           комментарии к сдачам.
         </SWorkspaceSubtitle>
-        <SActions>
-          <Link href={routes.EXPERT_PAGE}>
-            <Button>Кабинет эксперта</Button>
-          </Link>
-          <Link href={routes.ORGANIZER_EVALUATIONS_PAGE}>
-            <Button>Назначения</Button>
-          </Link>
-        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>
@@ -128,7 +120,10 @@ export const MentorPage = () => {
             </SField>
             <SField>
               Link
-              <SInput value={link} onChange={(event) => setLink(event.target.value)} />
+              <SInput
+                value={link}
+                onChange={(event) => setLink(event.target.value)}
+              />
             </SField>
             <SField>
               Starts at
@@ -147,7 +142,10 @@ export const MentorPage = () => {
           </SFormGrid>
           <SField>
             Notes
-            <STextarea value={notes} onChange={(event) => setNotes(event.target.value)} />
+            <STextarea
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+            />
           </SField>
           <SActions>
             <Button
@@ -185,8 +183,8 @@ export const MentorPage = () => {
                 <div>
                   <SItemTitle>Команда #{call.teamId ?? "-"}</SItemTitle>
                   <SItemMeta>
-                    {formatDateTime(call.startsAt)} - {formatDateTime(call.endsAt)} ·{" "}
-                    {call.link ?? "-"}
+                    {formatDateTime(call.startsAt)} -{" "}
+                    {formatDateTime(call.endsAt)} · {call.link ?? "-"}
                   </SItemMeta>
                 </div>
                 <SStatus>#{call.id ?? "-"}</SStatus>
@@ -205,7 +203,9 @@ export const MentorPage = () => {
             <SInput
               type="number"
               value={stageSubmissionId}
-              onChange={(event) => setStageSubmissionId(Number(event.target.value))}
+              onChange={(event) =>
+                setStageSubmissionId(Number(event.target.value))
+              }
             />
           </SField>
           <SList>
@@ -243,7 +243,9 @@ export const MentorPage = () => {
                   { stageSubmissionId, text: commentText.trim() },
                   {
                     onSuccess: (data) => {
-                      setActionResult(`Комментарий создан: #${data.commentId ?? "-"}`);
+                      setActionResult(
+                        `Комментарий создан: #${data.commentId ?? "-"}`,
+                      );
                     },
                     onError: (error) => setActionResult(error.message),
                   },
@@ -259,7 +261,8 @@ export const MentorPage = () => {
                 <div>
                   <SItemTitle>{comment.text ?? "-"}</SItemTitle>
                   <SItemMeta>
-                    Mentor #{comment.mentorId ?? "-"} · {formatDateTime(comment.createdAt)}
+                    Mentor #{comment.mentorId ?? "-"} ·{" "}
+                    {formatDateTime(comment.createdAt)}
                   </SItemMeta>
                 </div>
               </SListItem>

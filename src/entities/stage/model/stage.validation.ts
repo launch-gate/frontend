@@ -49,9 +49,9 @@ export const resourceSchema = object({
   order: number().integer().optional(),
   type: resourceTypeSchema.optional(),
   title: string().optional(),
-  description: string().optional(),
-  linkUrl: string().optional(),
-  fileId: number().integer().optional(),
+  description: string().nullable().optional(),
+  linkUrl: string().nullable().optional(),
+  fileId: number().integer().nullable().optional(),
 });
 
 export const resourceListSchema = object({
@@ -78,11 +78,11 @@ export const fieldParticipantSchema = object({
   title: string().optional(),
   type: submissionFieldTypeSchema.optional(),
   required: boolean().optional(),
-  fileFormats: string().optional(),
-  maxFileSizeMb: number().integer().optional(),
-  options: string().optional(),
-  participantHint: string().optional(),
-  exampleValue: string().optional(),
+  fileFormats: string().nullable().optional(),
+  maxFileSizeMb: number().integer().nullable().optional(),
+  options: string().nullable().optional(),
+  participantHint: string().nullable().optional(),
+  exampleValue: string().nullable().optional(),
 });
 
 export const fieldSchema = fieldParticipantSchema.shape({

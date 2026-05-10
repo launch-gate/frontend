@@ -93,7 +93,7 @@ export const SField = styled.label`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  ${({ theme }) => theme.font.caption};
+  ${({ theme }) => theme.font.body};
   color: ${({ theme }) => theme.colors.gray.mid};
 `;
 
@@ -114,7 +114,8 @@ export const STextarea = styled.textarea`
   border: 1px solid ${({ theme }) => theme.colors.gray.primary};
   border-radius: 8px;
   color: ${({ theme }) => theme.colors.gray.dark};
-  resize: vertical;
+  resize: none;
+  overflow: hidden;
   ${({ theme }) => theme.font.body};
 `;
 
@@ -187,4 +188,37 @@ export const SInlineNav = styled.nav`
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+`;
+
+export const SContactsSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const SContactRow = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  ${({ theme }) => theme.font.body};
+`;
+
+export const SContactLabel = styled.span`
+  ${({ theme }) => theme.font.body};
+  color: ${({ theme }) => theme.colors.gray.mid};
+  white-space: nowrap;
+`;
+
+export const SContactValue = styled.span`
+  ${({ theme }) => theme.font.body};
+  color: ${({ theme }) => theme.colors.gray.dark};
+`;
+
+export const SContactLink = styled.a`
+  ${({ theme }) => theme.font.body};
+  color: ${({ theme }) => theme.colors.violet};
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
 `;

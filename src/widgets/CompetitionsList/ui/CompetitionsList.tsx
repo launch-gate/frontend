@@ -7,11 +7,34 @@ import {
 } from "@/entities/competition";
 import { InfinityListProps, VirtualizedList } from "@/shared/components";
 
+import {
+  SSkeletonCard,
+  SSkeletonLeft,
+  SSkeletonLine,
+  SSkeletonRight,
+  SStateBox,
+  SStateText,
+  SStateTitle,
+} from "./competitionsList.styles";
+
 const DURATION_MS: Record<string, number> = {
   week: 7 * 86_400_000,
   "2weeks": 14 * 86_400_000,
   month: 30 * 86_400_000,
 };
+
+const SkeletonCard = ({ index }: { index: number }) => (
+  <SSkeletonCard>
+    <SSkeletonLeft />
+    <SSkeletonRight>
+      <SSkeletonLine $width="60%" $height="14px" />
+      <SSkeletonLine $width="85%" $height="22px" />
+      <SSkeletonLine $width="40%" $height="14px" />
+      <SSkeletonLine $width="100%" $height="14px" />
+      <SSkeletonLine $width="90%" $height="14px" />
+    </SSkeletonRight>
+  </SSkeletonCard>
+);
 
 export const CompetitionsList = () => {
   const { search, statuses, duration, durationRange } = competitionFilterStore(
@@ -20,9 +43,10 @@ export const CompetitionsList = () => {
   const contests = useGetContests();
 
   const filteredContests = useMemo(() => {
-    let list = contests.data?.contests ?? [];
+    let list = (contests.data?.contests ?? []).filter(
+      (contest) => contest.status !== "DRAFT",
+    );
 
-    // Поиск по тексту
     const normalizedSearch = search.trim().toLowerCase();
     if (normalizedSearch) {
       list = list.filter((contest) =>
@@ -32,14 +56,12 @@ export const CompetitionsList = () => {
       );
     }
 
-    // Фильтр по статусу
     if (statuses.length > 0) {
       list = list.filter(
         (contest) => contest.status && statuses.includes(contest.status),
       );
     }
 
-    // Фильтр по предустановленной длительности
     if (duration && duration !== "custom") {
       const maxMs = DURATION_MS[duration];
       list = list.filter((contest) => {
@@ -51,7 +73,6 @@ export const CompetitionsList = () => {
       });
     }
 
-    // Фильтр по произвольному периоду
     if (duration === "custom" && durationRange[0] && durationRange[1]) {
       list = list.filter((contest) => {
         if (!contest.startsAt) return true;
@@ -71,7 +92,7 @@ export const CompetitionsList = () => {
   const itemLoadingContent: InfinityListProps<
     IContestInfoResponse,
     unknown
-  >["itemLoadingContent"] = (key) => <div key={key}>Загрузка...</div>;
+  >["itemLoadingContent"] = (key) => <SkeletonCard key={key} index={key} />;
 
   return (
     <VirtualizedList
@@ -81,8 +102,23 @@ export const CompetitionsList = () => {
       isPending={contests.isPending}
       itemContent={itemContent}
       itemLoadingContent={itemLoadingContent}
-      emptyComponent={<div>Конкурсы не найдены.</div>}
-      errorComponent={<div>Не удалось загрузить список конкурсов.</div>}
+      itemLoadingSize={4}
+      emptyComponent={
+        <SStateBox>
+          <SStateTitle>Конкурсы не найдены</SStateTitle>
+          <SStateText>
+            Попробуйте изменить параметры поиска или сбросить фильтры
+          </SStateText>
+        </SStateBox>
+      }
+      errorComponent={
+        <SStateBox>
+          <SStateTitle>Не удалось загрузить конкурсы</SStateTitle>
+          <SStateText>
+            Проверьте подключение к интернету и попробуйте снова
+          </SStateText>
+        </SStateBox>
+      }
     />
   );
 };

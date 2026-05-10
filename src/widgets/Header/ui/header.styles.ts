@@ -52,7 +52,10 @@ export const SNavItem = styled.div<{ $active: boolean }>`
     background-color: ${({ theme }) => theme.colors.gray.primary};
   }
 
-  /* убираем собственный hover Ant Design у кнопки внутри */
+  /* кнопка не перехватывает клики — Link снаружи обрабатывает навигацию */
+  .ant-btn {
+    pointer-events: none;
+  }
   .ant-btn-text:not(:disabled):hover {
     background-color: transparent !important;
   }

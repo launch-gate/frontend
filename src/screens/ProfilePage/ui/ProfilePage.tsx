@@ -124,10 +124,7 @@ const getSavedValues = (profileData: IUserProfileResponse): SavedValues => ({
     ) ?? [],
 });
 
-const areContactsEqual = (
-  left: EditableContact[],
-  right: EditableContact[],
-) =>
+const areContactsEqual = (left: EditableContact[], right: EditableContact[]) =>
   left.length === right.length &&
   left.every(
     (contact, index) =>
@@ -244,12 +241,6 @@ export const ProfilePage = () => {
         </SWorkspaceSubtitle>
         {profile.data && (
           <SActions>
-            <Link href={routes.COMPETITIONS_PAGE}>
-              <Button>Конкурсы</Button>
-            </Link>
-            <Link href={routes.CREATE_PAGE}>
-              <Button>Создать</Button>
-            </Link>
             {isOrganizer && (
               <>
                 <Link href={routes.ORGANIZER_PAGE}>

@@ -57,7 +57,14 @@ export const ContestAnalyticsPage = () => {
   return (
     <SWorkspacePage>
       <SWorkspaceHeader>
-        <SWorkspaceTitle>Аналитика конкурса #{Number.isFinite(contestId) ? contestId : "-"}</SWorkspaceTitle>
+        <Link href={routes.ORGANIZER_PAGE}>
+          <Button type="text" color="gray">
+            ← Панель организатора
+          </Button>
+        </Link>
+        <SWorkspaceTitle>
+          Аналитика конкурса #{Number.isFinite(contestId) ? contestId : "-"}
+        </SWorkspaceTitle>
         <SWorkspaceSubtitle>
           Метрики конкурса, экспорт рейтинга и создание кастомной выгрузки.
         </SWorkspaceSubtitle>
@@ -78,7 +85,9 @@ export const ContestAnalyticsPage = () => {
             <SListItem>
               <div>
                 <SItemTitle>Регистрации</SItemTitle>
-                <SItemMeta>Всего участников, зарегистрированных на конкурс</SItemMeta>
+                <SItemMeta>
+                  Всего участников, зарегистрированных на конкурс
+                </SItemMeta>
               </div>
               <SStatus>{analytics.data?.registrations ?? 0}</SStatus>
             </SListItem>
@@ -112,7 +121,9 @@ export const ContestAnalyticsPage = () => {
             Формат
             <SSelect
               value={format}
-              onChange={(event) => setFormat(event.target.value as ExportFormat)}
+              onChange={(event) =>
+                setFormat(event.target.value as ExportFormat)
+              }
             >
               <option value="CSV">CSV</option>
               <option value="XLSX">XLSX</option>
@@ -127,7 +138,10 @@ export const ContestAnalyticsPage = () => {
                   { contestId, format },
                   {
                     onSuccess: (blob) => {
-                      downloadBlob(blob, `contest-${contestId}-ranking.${format.toLowerCase()}`);
+                      downloadBlob(
+                        blob,
+                        `contest-${contestId}-ranking.${format.toLowerCase()}`,
+                      );
                       setActionResult("Экспорт рейтинга сформирован.");
                     },
                     onError: (error) => setActionResult(error.message),
@@ -147,7 +161,9 @@ export const ContestAnalyticsPage = () => {
               Формат
               <SSelect
                 value={format}
-                onChange={(event) => setFormat(event.target.value as ExportFormat)}
+                onChange={(event) =>
+                  setFormat(event.target.value as ExportFormat)
+                }
               >
                 <option value="CSV">CSV</option>
                 <option value="XLSX">XLSX</option>

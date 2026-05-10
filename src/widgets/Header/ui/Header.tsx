@@ -7,10 +7,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 
-import {
-  getUserProfileKey,
-  useGetUserProfile,
-} from "@/entities/user";
+import { getUserProfileKey, useGetUserProfile } from "@/entities/user";
 import { appLogo } from "@/shared/assets";
 import { Button } from "@/shared/components";
 import { routes } from "@/shared/config";
@@ -75,13 +72,12 @@ export const Header = () => {
   const navLinks = useMemo<HeaderLink[]>(() => {
     const links: HeaderLink[] = [
       { href: routes.COMPETITIONS_PAGE, label: t("join") },
-      { href: routes.CREATE_PAGE, label: t("create") },
     ];
 
     if (accountType === "ORGANIZER") {
       links.push(
-        { href: routes.ORGANIZER_PAGE, label: "Организатор" },
-        { href: routes.ORGANIZER_EVALUATIONS_PAGE, label: "Назначения" },
+        { href: routes.ORGANIZER_PAGE, label: "Организовать" },
+        { href: routes.ORGANIZER_EVALUATIONS_PAGE, label: "Назначить" },
         { href: routes.MENTOR_PAGE, label: "Ментор" },
         { href: routes.EXPERT_PAGE, label: "Эксперт" },
       );
@@ -90,8 +86,12 @@ export const Header = () => {
     return links;
   }, [accountType, t]);
 
-  const getIsActive = (href: string) =>
-    href === routes.HOME_PAGE ? pathname === href : pathname.startsWith(href);
+  const getIsActive = (href: string) => {
+    if (href === routes.HOME_PAGE || href === routes.ORGANIZER_PAGE) {
+      return pathname === href;
+    }
+    return pathname.startsWith(href);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
@@ -117,11 +117,11 @@ export const Header = () => {
         <SHeaderActions>
           {hasSession &&
             navLinks.map((link) => (
-              <SNavItem key={link.href} $active={getIsActive(link.href)}>
-                <Button type="text">
-                  <Link href={link.href}>{link.label}</Link>
-                </Button>
-              </SNavItem>
+              <Link key={link.href} href={link.href}>
+                <SNavItem $active={getIsActive(link.href)}>
+                  <Button type="text">{link.label}</Button>
+                </SNavItem>
+              </Link>
             ))}
         </SHeaderActions>
       </SHeaderMainContent>

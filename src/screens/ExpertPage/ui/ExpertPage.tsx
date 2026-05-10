@@ -44,14 +44,6 @@ export const ExpertPage = () => {
           Назначенные проверки, фильтр по статусу и переход к конкретной сдаче
           для draft-оценки и публикации.
         </SWorkspaceSubtitle>
-        <SActions>
-          <Link href={routes.MENTOR_PAGE}>
-            <Button>Кабинет ментора</Button>
-          </Link>
-          <Link href={routes.ORGANIZER_EVALUATIONS_PAGE}>
-            <Button>Назначения</Button>
-          </Link>
-        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>
@@ -77,7 +69,8 @@ export const ExpertPage = () => {
                   <SItemTitle>Проверка #{assignment.id ?? "-"}</SItemTitle>
                   <SItemMeta>
                     Submission #{assignment.submissionId ?? "-"} · Stage #
-                    {assignment.stageId ?? "-"} · Expert #{assignment.expertId ?? "-"}
+                    {assignment.stageId ?? "-"} · Expert #
+                    {assignment.expertId ?? "-"}
                   </SItemMeta>
                 </div>
                 <SActions>

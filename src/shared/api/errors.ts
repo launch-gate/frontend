@@ -10,7 +10,6 @@ export class DetailsError extends Error {
     super(message);
     this.details = details;
 
-    console.error(message, details);
-    Object.setPrototypeOf(this, details);
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
