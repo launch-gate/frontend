@@ -8,7 +8,7 @@ import { ICreateCompetitionRequest } from "./createCompetition.types";
 
 export const createCompetitionKey = "createCompetition";
 
-const createCompetition = async (
+export const createCompetition = async (
   competition: ICreateCompetitionRequest,
 ): Promise<void> =>
   API<void>({
@@ -38,3 +38,4 @@ export const useCreateCompetition = () =>
   });
 
 export * from "./createCompetition.types";
+export * from "./createCompetition.validation";
