@@ -4,13 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 
 import {
-  IContestRequest,
   ParticipationMode,
   useCreateOrganizerContest,
   useGetOrganizerContests,
 } from "@/entities/contest";
 import { Button } from "@/shared/components";
-import { routes } from "@/shared/config";
 import {
   SActions,
   SField,
@@ -45,7 +43,7 @@ export const OrganizerPage = () => {
   const [endsAt, setEndsAt] = useState("2026-06-15");
 
   const handleCreate = () => {
-    const data: IContestRequest = {
+    const data = {
       title,
       description,
       participationMode,
