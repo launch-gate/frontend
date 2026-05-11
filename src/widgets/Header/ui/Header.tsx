@@ -78,8 +78,6 @@ export const Header = () => {
       links.push(
         { href: routes.ORGANIZER_PAGE, label: "Организовать" },
         { href: routes.ORGANIZER_EVALUATIONS_PAGE, label: "Назначить" },
-        { href: routes.MENTOR_PAGE, label: "Ментор" },
-        { href: routes.EXPERT_PAGE, label: "Эксперт" },
       );
     }
 

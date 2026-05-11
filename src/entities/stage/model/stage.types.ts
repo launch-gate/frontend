@@ -2,6 +2,7 @@ export type ScoreScale = "POINTS_10" | "POINTS_100" | "PASS_FAIL" | "STARS_5";
 export type SubmissionFieldType =
   | "TEXT"
   | "LINK"
+  | "GITHUB_REPOSITORY"
   | "FILE"
   | "FILES"
   | "VIDEO"
@@ -54,8 +55,8 @@ export interface IFieldParticipantResponse {
   title?: string;
   type?: SubmissionFieldType;
   required?: boolean;
-  fileFormats?: string;
-  maxFileSizeMb?: number;
+  fileFormats?: string | string[];
+  maxFileSizeMb?: number | null;
   options?: string;
   participantHint?: string;
   exampleValue?: string;

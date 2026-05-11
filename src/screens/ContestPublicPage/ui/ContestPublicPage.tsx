@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -20,6 +20,7 @@ import {
 } from "@/entities/team";
 import { useGetUserProfile } from "@/entities/user";
 import { Button } from "@/shared/components";
+import { useBreadcrumbStore } from "@/widgets/Breadcrumb";
 import {
   SActions,
   SSelect,
@@ -247,6 +248,13 @@ export const ContestPublicPage = () => {
 
   const [teamName, setTeamName] = useState("");
   const [inviteToken, setInviteToken] = useState("");
+
+  const setLabels = useBreadcrumbStore((s) => s.setLabels);
+  const clearLabels = useBreadcrumbStore((s) => s.clearLabels);
+  useEffect(() => {
+    if (contest.data?.title) setLabels({ contestTitle: contest.data.title });
+    return () => clearLabels();
+  }, [contest.data?.title]);
   const [selectedTeamId, setSelectedTeamId] = useState(0);
   const [createdInviteToken, setCreatedInviteToken] = useState<string | null>(
     null,
@@ -493,7 +501,7 @@ export const ContestPublicPage = () => {
                     <SInput
                       value={inviteToken}
                       onChange={(e) => setInviteToken(e.target.value)}
-                      placeholder="LG-TEAM-1-SuperTeam"
+                      placeholder="LG-TEAM-...-..."
                       style={{ flex: 1 }}
                     />
                     <Button

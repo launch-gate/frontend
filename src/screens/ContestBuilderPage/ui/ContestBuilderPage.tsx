@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import {
   OrganizerRole,
@@ -16,16 +17,15 @@ import {
   useGetContest,
 } from "@/entities/contest";
 import { useAssignExpert, useCreateAiReview } from "@/entities/evaluation";
+import { useBreadcrumbStore } from "@/widgets/Breadcrumb";
 import { useAssignMentor } from "@/entities/mentor";
 import {
   ScoreScale,
-  SubmissionFieldType,
   useCreateOrganizerContestStage,
-  useCreateStageField,
-  useCreateStageResource,
+  useDeleteOrganizerStage,
   useGetOrganizerContestStages,
-  useGetOrganizerStageFields,
-  useGetStageResources,
+  useUpdateOrganizerStage,
+  getOrganizerContestStagesKey,
 } from "@/entities/stage";
 import { useGetContestTeams } from "@/entities/team";
 import { Button } from "@/shared/components";
@@ -52,7 +52,13 @@ import {
   SWorkspaceTitle,
 } from "@/screens/AppWorkspace";
 
-import { STab, STabs } from "./contestBuilderPage.styles";
+import {
+  SIconButton,
+  SIconRow,
+  SStageActions,
+  STab,
+  STabs,
+} from "./contestBuilderPage.styles";
 
 type Tab =
   | "main"
@@ -84,15 +90,6 @@ const roleOptions: { value: OrganizerRole; label: string }[] = [
   { value: "MENTOR", label: "Mentor" },
 ];
 
-const fieldTypeOptions: { value: SubmissionFieldType; label: string }[] = [
-  { value: "TEXT", label: "Текст" },
-  { value: "LINK", label: "Ссылка" },
-  { value: "FILE", label: "Файл" },
-  { value: "FILES", label: "Файлы" },
-  { value: "SELECT", label: "Выбор" },
-  { value: "NUMBER", label: "Число" },
-];
-
 const formatDate = (date?: string) => {
   if (!date) return "—";
   return new Intl.DateTimeFormat("ru-RU", {
@@ -104,22 +101,34 @@ const formatDate = (date?: string) => {
 
 export const ContestBuilderPage = () => {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const contestId = Number(params.contestId);
 
-  const [activeTab, setActiveTab] = useState<Tab>("main");
+  const activeTab = (searchParams.get("tab") as Tab | null) ?? "main";
+
+  const setActiveTab = (tab: Tab) => {
+    router.replace(`/organizer/contests/${contestId}?tab=${tab}`, {
+      scroll: false,
+    });
+  };
 
   // ── данные ──────────────────────────────────────────────────────────────
   const contest = useGetContest(contestId);
   const stages = useGetOrganizerContestStages(contestId);
   const organizers = useGetContestOrganizers(contestId);
   const participants = useGetOrganizerContestParticipants(contestId);
-  const teams = useGetContestTeams(contestId, true);
+  const teams = useGetContestTeams(contestId, activeTab === "mentoring");
 
   // ── мутации ─────────────────────────────────────────────────────────────
+  const queryClient = useQueryClient();
+
   const updateContest = useUpdateOrganizerContest();
   const publishContest = usePublishOrganizerContest();
   const deleteContest = useDeleteOrganizerContest();
   const createStage = useCreateOrganizerContestStage();
+  const updateStage = useUpdateOrganizerStage();
+  const deleteStage = useDeleteOrganizerStage();
   const addOrganizer = useAddContestOrganizer();
   const deleteOrganizer = useDeleteContestOrganizer();
   const assignMentor = useAssignMentor();
@@ -128,16 +137,27 @@ export const ContestBuilderPage = () => {
 
   // ── локальное состояние ─────────────────────────────────────────────────
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [rules, setRules] = useState("");
+  const [participationMode, setParticipationMode] = useState<
+    "INDIVIDUAL" | "TEAM"
+  >("TEAM");
+  const [minTeamSize, setMinTeamSize] = useState("");
+  const [maxTeamSize, setMaxTeamSize] = useState("");
+  const [registrationEndsAt, setRegistrationEndsAt] = useState("");
+  const [teamBuildingEndsAt, setTeamBuildingEndsAt] = useState("");
+  const [startsAt, setStartsAt] = useState("");
+  const [endsAt, setEndsAt] = useState("");
 
+  const [editingStageId, setEditingStageId] = useState<number | null>(null);
   const [stageTitle, setStageTitle] = useState("");
+  const [stageDescription, setStageDescription] = useState("");
+  const [stageRules, setStageRules] = useState("");
+  const [stageExtraInfo, setStageExtraInfo] = useState("");
   const [stageDeadline, setStageDeadline] = useState("");
+  const [stageDeadlineTime, setStageDeadlineTime] = useState("00:00");
+  const [stageEliminating, setStageEliminating] = useState(false);
   const [scoreScale, setScoreScale] = useState<ScoreScale>("POINTS_100");
-  const [selectedStageId, setSelectedStageId] = useState(0);
-  const [fieldTitle, setFieldTitle] = useState("");
-  const [fieldType, setFieldType] = useState<SubmissionFieldType>("TEXT");
-  const [resourceTitle, setResourceTitle] = useState("");
-  const [resourceLink, setResourceLink] = useState("");
 
   const [orgUserId, setOrgUserId] = useState("");
   const [orgRole, setOrgRole] = useState<OrganizerRole>("EXPERT");
@@ -151,101 +171,314 @@ export const ContestBuilderPage = () => {
 
   const [actionResult, setActionResult] = useState<string | null>(null);
 
-  const stageFields = useGetOrganizerStageFields(selectedStageId);
-  const stageResources = useGetStageResources(selectedStageId);
-  const createField = useCreateStageField();
-  const createResource = useCreateStageResource();
-
   const hasStages = (stages.data?.stages?.length ?? 0) > 0;
+
+  const setLabels = useBreadcrumbStore((s) => s.setLabels);
+  const clearLabels = useBreadcrumbStore((s) => s.clearLabels);
+  useEffect(() => {
+    if (contest.data?.title) setLabels({ contestTitle: contest.data.title });
+    return () => clearLabels();
+  }, [contest.data?.title]);
+
+  useEffect(() => {
+    if (!contest.data) return;
+    setTitle(contest.data.title ?? "");
+    setDescription(contest.data.description ?? "");
+    setRules(contest.data.rules ?? "");
+    setParticipationMode(contest.data.participationMode ?? "TEAM");
+    setMinTeamSize(
+      contest.data.minTeamSize ? String(contest.data.minTeamSize) : "",
+    );
+    setMaxTeamSize(
+      contest.data.maxTeamSize ? String(contest.data.maxTeamSize) : "",
+    );
+    setRegistrationEndsAt((contest.data.registrationEndsAt ?? "").slice(0, 10));
+    setTeamBuildingEndsAt((contest.data.teamBuildingEndsAt ?? "").slice(0, 10));
+    setStartsAt((contest.data.startsAt ?? "").slice(0, 10));
+    setEndsAt((contest.data.endsAt ?? "").slice(0, 10));
+  }, [contest.data]);
 
   const handleResult = (msg: string) => setActionResult(msg);
 
+  const resetStageForm = () => {
+    setEditingStageId(null);
+    setStageTitle("");
+    setStageDescription("");
+    setStageRules("");
+    setStageExtraInfo("");
+    setStageDeadline("");
+    setStageDeadlineTime("00:00");
+    setStageEliminating(false);
+    setScoreScale("POINTS_100");
+  };
+
+  const startStageEdit = (stageId: number) => {
+    const stage = (stages.data?.stages ?? []).find((s) => s.id === stageId);
+    if (!stage) return;
+    setEditingStageId(stageId);
+    setStageTitle(stage.title ?? "");
+    setStageDescription(stage.description ?? "");
+    setStageRules(stage.rules ?? "");
+    setStageExtraInfo(stage.extraInfo ?? "");
+    if (stage.deadlineAt) {
+      const msk = new Date(
+        new Date(stage.deadlineAt).getTime() + 3 * 60 * 60 * 1000,
+      );
+      setStageDeadline(msk.toISOString().slice(0, 10));
+      setStageDeadlineTime(msk.toISOString().slice(11, 16));
+    } else {
+      setStageDeadline("");
+      setStageDeadlineTime("00:00");
+    }
+    setStageEliminating(stage.eliminating ?? false);
+    setScoreScale(stage.scoreScale ?? "POINTS_100");
+  };
+
+  const invalidateStages = () =>
+    queryClient.invalidateQueries({
+      queryKey: [getOrganizerContestStagesKey, contestId],
+    });
+
   // ── вкладки ─────────────────────────────────────────────────────────────
 
+  const handleSave = () =>
+    updateContest.mutate(
+      {
+        contestId,
+        data: {
+          title: title || contest.data?.title || "Contest",
+          description: description || contest.data?.description || undefined,
+          rules: rules || contest.data?.rules || undefined,
+          participationMode:
+            participationMode || (contest.data?.participationMode ?? "TEAM"),
+          registrationEndsAt: registrationEndsAt
+            ? `${registrationEndsAt}T00:00:00Z`
+            : (contest.data?.registrationEndsAt ?? undefined),
+          teamBuildingEndsAt: teamBuildingEndsAt
+            ? `${teamBuildingEndsAt}T00:00:00Z`
+            : (contest.data?.teamBuildingEndsAt ?? undefined),
+          startsAt: startsAt
+            ? `${startsAt}T00:00:00Z`
+            : (contest.data?.startsAt ?? undefined),
+          endsAt: endsAt
+            ? `${endsAt}T00:00:00Z`
+            : (contest.data?.endsAt ?? undefined),
+          contacts: contest.data?.contacts ?? undefined,
+          minTeamSize:
+            participationMode === "TEAM" && minTeamSize
+              ? Number(minTeamSize)
+              : undefined,
+          maxTeamSize:
+            participationMode === "TEAM" && maxTeamSize
+              ? Number(maxTeamSize)
+              : undefined,
+        },
+      },
+      {
+        onSuccess: () => handleResult("Сохранено"),
+        onError: (e) => handleResult(`Ошибка: ${e.message}`),
+      },
+    );
+
   const renderMain = () => (
-    <SWorkspacePanel>
-      <SPanelTitle>Настройки конкурса</SPanelTitle>
-      <SField>
-        Название
-        <SInput
-          placeholder={contest.data?.title ?? "Введите название"}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-      </SField>
-      <SField>
-        Правила
-        <STextarea
-          value={rules}
-          placeholder={contest.data?.rules ?? "Введите правила"}
-          onChange={(e) => setRules(e.target.value)}
-          onInput={(e) => {
-            const el = e.currentTarget;
-            el.style.height = "auto";
-            el.style.height = `${el.scrollHeight}px`;
-          }}
-        />
-      </SField>
-      <SActions>
-        <Button
-          color="violet"
-          loading={updateContest.isPending}
-          onClick={() =>
-            updateContest.mutate(
-              {
-                contestId,
-                data: {
-                  title: title || contest.data?.title || "Contest",
-                  rules: rules || contest.data?.rules,
-                  participationMode: contest.data?.participationMode ?? "TEAM",
-                  description: contest.data?.description,
-                  registrationEndsAt: contest.data?.registrationEndsAt,
-                  teamBuildingEndsAt: contest.data?.teamBuildingEndsAt,
-                  startsAt: contest.data?.startsAt,
-                  endsAt: contest.data?.endsAt,
-                  contacts: contest.data?.contacts,
-                  minTeamSize: contest.data?.minTeamSize,
-                  maxTeamSize: contest.data?.maxTeamSize,
-                },
-              },
-              { onSuccess: () => handleResult("Сохранено") },
-            )
-          }
-        >
-          Сохранить
-        </Button>
-        <Button
-          loading={publishContest.isPending}
-          disabled={!hasStages}
-          title={!hasStages ? "Добавьте хотя бы один этап" : undefined}
-          onClick={() =>
-            publishContest.mutate(
-              { contestId },
-              { onSuccess: () => handleResult("Конкурс опубликован") },
-            )
-          }
-        >
-          Опубликовать
-        </Button>
-        <Button
-          color="gray"
-          loading={deleteContest.isPending}
-          onClick={() => deleteContest.mutate({ contestId })}
-        >
-          Удалить конкурс
-        </Button>
-      </SActions>
-      {actionResult && <SPanelText>{actionResult}</SPanelText>}
-    </SWorkspacePanel>
+    <>
+      {/* Описание */}
+      <SWorkspacePanel>
+        <SPanelTitle>Описание</SPanelTitle>
+        <SField>
+          Название
+          <SInput
+            placeholder="Название конкурса"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </SField>
+        <SField>
+          Описание
+          <STextarea
+            value={description}
+            placeholder="Введите описание конкурса"
+            onChange={(e) => setDescription(e.target.value)}
+            onInput={(e) => {
+              const el = e.currentTarget;
+              el.style.height = "auto";
+              el.style.height = `${el.scrollHeight}px`;
+            }}
+          />
+        </SField>
+        <SField>
+          Правила
+          <STextarea
+            value={rules}
+            placeholder="Введите условия участия, ограничения или авторские права"
+            onChange={(e) => setRules(e.target.value)}
+            onInput={(e) => {
+              const el = e.currentTarget;
+              el.style.height = "auto";
+              el.style.height = `${el.scrollHeight}px`;
+            }}
+          />
+        </SField>
+      </SWorkspacePanel>
+
+      {/* Параметры */}
+      <SWorkspacePanel>
+        <SPanelTitle>Параметры</SPanelTitle>
+        <SField>
+          Формат участия
+          <SSelect
+            value={
+              participationMode || contest.data?.participationMode || "TEAM"
+            }
+            onChange={(e) =>
+              setParticipationMode(e.target.value as "INDIVIDUAL" | "TEAM")
+            }
+          >
+            <option value="TEAM">Командный</option>
+            <option value="INDIVIDUAL">Индивидуальный</option>
+          </SSelect>
+        </SField>
+        {participationMode === "TEAM" && (
+          <SFormGrid>
+            <SField>
+              Мин. размер команды
+              <SInput
+                type="number"
+                min={1}
+                value={minTeamSize}
+                onChange={(e) => setMinTeamSize(e.target.value)}
+              />
+            </SField>
+            <SField>
+              Макс. размер команды
+              <SInput
+                type="number"
+                min={1}
+                value={maxTeamSize}
+                onChange={(e) => setMaxTeamSize(e.target.value)}
+              />
+            </SField>
+          </SFormGrid>
+        )}
+        <SFormGrid>
+          <SField>
+            Регистрация до
+            <SInput
+              type="date"
+              value={registrationEndsAt}
+              onChange={(e) => setRegistrationEndsAt(e.target.value)}
+            />
+          </SField>
+          <SField>
+            Сбор команд до
+            <SInput
+              type="date"
+              value={teamBuildingEndsAt}
+              onChange={(e) => setTeamBuildingEndsAt(e.target.value)}
+            />
+          </SField>
+          <SField>
+            Начало конкурса
+            <SInput
+              type="date"
+              value={startsAt}
+              onChange={(e) => setStartsAt(e.target.value)}
+            />
+          </SField>
+          <SField>
+            Конец конкурса
+            <SInput
+              type="date"
+              value={endsAt}
+              onChange={(e) => setEndsAt(e.target.value)}
+            />
+          </SField>
+        </SFormGrid>
+        <SActions>
+          <Button
+            color="violet"
+            loading={updateContest.isPending}
+            onClick={handleSave}
+          >
+            Сохранить
+          </Button>
+          <Button
+            loading={publishContest.isPending}
+            disabled={!hasStages}
+            title={!hasStages ? "Добавьте хотя бы один этап" : undefined}
+            onClick={() =>
+              publishContest.mutate(
+                { contestId },
+                { onSuccess: () => handleResult("Конкурс опубликован") },
+              )
+            }
+          >
+            Опубликовать
+          </Button>
+          <Button
+            color="gray"
+            loading={deleteContest.isPending}
+            onClick={() => deleteContest.mutate({ contestId })}
+          >
+            Удалить конкурс
+          </Button>
+        </SActions>
+        {actionResult && <SPanelText>{actionResult}</SPanelText>}
+      </SWorkspacePanel>
+    </>
   );
+
+  const handleSaveStage = () => {
+    const data = {
+      title: stageTitle,
+      description: stageDescription || undefined,
+      rules: stageRules || undefined,
+      extraInfo: stageExtraInfo || undefined,
+      deadlineAt: stageDeadline
+        ? new Date(
+            `${stageDeadline}T${stageDeadlineTime}:00+03:00`,
+          ).toISOString()
+        : undefined,
+      eliminating: stageEliminating,
+      scoreScale,
+    };
+
+    if (editingStageId) {
+      updateStage.mutate(
+        { stageId: editingStageId, data },
+        {
+          onSuccess: () => {
+            invalidateStages();
+            resetStageForm();
+          },
+          onError: (e) => handleResult(`Ошибка: ${e.message}`),
+        },
+      );
+    } else {
+      createStage.mutate(
+        {
+          contestId,
+          data: { ...data, order: stages.data?.stages?.length ?? 0 },
+        },
+        {
+          onSuccess: resetStageForm,
+          onError: (e) => handleResult(`Ошибка: ${e.message}`),
+        },
+      );
+    }
+  };
 
   const renderStages = () => (
     <>
       <SWorkspacePanel>
-        <SPanelTitle>Создать этап</SPanelTitle>
+        <SPanelTitle>
+          {editingStageId
+            ? `Редактировать этап #${editingStageId}`
+            : "Создать этап"}
+        </SPanelTitle>
         <SFormGrid>
           <SField>
-            Название
+            Название *
             <SInput
               value={stageTitle}
               placeholder="Название этапа"
@@ -253,7 +486,7 @@ export const ContestBuilderPage = () => {
             />
           </SField>
           <SField>
-            Шкала оценивания
+            Шкала оценивания *
             <SSelect
               value={scoreScale}
               onChange={(e) => setScoreScale(e.target.value as ScoreScale)}
@@ -266,40 +499,67 @@ export const ContestBuilderPage = () => {
             </SSelect>
           </SField>
           <SField>
-            Дедлайн (UTC)
+            Дедлайн * (МСК)
             <SInput
+              type="date"
               value={stageDeadline}
-              placeholder="2026-06-01T18:00:00Z"
               onChange={(e) => setStageDeadline(e.target.value)}
             />
+            <SInput
+              type="time"
+              value={stageDeadlineTime}
+              onChange={(e) => setStageDeadlineTime(e.target.value)}
+            />
+          </SField>
+          <SField>
+            Отсеивающий этап *
+            <SSelect
+              value={stageEliminating ? "true" : "false"}
+              onChange={(e) => setStageEliminating(e.target.value === "true")}
+            >
+              <option value="false">Нет</option>
+              <option value="true">Да — участники могут выбыть</option>
+            </SSelect>
           </SField>
         </SFormGrid>
+        <SField>
+          Описание
+          <STextarea
+            value={stageDescription}
+            placeholder="Что нужно сделать на этом этапе"
+            onChange={(e) => setStageDescription(e.target.value)}
+          />
+        </SField>
+        <SField>
+          Правила
+          <STextarea
+            value={stageRules}
+            placeholder="Условия и ограничения этапа"
+            onChange={(e) => setStageRules(e.target.value)}
+          />
+        </SField>
+        <SField>
+          Дополнительная информация
+          <STextarea
+            value={stageExtraInfo}
+            placeholder="Ссылки, примечания, FAQ"
+            onChange={(e) => setStageExtraInfo(e.target.value)}
+          />
+        </SField>
         <SActions>
           <Button
             color="violet"
-            loading={createStage.isPending}
+            loading={createStage.isPending || updateStage.isPending}
             disabled={!stageTitle.trim()}
-            onClick={() =>
-              createStage.mutate(
-                {
-                  contestId,
-                  data: {
-                    title: stageTitle,
-                    deadlineAt: stageDeadline,
-                    scoreScale,
-                  },
-                },
-                {
-                  onSuccess: () => {
-                    setStageTitle("");
-                    setStageDeadline("");
-                  },
-                },
-              )
-            }
+            onClick={handleSaveStage}
           >
-            Добавить этап
+            {editingStageId ? "Сохранить" : "Добавить этап"}
           </Button>
+          {editingStageId && (
+            <Button type="text" color="gray" onClick={resetStageForm}>
+              Отмена
+            </Button>
+          )}
         </SActions>
       </SWorkspacePanel>
 
@@ -312,158 +572,78 @@ export const ContestBuilderPage = () => {
                 <SItemTitle>{stage.title ?? `Этап #${stage.id}`}</SItemTitle>
                 <SItemMeta>
                   Дедлайн: {formatDate(stage.deadlineAt)} ·{" "}
-                  {stage.scoreScale ?? "—"}
+                  {scoreScaleOptions.find((o) => o.value === stage.scoreScale)
+                    ?.label ??
+                    stage.scoreScale ??
+                    "—"}
                   {stage.eliminating ? " · Отборочный" : ""}
+                  {" · "}
+                  {stage.fields?.length ?? 0} полей
                 </SItemMeta>
               </div>
-              <SStatus>{stage.fields?.length ?? 0} полей</SStatus>
+              <SStageActions>
+                {stage.id && (
+                  <Link
+                    href={`/organizer/contests/${contestId}/stages/${stage.id}/fields`}
+                  >
+                    <Button>Конструктор полей</Button>
+                  </Link>
+                )}
+                <SIconRow>
+                  <SIconButton
+                    title="Изменить"
+                    onClick={() => stage.id && startStageEdit(stage.id)}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </SIconButton>
+                  <SIconButton
+                    title="Удалить"
+                    onClick={() =>
+                      stage.id &&
+                      deleteStage.mutate(
+                        { stageId: stage.id },
+                        {
+                          onSuccess: () => {
+                            invalidateStages();
+                            if (editingStageId === stage.id) resetStageForm();
+                          },
+                          onError: (e) => handleResult(`Ошибка: ${e.message}`),
+                        },
+                      )
+                    }
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                    </svg>
+                  </SIconButton>
+                </SIconRow>
+              </SStageActions>
             </SListItem>
           ))}
           {!hasStages && !stages.isPending && (
             <SPanelText>Этапы ещё не созданы.</SPanelText>
           )}
         </SList>
-      </SWorkspacePanel>
-
-      {/* Поля и ресурсы выбранного этапа */}
-      <SWorkspacePanel>
-        <SPanelTitle>Поля и ресурсы этапа</SPanelTitle>
-        <SField>
-          Выберите этап
-          <SSelect
-            value={selectedStageId || ""}
-            onChange={(e) => setSelectedStageId(Number(e.target.value))}
-          >
-            <option value="">— выберите этап —</option>
-            {(stages.data?.stages ?? []).map((stage) => (
-              <option key={stage.id} value={stage.id}>
-                {stage.title ?? `Этап #${stage.id}`}
-              </option>
-            ))}
-          </SSelect>
-        </SField>
-
-        {selectedStageId > 0 && (
-          <>
-            <SPanelTitle style={{ marginTop: 8 }}>Добавить поле</SPanelTitle>
-            <SFormGrid>
-              <SField>
-                Тип
-                <SSelect
-                  value={fieldType}
-                  onChange={(e) =>
-                    setFieldType(e.target.value as SubmissionFieldType)
-                  }
-                >
-                  {fieldTypeOptions.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </SSelect>
-              </SField>
-              <SField>
-                Название поля
-                <SInput
-                  value={fieldTitle}
-                  placeholder="Название поля"
-                  onChange={(e) => setFieldTitle(e.target.value)}
-                />
-              </SField>
-            </SFormGrid>
-            <SActions>
-              <Button
-                color="violet"
-                loading={createField.isPending}
-                disabled={!fieldTitle.trim()}
-                onClick={() =>
-                  createField.mutate(
-                    {
-                      stageId: selectedStageId,
-                      data: { title: fieldTitle, type: fieldType },
-                    },
-                    { onSuccess: () => setFieldTitle("") },
-                  )
-                }
-              >
-                Добавить поле
-              </Button>
-            </SActions>
-            <SList>
-              {(stageFields.data?.fields ?? []).map((f) => (
-                <SListItem key={f.id}>
-                  <div>
-                    <SItemTitle>{f.title}</SItemTitle>
-                    <SItemMeta>
-                      {f.type}
-                      {f.required ? " · Обязательное" : ""}
-                    </SItemMeta>
-                  </div>
-                </SListItem>
-              ))}
-            </SList>
-
-            <SPanelTitle style={{ marginTop: 8 }}>Добавить ресурс</SPanelTitle>
-            <SFormGrid>
-              <SField>
-                Название
-                <SInput
-                  value={resourceTitle}
-                  placeholder="Название ресурса"
-                  onChange={(e) => setResourceTitle(e.target.value)}
-                />
-              </SField>
-              <SField>
-                Ссылка
-                <SInput
-                  value={resourceLink}
-                  placeholder="https://..."
-                  onChange={(e) => setResourceLink(e.target.value)}
-                />
-              </SField>
-            </SFormGrid>
-            <SActions>
-              <Button
-                color="violet"
-                loading={createResource.isPending}
-                disabled={!resourceTitle.trim() || !resourceLink.trim()}
-                onClick={() =>
-                  createResource.mutate(
-                    {
-                      stageId: selectedStageId,
-                      data: {
-                        title: resourceTitle,
-                        type: "LINK",
-                        linkUrl: resourceLink,
-                      },
-                    },
-                    {
-                      onSuccess: () => {
-                        setResourceTitle("");
-                        setResourceLink("");
-                      },
-                    },
-                  )
-                }
-              >
-                Добавить ресурс
-              </Button>
-            </SActions>
-            <SList>
-              {(stageResources.data?.resources ?? []).map((r) => (
-                <SListItem key={r.id}>
-                  <div>
-                    <SItemTitle>{r.title}</SItemTitle>
-                    <SItemMeta>
-                      {r.type}
-                      {r.linkUrl ? ` · ${r.linkUrl}` : ""}
-                    </SItemMeta>
-                  </div>
-                </SListItem>
-              ))}
-            </SList>
-          </>
-        )}
       </SWorkspacePanel>
     </>
   );
@@ -733,13 +913,6 @@ export const ContestBuilderPage = () => {
   return (
     <SWorkspacePage>
       <SWorkspaceHeader>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Link href={routes.ORGANIZER_PAGE}>
-            <Button type="text" color="gray">
-              ← Все конкурсы
-            </Button>
-          </Link>
-        </div>
         <SWorkspaceTitle>
           {contest.data?.title ?? `Конкурс #${contestId}`}
         </SWorkspaceTitle>

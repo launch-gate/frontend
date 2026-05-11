@@ -1,5 +1,42 @@
 import styled from "styled-components";
 
+export const SStageActions = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+`;
+
+export const SIconRow = styled.div`
+  display: flex;
+  gap: 4px;
+`;
+
+export const SIconButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid ${({ theme }) => theme.colors.gray.primary};
+  border-radius: 8px;
+  background: ${({ theme }) => theme.colors.white};
+  color: ${({ theme }) => theme.colors.gray.mid};
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.gray.dark};
+    border-color: ${({ theme }) => theme.colors.gray.mid};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+`;
+
 export const STabs = styled.div`
   display: flex;
   gap: 4px;

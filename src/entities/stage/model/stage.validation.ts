@@ -16,6 +16,7 @@ export const resourceTypeSchema = mixed<ResourceType>().oneOf([
 export const submissionFieldTypeSchema = mixed<SubmissionFieldType>().oneOf([
   "TEXT",
   "LINK",
+  "GITHUB_REPOSITORY",
   "FILE",
   "FILES",
   "VIDEO",
@@ -63,8 +64,8 @@ export const submissionFieldRequestSchema = object({
   title: string().required(),
   type: submissionFieldTypeSchema.required(),
   required: boolean().optional(),
-  fileFormats: string().optional(),
-  maxFileSizeMb: number().integer().optional(),
+  fileFormats: mixed().nullable().optional(),
+  maxFileSizeMb: number().nullable().optional(),
   options: string().optional(),
   participantHint: string().optional(),
   exampleValue: string().optional(),
@@ -78,16 +79,17 @@ export const fieldParticipantSchema = object({
   title: string().optional(),
   type: submissionFieldTypeSchema.optional(),
   required: boolean().optional(),
-  fileFormats: string().nullable().optional(),
-  maxFileSizeMb: number().integer().nullable().optional(),
-  options: string().nullable().optional(),
+  fileFormats: mixed().nullable().optional(),
+  maxFileSizeMb: number().nullable().optional(),
+  options: mixed().nullable().optional(),
   participantHint: string().nullable().optional(),
   exampleValue: string().nullable().optional(),
 });
 
 export const fieldSchema = fieldParticipantSchema.shape({
-  expertNote: string().optional(),
-  criteriaDescription: string().optional(),
+  expertNote: string().nullable().optional(),
+  criteriaDescription: string().nullable().optional(),
+  criteria: mixed().nullable().optional(),
 });
 
 export const fieldListSchema = object({
@@ -112,12 +114,12 @@ export const stageRequestSchema = object({
 export const stageParticipantSchema = object({
   id: number().integer().optional(),
   order: number().integer().optional(),
-  title: string().optional(),
-  description: string().optional(),
-  rules: string().optional(),
-  deadlineAt: string().optional(),
-  eliminating: boolean().optional(),
-  scoreScale: scoreScaleSchema.optional(),
+  title: string().nullable().optional(),
+  description: string().nullable().optional(),
+  rules: string().nullable().optional(),
+  deadlineAt: string().nullable().optional(),
+  eliminating: boolean().nullable().optional(),
+  scoreScale: scoreScaleSchema.nullable().optional(),
   fields: array().of(fieldParticipantSchema).optional(),
   resources: array().of(resourceSchema).optional(),
 });
@@ -125,13 +127,13 @@ export const stageParticipantSchema = object({
 export const stageOrganizesSchema = object({
   id: number().integer().optional(),
   order: number().integer().optional(),
-  title: string().optional(),
-  description: string().optional(),
-  rules: string().optional(),
-  extraInfo: string().optional(),
-  deadlineAt: string().optional(),
-  eliminating: boolean().optional(),
-  scoreScale: scoreScaleSchema.optional(),
+  title: string().nullable().optional(),
+  description: string().nullable().optional(),
+  rules: string().nullable().optional(),
+  extraInfo: string().nullable().optional(),
+  deadlineAt: string().nullable().optional(),
+  eliminating: boolean().nullable().optional(),
+  scoreScale: scoreScaleSchema.nullable().optional(),
   fields: array().of(fieldSchema).optional(),
   resources: array().of(resourceSchema).optional(),
 });

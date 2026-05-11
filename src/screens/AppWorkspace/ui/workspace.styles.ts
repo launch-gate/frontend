@@ -156,7 +156,7 @@ export const SItemTitle = styled.div`
 `;
 
 export const SItemMeta = styled.div`
-  ${({ theme }) => theme.font.caption};
+  ${({ theme }) => theme.font.body};
   color: ${({ theme }) => theme.colors.gray.mid};
   margin-top: 6px;
   line-height: 1.35;
@@ -188,6 +188,18 @@ export const SInlineNav = styled.nav`
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+`;
+
+export const SStageNav = styled.div`
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding-top: 4px;
+
+  > :last-child {
+    justify-self: end;
+  }
 `;
 
 export const SContactsSection = styled.div`

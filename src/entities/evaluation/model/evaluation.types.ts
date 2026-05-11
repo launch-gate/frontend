@@ -38,4 +38,33 @@ export interface IAiReviewCreatedResponse {
   aiReviewId?: number;
 }
 
+export type AiReviewFieldStatus =
+  | "SUCCESS"
+  | "UNSUPPORTED_FORMAT"
+  | "SKIPPED_NO_CRITERIA"
+  | "SKIPPED_NO_DATA"
+  | "FAILED";
+
+export interface IAiReviewCriterionResult {
+  criterionDescription?: string;
+  score?: number;
+  comment?: string;
+}
+
+export interface IAiReviewFieldResult {
+  fieldId?: number;
+  fieldTitle?: string;
+  status?: AiReviewFieldStatus;
+  result?: string;
+  criteriaResults?: IAiReviewCriterionResult[];
+}
+
+export interface IAiReviewResponse {
+  id?: number;
+  submissionId?: number;
+  status?: string;
+  createdAt?: string;
+  fieldResults?: IAiReviewFieldResult[];
+}
+
 export type IExpertReviewSubmissionResponse = IStageSubmissionResponse;

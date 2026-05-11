@@ -37,9 +37,8 @@ const SkeletonCard = ({ index }: { index: number }) => (
 );
 
 export const CompetitionsList = () => {
-  const { search, statuses, duration, durationRange } = competitionFilterStore(
-    (state) => state.competitionState,
-  );
+  const { search, statuses, participationMode, duration, durationRange } =
+    competitionFilterStore((state) => state.competitionState);
   const contests = useGetContests();
 
   const filteredContests = useMemo(() => {
@@ -53,6 +52,12 @@ export const CompetitionsList = () => {
         [contest.title, contest.description, contest.contacts]
           .filter(Boolean)
           .some((value) => value?.toLowerCase().includes(normalizedSearch)),
+      );
+    }
+
+    if (participationMode) {
+      list = list.filter(
+        (contest) => contest.participationMode === participationMode,
       );
     }
 
@@ -82,7 +87,7 @@ export const CompetitionsList = () => {
     }
 
     return list;
-  }, [contests.data?.contests, search, statuses, duration, durationRange]);
+  }, [contests.data?.contests, search, statuses, participationMode, duration, durationRange]);
 
   const itemContent: InfinityListProps<
     IContestInfoResponse,

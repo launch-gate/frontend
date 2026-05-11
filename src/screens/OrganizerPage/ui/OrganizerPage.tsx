@@ -34,22 +34,35 @@ export const OrganizerPage = () => {
   const contests = useGetOrganizerContests();
   const createContest = useCreateOrganizerContest();
 
-  const [title, setTitle] = useState("Launch Gate AI Challenge");
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [participationMode, setParticipationMode] =
     useState<ParticipationMode>("TEAM");
-  const [registrationEndsAt, setRegistrationEndsAt] = useState("2026-05-20");
-  const [startsAt, setStartsAt] = useState("2026-05-01");
-  const [endsAt, setEndsAt] = useState("2026-06-15");
+  const [minTeamSize, setMinTeamSize] = useState("2");
+  const [maxTeamSize, setMaxTeamSize] = useState("5");
+  const [registrationEndsAt, setRegistrationEndsAt] = useState("");
+  const [teamBuildingEndsAt, setTeamBuildingEndsAt] = useState("");
+  const [startsAt, setStartsAt] = useState("");
+  const [endsAt, setEndsAt] = useState("");
+
+  const isTeam = participationMode === "TEAM";
 
   const handleCreate = () => {
     const data = {
       title,
       description,
       participationMode,
-      registrationEndsAt,
-      startsAt,
-      endsAt,
+      minTeamSize: isTeam && minTeamSize ? Number(minTeamSize) : undefined,
+      maxTeamSize: isTeam && maxTeamSize ? Number(maxTeamSize) : undefined,
+      registrationEndsAt: registrationEndsAt
+        ? `${registrationEndsAt}T00:00:00Z`
+        : undefined,
+      teamBuildingEndsAt:
+        isTeam && teamBuildingEndsAt
+          ? `${teamBuildingEndsAt}T00:00:00Z`
+          : undefined,
+      startsAt: startsAt ? `${startsAt}T00:00:00Z` : undefined,
+      endsAt: endsAt ? `${endsAt}T00:00:00Z` : undefined,
     };
 
     createContest.mutate(data);
@@ -69,14 +82,15 @@ export const OrganizerPage = () => {
           <SPanelTitle>Новый конкурс</SPanelTitle>
           <SFormGrid>
             <SField>
-              Название
+              Название *
               <SInput
                 value={title}
+                placeholder="Название конкурса"
                 onChange={(e) => setTitle(e.target.value)}
               />
             </SField>
             <SField>
-              Формат участия
+              Формат участия *
               <SSelect
                 value={participationMode}
                 onChange={(e) =>
@@ -87,6 +101,28 @@ export const OrganizerPage = () => {
                 <option value="INDIVIDUAL">Индивидуальный</option>
               </SSelect>
             </SField>
+            {isTeam && (
+              <>
+                <SField>
+                  Мин. размер команды *
+                  <SInput
+                    type="number"
+                    min={1}
+                    value={minTeamSize}
+                    onChange={(e) => setMinTeamSize(e.target.value)}
+                  />
+                </SField>
+                <SField>
+                  Макс. размер команды *
+                  <SInput
+                    type="number"
+                    min={1}
+                    value={maxTeamSize}
+                    onChange={(e) => setMaxTeamSize(e.target.value)}
+                  />
+                </SField>
+              </>
+            )}
             <SField>
               Регистрация до
               <SInput
@@ -95,13 +131,26 @@ export const OrganizerPage = () => {
                 onChange={(e) => setRegistrationEndsAt(e.target.value)}
               />
             </SField>
+            {isTeam && (
+              <SField>
+                Сбор команд до
+                <SInput
+                  type="date"
+                  value={teamBuildingEndsAt}
+                  onChange={(e) => setTeamBuildingEndsAt(e.target.value)}
+                />
+              </SField>
+            )}
             <SField>
-              Даты конкурса
+              Начало конкурса
               <SInput
                 type="date"
                 value={startsAt}
                 onChange={(e) => setStartsAt(e.target.value)}
               />
+            </SField>
+            <SField>
+              Конец конкурса
               <SInput
                 type="date"
                 value={endsAt}

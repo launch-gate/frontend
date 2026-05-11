@@ -4,4 +4,5 @@ export * from "./saveExpertReviewDraft";
 export * from "./publishExpertReview";
 export * from "./assignExpert";
 export * from "./createAiReview";
+export * from "./getAiReview";
 export * from "../model/evaluation.types";

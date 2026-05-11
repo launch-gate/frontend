@@ -1,6 +1,7 @@
 export interface ICompetitionStore {
   search: string;
   statuses: string[];
+  participationMode: "TEAM" | "INDIVIDUAL" | null;
   duration: string | null;
   durationRange: [number | null, number | null];
   prizeMin: number;
