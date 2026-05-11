@@ -1,10 +1,7 @@
 import path from "node:path";
 
-import createNextIntlPlugin from "next-intl/plugin";
-
-const withNextIntl = createNextIntlPlugin(
-  "./src/entities/locale/lib/request.ts",
-);
+const nextIntlConfigPath = "./src/entities/locale/lib/request.ts";
+const nextIntlConfigAlias = path.resolve(nextIntlConfigPath);
 
 const nextConfig = {
   reactStrictMode: false,
@@ -14,12 +11,18 @@ const nextConfig = {
     styledComponents: true,
   },
   productionBrowserSourceMaps: false,
-  eslint: { ignoreDuringBuilds: true },
   webpack: (config, { isServer }) => {
+    config.resolve.alias["next-intl/config"] = nextIntlConfigAlias;
+
     if (!isServer) {
       config.resolve.alias["prom-client"] = false;
     }
     return config;
+  },
+  turbopack: {
+    resolveAlias: {
+      "next-intl/config": nextIntlConfigPath,
+    },
   },
   experimental: {
     optimizePackageImports: [
@@ -64,6 +67,4 @@ const nextConfig = {
   },
 };
 
-const configWithIntl = withNextIntl(nextConfig);
-
-export default configWithIntl;
+export default nextConfig;

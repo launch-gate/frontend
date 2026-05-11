@@ -1,5 +1,4 @@
 import { PropsWithChildren } from "react";
-import { Sansation } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 
@@ -11,12 +10,6 @@ import {
   toJsonLd,
 } from "@/shared/config/seo";
 import "./(theme)/global.css";
-
-const sansation = Sansation({
-  weight: ["300", "400", "700"],
-  subsets: ["latin", "cyrillic"],
-  variable: "--font-sansation",
-});
 
 export const generateMetadata = () =>
   createLocalizedPageMetadata("seo.pages.homePage", {
@@ -34,7 +27,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
 
   return (
     <html lang={locale}>
-      <body className={`${sansation.variable} font-sans`}>
+      <body>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: toJsonLd(websiteJsonLd) }}
