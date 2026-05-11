@@ -24,10 +24,14 @@ export const getContestTeams = ({
 
 export const useGetContestTeams = (contestId: number, enabled = true) =>
   useQuery<IGetContestTeamsResponse, DetailsError>({
-    queryKey: [getContestTeamsKey, contestId],
-    queryFn: () => getContestTeams({ contestId }),
+    ...getContestTeamsQueryOptions(contestId),
     enabled,
   });
+
+export const getContestTeamsQueryOptions = (contestId: number) => ({
+    queryKey: [getContestTeamsKey, contestId],
+    queryFn: () => getContestTeams({ contestId }),
+});
 
 export * from "./getContestTeams.types";
 export * from "./getContestTeams.validation";

@@ -24,10 +24,14 @@ export const getContestStages = ({
 
 export const useGetContestStages = (contestId: number, enabled = true) =>
   useQuery<IGetContestStagesResponse, DetailsError>({
-    queryKey: [getContestStagesKey, contestId],
-    queryFn: () => getContestStages({ contestId }),
+    ...getContestStagesQueryOptions(contestId),
     enabled,
   });
+
+export const getContestStagesQueryOptions = (contestId: number) => ({
+    queryKey: [getContestStagesKey, contestId],
+    queryFn: () => getContestStages({ contestId }),
+});
 
 export * from "./getContestStages.types";
 export * from "./getContestStages.validation";

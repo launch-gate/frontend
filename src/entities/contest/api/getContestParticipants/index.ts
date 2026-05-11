@@ -24,10 +24,14 @@ export const getContestParticipants = ({
 
 export const useGetContestParticipants = (contestId: number, enabled = true) =>
   useQuery<IGetContestParticipantsResponse, DetailsError>({
-    queryKey: [getContestParticipantsKey, contestId],
-    queryFn: () => getContestParticipants({ contestId }),
+    ...getContestParticipantsQueryOptions(contestId),
     enabled,
   });
+
+export const getContestParticipantsQueryOptions = (contestId: number) => ({
+    queryKey: [getContestParticipantsKey, contestId],
+    queryFn: () => getContestParticipants({ contestId }),
+});
 
 export * from "./getContestParticipants.types";
 export * from "./getContestParticipants.validation";

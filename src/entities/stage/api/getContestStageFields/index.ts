@@ -24,10 +24,14 @@ export const getContestStageFields = ({
 
 export const useGetContestStageFields = (stageId: number, enabled = true) =>
   useQuery<IGetContestStageFieldsResponse, DetailsError>({
-    queryKey: [getContestStageFieldsKey, stageId],
-    queryFn: () => getContestStageFields({ stageId }),
+    ...getContestStageFieldsQueryOptions(stageId),
     enabled,
   });
+
+export const getContestStageFieldsQueryOptions = (stageId: number) => ({
+    queryKey: [getContestStageFieldsKey, stageId],
+    queryFn: () => getContestStageFields({ stageId }),
+});
 
 export * from "./getContestStageFields.types";
 export * from "./getContestStageFields.validation";

@@ -20,10 +20,14 @@ export const getContest = ({
   );
 
 export const useGetContest = (contestId: number) =>
-  useQuery<IGetContestResponse, DetailsError>({
+  useQuery<IGetContestResponse, DetailsError>(
+    getContestQueryOptions(contestId),
+  );
+
+export const getContestQueryOptions = (contestId: number) => ({
     queryKey: [getContestKey, contestId],
     queryFn: () => getContest({ contestId }),
-  });
+});
 
 export * from "./getContest.types";
 export * from "./getContest.validation";

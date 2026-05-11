@@ -24,10 +24,14 @@ export const getStageResources = ({
 
 export const useGetStageResources = (stageId: number, enabled = true) =>
   useQuery<IGetStageResourcesResponse, DetailsError>({
-    queryKey: [getStageResourcesKey, stageId],
-    queryFn: () => getStageResources({ stageId }),
+    ...getStageResourcesQueryOptions(stageId),
     enabled,
   });
+
+export const getStageResourcesQueryOptions = (stageId: number) => ({
+    queryKey: [getStageResourcesKey, stageId],
+    queryFn: () => getStageResources({ stageId }),
+});
 
 export * from "./getStageResources.types";
 export * from "./getStageResources.validation";

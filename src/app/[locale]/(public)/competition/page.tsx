@@ -1,3 +1,6 @@
+import { HydrationBoundary } from "@tanstack/react-query";
+
+import { prefetchGetContests } from "@/entities/contest";
 import { CompetitionListPage } from "@/screens/CompetitionListPage";
 import { createLocalizedPageMetadata } from "@/shared/config/seo";
 
@@ -10,5 +13,11 @@ export const generateMetadata = () =>
   });
 
 export default async function CompetitionList() {
-  return <CompetitionListPage />;
+  const contestsState = await prefetchGetContests();
+
+  return (
+    <HydrationBoundary state={contestsState}>
+      <CompetitionListPage />
+    </HydrationBoundary>
+  );
 }

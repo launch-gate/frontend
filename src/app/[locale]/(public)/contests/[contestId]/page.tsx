@@ -1,4 +1,7 @@
+import { HydrationBoundary } from "@tanstack/react-query";
+
 import { ContestPublicPage } from "@/screens/ContestPublicPage";
+import { prefetchContestPublicPage } from "@/screens/ContestPublicPage/lib/prefetchContestPublicPage";
 import { fetchPublicApi } from "@/shared/api/publicApi";
 import {
   BRAND_NAME,
@@ -40,6 +43,13 @@ export async function generateMetadata({ params }: PageProps) {
   });
 }
 
-export default function ContestPublic() {
-  return <ContestPublicPage />;
+export default async function ContestPublic({ params }: PageProps) {
+  const { contestId } = await params;
+  const contestState = await prefetchContestPublicPage(Number(contestId));
+
+  return (
+    <HydrationBoundary state={contestState}>
+      <ContestPublicPage />
+    </HydrationBoundary>
+  );
 }
