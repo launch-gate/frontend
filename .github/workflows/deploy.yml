@@ -1,0 +1,66 @@
+name: Deploy Frontend
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      DEPLOY_PATH: /opt/frontend
+      DEPLOY_ARCHIVE: frontend-deploy.tgz
+      SHARED_NETWORK: launch-gate-shared
+    steps:
+      - name: Ensure main branch
+        run: |
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "This workflow can only be started from branch main"
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare deploy bundle
+        run: |
+          mkdir -p deploy
+          tar -czf "deploy/${DEPLOY_ARCHIVE}" \
+            .dockerignore \
+            .env.example \
+            Dockerfile \
+            docker-compose.yml \
+            next.config.mjs \
+            package.json \
+            package-lock.json \
+            tsconfig.json \
+            locales \
+            public \
+            src
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${{ secrets.DEPLOY_PORT }}" "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Ensure target directory and shared network exist
+        run: |
+          ssh -p "${{ secrets.DEPLOY_PORT }}" "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "mkdir -p ${DEPLOY_PATH} && (docker network inspect ${SHARED_NETWORK} >/dev/null 2>&1 || docker network create ${SHARED_NETWORK})"
+
+      - name: Upload deploy bundle
+        run: |
+          scp -P "${{ secrets.DEPLOY_PORT }}" "deploy/${DEPLOY_ARCHIVE}" \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${DEPLOY_PATH}/${DEPLOY_ARCHIVE}"
+
+      - name: Rebuild and restart frontend
+        run: |
+          ssh -p "${{ secrets.DEPLOY_PORT }}" "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd ${DEPLOY_PATH} \
+            && tar -xzf ${DEPLOY_ARCHIVE} \
+            && if [ ! -f .env ]; then cp .env.example .env && echo 'Fill ${DEPLOY_PATH}/.env and rerun the workflow' && exit 1; fi \
+            && docker compose up -d --build \
+            && docker compose ps"
