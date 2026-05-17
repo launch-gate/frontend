@@ -61,6 +61,24 @@ const contactTypeLabels: Record<UserContactType, string> = {
   VK: "VK",
 };
 
+const contactPlaceholders: Record<UserContactType, string> = {
+  TELEGRAM: "@username",
+  EMAIL: "name@example.com",
+  VK: "https://vk.com/id или @id",
+};
+
+const contactValidation: Record<UserContactType, (v: string) => string | null> =
+  {
+    TELEGRAM: (v) =>
+      v.startsWith("@") && v.length > 1 ? null : "Формат: @username",
+    EMAIL: (v) =>
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : "Формат: name@example.com",
+    VK: (v) =>
+      /^https?:\/\/vk\.(com|ru)\//.test(v) || v.startsWith("@")
+        ? null
+        : "Формат: https://vk.com/id или @id",
+  };
+
 const PencilIcon = () => (
   <svg
     width="13"
@@ -237,7 +255,7 @@ export const ProfilePage = () => {
         <SWorkspaceTitle>Профиль</SWorkspaceTitle>
         <SWorkspaceSubtitle>
           Личные данные, контакты и список рабочих пространств участника или
-          команды.
+          команды
         </SWorkspaceSubtitle>
         {profile.data && (
           <SActions>
@@ -333,14 +351,40 @@ export const ProfilePage = () => {
                     </SField>
                     <SField>
                       <span>Значение</span>
-                      <SInput
-                        value={contact.value}
-                        onChange={(e) =>
-                          handleContactChange(index, {
-                            value: e.target.value,
-                          })
-                        }
-                      />
+                      {(() => {
+                        const error = contact.value.trim()
+                          ? contactValidation[contact.type](
+                              contact.value.trim(),
+                            )
+                          : null;
+                        return (
+                          <>
+                            <SInput
+                              value={contact.value}
+                              placeholder={contactPlaceholders[contact.type]}
+                              onChange={(e) =>
+                                handleContactChange(index, {
+                                  value: e.target.value,
+                                })
+                              }
+                              style={
+                                error ? { borderColor: "#e05" } : undefined
+                              }
+                            />
+                            {error && (
+                              <span
+                                style={{
+                                  fontSize: 12,
+                                  color: "#e05",
+                                  marginTop: 2,
+                                }}
+                              >
+                                {error}
+                              </span>
+                            )}
+                          </>
+                        );
+                      })()}
                     </SField>
                     <SContactPrimaryLabel>
                       <input
@@ -362,7 +406,7 @@ export const ProfilePage = () => {
                 ))}
               </SContactList>
             ) : (
-              <SContactEmpty>Контакты не добавлены.</SContactEmpty>
+              <SContactEmpty>Контакты не добавлены</SContactEmpty>
             )}
           </SContactSection>
 
@@ -390,7 +434,7 @@ export const ProfilePage = () => {
             )}
             {profile.data?.email && (
               <SAccountRow>
-                <SAccountLabel>Email</SAccountLabel>
+                <SAccountLabel>Login Email</SAccountLabel>
                 <SAccountValue>{profile.data.email}</SAccountValue>
               </SAccountRow>
             )}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import {
@@ -28,10 +28,17 @@ import {
   getOrganizerContestStagesKey,
 } from "@/entities/stage";
 import { useGetContestTeams } from "@/entities/team";
+import {
+  IContactResponse,
+  UserContactType,
+  useGetUserProfile,
+  useUpdateUserProfile,
+} from "@/entities/user";
 import { Button } from "@/shared/components";
 import { routes } from "@/shared/config";
 import {
   SActions,
+  SContactEditorRow,
   SField,
   SFormGrid,
   SInput,
@@ -41,6 +48,7 @@ import {
   SListItem,
   SPanelText,
   SPanelTitle,
+  SRequiredMark,
   SSelect,
   SStatus,
   STextarea,
@@ -60,8 +68,111 @@ import {
   STabs,
 } from "./contestBuilderPage.styles";
 
+// ─── Типы и хелперы для контактов ──────────────────────────────────────────
+
+type ContestContactType = "TELEGRAM" | "EMAIL" | "PHONE" | "VK" | "WEBSITE";
+
+interface ContestContact {
+  type: ContestContactType;
+  value: string;
+  note: string;
+}
+
+const CONTACT_TYPE_OPTIONS: {
+  value: ContestContactType;
+  label: string;
+  placeholder: string;
+}[] = [
+  { value: "TELEGRAM", label: "Telegram", placeholder: "@username" },
+  { value: "EMAIL", label: "Email", placeholder: "org@example.com" },
+  { value: "PHONE", label: "Телефон", placeholder: "+7 999 123-45-67" },
+  { value: "VK", label: "VK", placeholder: "https://vk.com/id или @id" },
+  { value: "WEBSITE", label: "Сайт", placeholder: "https://example.com" },
+];
+
+const CONTACT_VALIDATION: Record<
+  ContestContactType,
+  (v: string) => string | null
+> = {
+  TELEGRAM: (v) =>
+    v.startsWith("@") && v.length > 1 ? null : "Формат: @username",
+  EMAIL: (v) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : "Формат: name@example.com",
+  PHONE: (v) =>
+    /^[+\d][\d\s\-()]{5,}$/.test(v) ? null : "Формат: +7 999 123-45-67",
+  VK: (v) =>
+    /^https?:\/\/vk\.(com|ru)\//.test(v) || v.startsWith("@")
+      ? null
+      : "Формат: https://vk.com/id или @id",
+  WEBSITE: (v) =>
+    /^https?:\/\//.test(v) ? null : "Формат: https://example.com",
+};
+
+const serializeContacts = (contacts: ContestContact[]): string | undefined => {
+  const valid = contacts
+    .map((c) => ({ type: c.type, value: c.value.trim(), note: c.note.trim() }))
+    .filter((c) => c.value);
+  return valid.length ? JSON.stringify(valid) : undefined;
+};
+
+const deserializeContacts = (raw?: string | null): ContestContact[] => {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((c) => c.type && c.value)
+      .map((c) => ({
+        type: c.type as ContestContactType,
+        value: String(c.value),
+        note: String(c.note ?? ""),
+      }));
+  } catch {
+    return [];
+  }
+};
+
+const PROFILE_COMPATIBLE_TYPES = new Set<ContestContactType>([
+  "TELEGRAM",
+  "EMAIL",
+  "VK",
+]);
+
+const mergeContactsIntoProfile = (
+  contestContacts: ContestContact[],
+  profileContacts: IContactResponse[],
+): { type: UserContactType; value: string; primaryContact: boolean }[] => {
+  const incoming = contestContacts.filter(
+    (c) => PROFILE_COMPATIBLE_TYPES.has(c.type) && c.value.trim(),
+  );
+  const incomingTypes = new Set(incoming.map((c) => c.type));
+  const kept = profileContacts
+    .filter(
+      (c) =>
+        c.type && c.value && !incomingTypes.has(c.type as ContestContactType),
+    )
+    .map((c) => ({
+      type: c.type as UserContactType,
+      value: c.value!,
+      primaryContact: c.primaryContact ?? false,
+    }));
+  const added = incoming.map((c) => ({
+    type: c.type as UserContactType,
+    value: c.value.trim(),
+    primaryContact: false,
+  }));
+  const merged = [...kept, ...added];
+  if (merged.length > 0 && !merged.some((c) => c.primaryContact)) {
+    merged[0].primaryContact = true;
+  }
+  return merged;
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+
 type Tab =
   | "main"
+  | "contacts"
   | "stages"
   | "team"
   | "participants"
@@ -70,6 +181,7 @@ type Tab =
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "main", label: "Основное" },
+  { key: "contacts", label: "Контакты" },
   { key: "stages", label: "Этапы" },
   { key: "team", label: "Команда" },
   { key: "participants", label: "Участники" },
@@ -115,6 +227,7 @@ export const ContestBuilderPage = () => {
 
   // ── данные ──────────────────────────────────────────────────────────────
   const contest = useGetContest(contestId);
+  const profile = useGetUserProfile();
   const stages = useGetOrganizerContestStages(contestId);
   const organizers = useGetContestOrganizers(contestId);
   const participants = useGetOrganizerContestParticipants(contestId);
@@ -124,6 +237,7 @@ export const ContestBuilderPage = () => {
   const queryClient = useQueryClient();
 
   const updateContest = useUpdateOrganizerContest();
+  const updateProfile = useUpdateUserProfile();
   const publishContest = usePublishOrganizerContest();
   const deleteContest = useDeleteOrganizerContest();
   const createStage = useCreateOrganizerContestStage();
@@ -139,6 +253,7 @@ export const ContestBuilderPage = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [rules, setRules] = useState("");
+  const [contacts, setContacts] = useState<ContestContact[]>([]);
   const [participationMode, setParticipationMode] = useState<
     "INDIVIDUAL" | "TEAM"
   >("TEAM");
@@ -169,6 +284,15 @@ export const ContestBuilderPage = () => {
   const [expertUserId, setExpertUserId] = useState("");
   const [aiSubmissionId, setAiSubmissionId] = useState("");
 
+  const [editingContactIndex, setEditingContactIndex] = useState<number | null>(
+    null,
+  );
+  const [contactForm, setContactForm] = useState<ContestContact>({
+    type: "TELEGRAM",
+    value: "",
+    note: "",
+  });
+
   const [actionResult, setActionResult] = useState<string | null>(null);
 
   const hasStages = (stages.data?.stages?.length ?? 0) > 0;
@@ -197,6 +321,33 @@ export const ContestBuilderPage = () => {
     setStartsAt((contest.data.startsAt ?? "").slice(0, 10));
     setEndsAt((contest.data.endsAt ?? "").slice(0, 10));
   }, [contest.data]);
+
+  const contactsInitialized = useRef(false);
+
+  useEffect(() => {
+    if (contactsInitialized.current) return;
+    if (!contest.data || profile.isLoading) return;
+
+    contactsInitialized.current = true;
+
+    const existing = deserializeContacts(contest.data.contacts);
+    if (existing.length > 0) {
+      setContacts(existing);
+    } else {
+      setContacts(
+        (profile.data?.contacts ?? [])
+          .filter(
+            (c): c is { type: UserContactType; value: string } =>
+              !!(c.type && c.value),
+          )
+          .map((c) => ({
+            type: c.type as ContestContactType,
+            value: c.value,
+            note: "",
+          })),
+      );
+    }
+  }, [contest.data, profile.data, profile.isLoading]);
 
   const handleResult = (msg: string) => setActionResult(msg);
 
@@ -239,6 +390,91 @@ export const ContestBuilderPage = () => {
       queryKey: [getOrganizerContestStagesKey, contestId],
     });
 
+  const resetContactForm = () => {
+    setEditingContactIndex(null);
+    setContactForm({ type: "TELEGRAM", value: "", note: "" });
+  };
+
+  const startContactEdit = (index: number) => {
+    setEditingContactIndex(index);
+    setContactForm({ ...contacts[index] });
+  };
+
+  const saveContacts = (newContacts: ContestContact[]) => {
+    updateContest.mutate(
+      {
+        contestId,
+        data: {
+          title: title || contest.data?.title || "Contest",
+          description: description || contest.data?.description || undefined,
+          rules: rules || contest.data?.rules || undefined,
+          participationMode:
+            participationMode || (contest.data?.participationMode ?? "TEAM"),
+          registrationEndsAt: registrationEndsAt
+            ? `${registrationEndsAt}T00:00:00Z`
+            : (contest.data?.registrationEndsAt ?? undefined),
+          teamBuildingEndsAt: teamBuildingEndsAt
+            ? `${teamBuildingEndsAt}T00:00:00Z`
+            : (contest.data?.teamBuildingEndsAt ?? undefined),
+          startsAt: startsAt
+            ? `${startsAt}T00:00:00Z`
+            : (contest.data?.startsAt ?? undefined),
+          endsAt: endsAt
+            ? `${endsAt}T00:00:00Z`
+            : (contest.data?.endsAt ?? undefined),
+          contacts: serializeContacts(newContacts),
+          minTeamSize:
+            participationMode === "TEAM" && minTeamSize
+              ? Number(minTeamSize)
+              : undefined,
+          maxTeamSize:
+            participationMode === "TEAM" && maxTeamSize
+              ? Number(maxTeamSize)
+              : undefined,
+        },
+      },
+      {
+        onSuccess: () => {
+          handleResult("Сохранено");
+          const merged = mergeContactsIntoProfile(
+            newContacts,
+            profile.data?.contacts ?? [],
+          );
+          if (merged.length > 0)
+            updateProfile.mutate({
+              fullName: profile.data?.fullName,
+              nickname: profile.data?.nickname,
+              bio: profile.data?.bio,
+              contacts: merged,
+            });
+        },
+        onError: (e) => handleResult(`Ошибка: ${e.message}`),
+      },
+    );
+  };
+
+  const handleSaveContact = () => {
+    const trimmed: ContestContact = {
+      ...contactForm,
+      value: contactForm.value.trim(),
+      note: contactForm.note.trim(),
+    };
+    const newContacts =
+      editingContactIndex !== null
+        ? contacts.map((c, i) => (i === editingContactIndex ? trimmed : c))
+        : [...contacts, trimmed];
+    setContacts(newContacts);
+    resetContactForm();
+    saveContacts(newContacts);
+  };
+
+  const handleDeleteContact = (index: number) => {
+    const newContacts = contacts.filter((_, i) => i !== index);
+    setContacts(newContacts);
+    if (editingContactIndex === index) resetContactForm();
+    saveContacts(newContacts);
+  };
+
   // ── вкладки ─────────────────────────────────────────────────────────────
 
   const handleSave = () =>
@@ -263,7 +499,7 @@ export const ContestBuilderPage = () => {
           endsAt: endsAt
             ? `${endsAt}T00:00:00Z`
             : (contest.data?.endsAt ?? undefined),
-          contacts: contest.data?.contacts ?? undefined,
+          contacts: serializeContacts(contacts),
           minTeamSize:
             participationMode === "TEAM" && minTeamSize
               ? Number(minTeamSize)
@@ -275,7 +511,20 @@ export const ContestBuilderPage = () => {
         },
       },
       {
-        onSuccess: () => handleResult("Сохранено"),
+        onSuccess: () => {
+          handleResult("Сохранено");
+          const merged = mergeContactsIntoProfile(
+            contacts,
+            profile.data?.contacts ?? [],
+          );
+          if (merged.length > 0)
+            updateProfile.mutate({
+              fullName: profile.data?.fullName,
+              nickname: profile.data?.nickname,
+              bio: profile.data?.bio,
+              contacts: merged,
+            });
+        },
         onError: (e) => handleResult(`Ошибка: ${e.message}`),
       },
     );
@@ -468,6 +717,153 @@ export const ContestBuilderPage = () => {
     }
   };
 
+  const renderContacts = () => {
+    const formOpt = CONTACT_TYPE_OPTIONS.find(
+      (o) => o.value === contactForm.type,
+    );
+    const formError = contactForm.value.trim()
+      ? CONTACT_VALIDATION[contactForm.type](contactForm.value.trim())
+      : null;
+    const canSubmitContact =
+      contactForm.value.trim() !== "" && formError === null;
+
+    return (
+      <>
+        {/* Форма добавления / редактирования */}
+        <SWorkspacePanel>
+          <SPanelTitle>
+            {editingContactIndex !== null
+              ? "Редактировать контакт"
+              : "Добавить контакт"}
+          </SPanelTitle>
+          <SField>
+            Тип
+            <SSelect
+              value={contactForm.type}
+              onChange={(e) =>
+                setContactForm((f) => ({
+                  ...f,
+                  type: e.target.value as ContestContactType,
+                  value: "",
+                }))
+              }
+            >
+              {CONTACT_TYPE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </SSelect>
+          </SField>
+          <SField>
+            Значение
+            <SInput
+              value={contactForm.value}
+              placeholder={formOpt?.placeholder ?? ""}
+              onChange={(e) =>
+                setContactForm((f) => ({ ...f, value: e.target.value }))
+              }
+              style={formError ? { borderColor: "#e05" } : undefined}
+            />
+            {formError && (
+              <span style={{ fontSize: 12, color: "#e05", marginTop: 2 }}>
+                {formError}
+              </span>
+            )}
+          </SField>
+          <SField>
+            Заметка (необязательно)
+            <SInput
+              value={contactForm.note}
+              placeholder="По каким вопросам писать сюда"
+              onChange={(e) =>
+                setContactForm((f) => ({ ...f, note: e.target.value }))
+              }
+            />
+          </SField>
+          <SActions>
+            <Button
+              color="violet"
+              loading={updateContest.isPending}
+              disabled={!canSubmitContact}
+              onClick={handleSaveContact}
+            >
+              {editingContactIndex !== null ? "Сохранить" : "Добавить контакт"}
+            </Button>
+            {editingContactIndex !== null && (
+              <Button type="text" color="gray" onClick={resetContactForm}>
+                Отмена
+              </Button>
+            )}
+          </SActions>
+          {actionResult && <SPanelText>{actionResult}</SPanelText>}
+        </SWorkspacePanel>
+
+        {/* Список сохранённых контактов */}
+        <SWorkspacePanel>
+          <SPanelTitle>Контакты организаторов ({contacts.length})</SPanelTitle>
+          <SList>
+            {contacts.map((contact, index) => {
+              const typeLabel =
+                CONTACT_TYPE_OPTIONS.find((o) => o.value === contact.type)
+                  ?.label ?? contact.type;
+              return (
+                <SListItem key={index}>
+                  <div>
+                    <SItemTitle>{typeLabel}</SItemTitle>
+                    <SItemMeta>
+                      {contact.value}
+                      {contact.note && ` · ${contact.note}`}
+                    </SItemMeta>
+                  </div>
+                  <SIconRow>
+                    <SIconButton
+                      title="Изменить"
+                      onClick={() => startContactEdit(index)}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                    </SIconButton>
+                    <SIconButton
+                      title="Удалить"
+                      onClick={() => handleDeleteContact(index)}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        <path d="M10 11v6M14 11v6" />
+                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                      </svg>
+                    </SIconButton>
+                  </SIconRow>
+                </SListItem>
+              );
+            })}
+            {contacts.length === 0 && (
+              <SPanelText>Контакты ещё не добавлены.</SPanelText>
+            )}
+          </SList>
+        </SWorkspacePanel>
+      </>
+    );
+  };
+
   const renderStages = () => (
     <>
       <SWorkspacePanel>
@@ -478,7 +874,9 @@ export const ContestBuilderPage = () => {
         </SPanelTitle>
         <SFormGrid>
           <SField>
-            Название *
+            <span>
+              Название <SRequiredMark>*</SRequiredMark>
+            </span>
             <SInput
               value={stageTitle}
               placeholder="Название этапа"
@@ -486,7 +884,9 @@ export const ContestBuilderPage = () => {
             />
           </SField>
           <SField>
-            Шкала оценивания *
+            <span>
+              Шкала оценивания <SRequiredMark>*</SRequiredMark>
+            </span>
             <SSelect
               value={scoreScale}
               onChange={(e) => setScoreScale(e.target.value as ScoreScale)}
@@ -499,7 +899,9 @@ export const ContestBuilderPage = () => {
             </SSelect>
           </SField>
           <SField>
-            Дедлайн * (МСК)
+            <span>
+              Дедлайн <SRequiredMark>*</SRequiredMark> (МСК)
+            </span>
             <SInput
               type="date"
               value={stageDeadline}
@@ -512,7 +914,9 @@ export const ContestBuilderPage = () => {
             />
           </SField>
           <SField>
-            Отсеивающий этап *
+            <span>
+              Отсеивающий этап <SRequiredMark>*</SRequiredMark>
+            </span>
             <SSelect
               value={stageEliminating ? "true" : "false"}
               onChange={(e) => setStageEliminating(e.target.value === "true")}
@@ -649,79 +1053,83 @@ export const ContestBuilderPage = () => {
   );
 
   const renderTeam = () => (
-    <SWorkspacePanel>
-      <SPanelTitle>Добавить в команду</SPanelTitle>
-      <SFormGrid>
-        <SField>
-          User ID
-          <SInput
-            type="number"
-            value={orgUserId}
-            placeholder="ID пользователя"
-            onChange={(e) => setOrgUserId(e.target.value)}
-          />
-        </SField>
-        <SField>
-          Роль
-          <SSelect
-            value={orgRole}
-            onChange={(e) => setOrgRole(e.target.value as OrganizerRole)}
+    <>
+      <SWorkspacePanel>
+        <SPanelTitle>Добавить в команду</SPanelTitle>
+        <SFormGrid>
+          <SField>
+            User ID
+            <SInput
+              type="number"
+              value={orgUserId}
+              placeholder="ID пользователя"
+              onChange={(e) => setOrgUserId(e.target.value)}
+            />
+          </SField>
+          <SField>
+            Роль
+            <SSelect
+              value={orgRole}
+              onChange={(e) => setOrgRole(e.target.value as OrganizerRole)}
+            >
+              {roleOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </SSelect>
+          </SField>
+        </SFormGrid>
+        <SActions>
+          <Button
+            color="violet"
+            loading={addOrganizer.isPending}
+            disabled={!orgUserId}
+            onClick={() =>
+              addOrganizer.mutate(
+                { contestId, data: { userId: Number(orgUserId), role: orgRole } },
+                { onSuccess: () => setOrgUserId("") },
+              )
+            }
           >
-            {roleOptions.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </SSelect>
-        </SField>
-      </SFormGrid>
-      <SActions>
-        <Button
-          color="violet"
-          loading={addOrganizer.isPending}
-          disabled={!orgUserId}
-          onClick={() =>
-            addOrganizer.mutate(
-              { contestId, data: { userId: Number(orgUserId), role: orgRole } },
-              { onSuccess: () => setOrgUserId("") },
-            )
-          }
-        >
-          Добавить
-        </Button>
-      </SActions>
+            Добавить
+          </Button>
+        </SActions>
+      </SWorkspacePanel>
 
-      <SPanelTitle style={{ marginTop: 8 }}>
-        Команда организаторов ({organizers.data?.organizers?.length ?? 0})
-      </SPanelTitle>
-      <SList>
-        {(organizers.data?.organizers ?? []).map((org) => (
-          <SListItem key={org.id}>
-            <div>
-              <SItemTitle>Пользователь #{org.userId}</SItemTitle>
-              <SItemMeta>{org.role ?? "—"}</SItemMeta>
-            </div>
-            <SActions>
-              {org.role !== "CREATOR" && (
-                <Button
-                  color="gray"
-                  loading={deleteOrganizer.isPending}
-                  onClick={() =>
-                    deleteOrganizer.mutate({ contestId, organizerId: org.id! })
-                  }
-                >
-                  Удалить
-                </Button>
-              )}
-              {org.role === "CREATOR" && <SStatus>Creator</SStatus>}
-            </SActions>
-          </SListItem>
-        ))}
-        {!organizers.data?.organizers?.length && !organizers.isPending && (
-          <SPanelText>Нет данных об организаторах.</SPanelText>
-        )}
-      </SList>
-    </SWorkspacePanel>
+      <SWorkspacePanel>
+        <SPanelTitle>
+          Команда организаторов ({organizers.data?.organizers?.length ?? 0})
+        </SPanelTitle>
+        <SList>
+          {(organizers.data?.organizers ?? []).map((org) => (
+            <SListItem key={org.id}>
+              <div>
+                <SItemTitle>Пользователь #{org.userId}</SItemTitle>
+                <SItemMeta>{org.role ?? "—"}</SItemMeta>
+              </div>
+              <SActions>
+                {org.role !== "CREATOR" && (
+                  <Button
+                    color="gray"
+                    loading={deleteOrganizer.isPending}
+                    onClick={() =>
+                      deleteOrganizer.mutate({ contestId, organizerId: org.id! })
+                    }
+                  >
+                    Удалить
+                  </Button>
+                )}
+                {org.role === "CREATOR" && <SStatus>Creator</SStatus>}
+              </SActions>
+            </SListItem>
+          ))}
+          {!organizers.data?.organizers?.length && !organizers.isPending && (
+            <SPanelText>Нет данных об организаторах.</SPanelText>
+          )}
+        </SList>
+      </SWorkspacePanel>
+    </>
   );
 
   const renderParticipants = () => (
@@ -754,74 +1162,78 @@ export const ContestBuilderPage = () => {
   );
 
   const renderMentoring = () => (
-    <SWorkspacePanel>
-      <SPanelTitle>Назначить ментора</SPanelTitle>
-      <SFormGrid>
-        <SField>
-          Команда
-          <SSelect
-            value={mentorTeamId || ""}
-            onChange={(e) => setMentorTeamId(Number(e.target.value))}
-          >
-            <option value="">— выберите команду —</option>
-            {(teams.data?.teams ?? []).map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name ?? `Команда #${team.id}`}
-              </option>
-            ))}
-          </SSelect>
-        </SField>
-        <SField>
-          User ID ментора
-          <SInput
-            type="number"
-            value={mentorUserId}
-            placeholder="ID пользователя"
-            onChange={(e) => setMentorUserId(e.target.value)}
-          />
-        </SField>
-      </SFormGrid>
-      <SActions>
-        <Button
-          color="violet"
-          loading={assignMentor.isPending}
-          disabled={!mentorTeamId || !mentorUserId}
-          onClick={() =>
-            assignMentor.mutate(
-              { teamId: mentorTeamId, mentorUserId: Number(mentorUserId) },
-              {
-                onSuccess: () => {
-                  handleResult("Ментор назначен");
-                  setMentorUserId("");
-                  setMentorTeamId(0);
+    <>
+      <SWorkspacePanel>
+        <SPanelTitle>Назначить ментора</SPanelTitle>
+        <SFormGrid>
+          <SField>
+            Команда
+            <SSelect
+              value={mentorTeamId || ""}
+              onChange={(e) => setMentorTeamId(Number(e.target.value))}
+            >
+              <option value="">— выберите команду —</option>
+              {(teams.data?.teams ?? []).map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name ?? `Команда #${team.id}`}
+                </option>
+              ))}
+            </SSelect>
+          </SField>
+          <SField>
+            User ID ментора
+            <SInput
+              type="number"
+              value={mentorUserId}
+              placeholder="ID пользователя"
+              onChange={(e) => setMentorUserId(e.target.value)}
+            />
+          </SField>
+        </SFormGrid>
+        <SActions>
+          <Button
+            color="violet"
+            loading={assignMentor.isPending}
+            disabled={!mentorTeamId || !mentorUserId}
+            onClick={() =>
+              assignMentor.mutate(
+                { teamId: mentorTeamId, mentorUserId: Number(mentorUserId) },
+                {
+                  onSuccess: () => {
+                    handleResult("Ментор назначен");
+                    setMentorUserId("");
+                    setMentorTeamId(0);
+                  },
                 },
-              },
-            )
-          }
-        >
-          Назначить
-        </Button>
-      </SActions>
-      {actionResult && <SPanelText>{actionResult}</SPanelText>}
+              )
+            }
+          >
+            Назначить
+          </Button>
+        </SActions>
+        {actionResult && <SPanelText>{actionResult}</SPanelText>}
+      </SWorkspacePanel>
 
-      <SPanelTitle style={{ marginTop: 8 }}>
-        Команды конкурса ({teams.data?.teams?.length ?? 0})
-      </SPanelTitle>
-      <SList>
-        {(teams.data?.teams ?? []).map((team) => (
-          <SListItem key={team.id}>
-            <div>
-              <SItemTitle>{team.name ?? `Команда #${team.id}`}</SItemTitle>
-              <SItemMeta>{team.memberIds?.length ?? 0} участников</SItemMeta>
-            </div>
-            <SStatus>#{team.id}</SStatus>
-          </SListItem>
-        ))}
-        {!teams.data?.teams?.length && !teams.isPending && (
-          <SPanelText>Команды ещё не созданы.</SPanelText>
-        )}
-      </SList>
-    </SWorkspacePanel>
+      <SWorkspacePanel>
+        <SPanelTitle>
+          Команды конкурса ({teams.data?.teams?.length ?? 0})
+        </SPanelTitle>
+        <SList>
+          {(teams.data?.teams ?? []).map((team) => (
+            <SListItem key={team.id}>
+              <div>
+                <SItemTitle>{team.name ?? `Команда #${team.id}`}</SItemTitle>
+                <SItemMeta>{team.memberIds?.length ?? 0} участников</SItemMeta>
+              </div>
+              <SStatus>#{team.id}</SStatus>
+            </SListItem>
+          ))}
+          {!teams.data?.teams?.length && !teams.isPending && (
+            <SPanelText>Команды ещё не созданы</SPanelText>
+          )}
+        </SList>
+      </SWorkspacePanel>
+    </>
   );
 
   const renderExpertise = () => (
@@ -935,6 +1347,7 @@ export const ContestBuilderPage = () => {
 
       <SWorkspaceGrid>
         {activeTab === "main" && renderMain()}
+        {activeTab === "contacts" && renderContacts()}
         {activeTab === "stages" && renderStages()}
         {activeTab === "team" && renderTeam()}
         {activeTab === "participants" && renderParticipants()}

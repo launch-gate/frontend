@@ -58,15 +58,15 @@ export interface IParticipantContestRegistrationResponse {
 
 export interface IContestParticipantResponse {
   userId?: number;
-  fullName?: string;
-  nickname?: string;
-  bio?: string;
+  fullName?: string | null;
+  nickname?: string | null;
+  bio?: string | null;
   registeredAt?: string;
 }
 
 export interface IContestParticipantOrganizerResponse
   extends IContestParticipantResponse {
-  email?: string;
+  email?: string | null;
 }
 
 export interface IContestParticipantListResponse {

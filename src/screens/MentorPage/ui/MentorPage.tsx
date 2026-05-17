@@ -12,7 +12,6 @@ import {
   useGetStageSubmissionMentorComments,
 } from "@/entities/mentor";
 import { Button } from "@/shared/components";
-import { routes } from "@/shared/config";
 import {
   SActions,
   SField,
@@ -77,7 +76,7 @@ export const MentorPage = () => {
         <SWorkspaceTitle>Кабинет ментора</SWorkspaceTitle>
         <SWorkspaceSubtitle>
           Команды ментора, календарь созвонов, чтение submission команды и
-          комментарии к сдачам.
+          комментарии к сдачам
         </SWorkspaceSubtitle>
       </SWorkspaceHeader>
 
@@ -90,7 +89,7 @@ export const MentorPage = () => {
                 <div>
                   <SItemTitle>Команда #{assignment.teamId ?? "-"}</SItemTitle>
                   <SItemMeta>
-                    Конкурс #{assignment.contestId ?? "-"} · Mentor #
+                    Конкурс #{assignment.contestId ?? "-"} · Ментор #
                     {assignment.mentorId ?? "-"}
                   </SItemMeta>
                 </div>
@@ -102,7 +101,7 @@ export const MentorPage = () => {
               </SListItem>
             ))}
             {!(teams.data?.assignments ?? []).length && !teams.isPending && (
-              <SPanelText>Назначений на команды нет.</SPanelText>
+              <SPanelText>Назначений на команды нет</SPanelText>
             )}
           </SList>
         </SWorkspacePanel>
@@ -119,21 +118,21 @@ export const MentorPage = () => {
               />
             </SField>
             <SField>
-              Link
+              Ссылка
               <SInput
                 value={link}
                 onChange={(event) => setLink(event.target.value)}
               />
             </SField>
             <SField>
-              Starts at
+              Начало
               <SInput
                 value={startsAt}
                 onChange={(event) => setStartsAt(event.target.value)}
               />
             </SField>
             <SField>
-              Ends at
+              Конец
               <SInput
                 value={endsAt}
                 onChange={(event) => setEndsAt(event.target.value)}
@@ -141,7 +140,7 @@ export const MentorPage = () => {
             </SField>
           </SFormGrid>
           <SField>
-            Notes
+            Заметки
             <STextarea
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
@@ -191,7 +190,7 @@ export const MentorPage = () => {
               </SListItem>
             ))}
             {!(calls.data?.calls ?? []).length && !calls.isPending && (
-              <SPanelText>Созвоны не запланированы.</SPanelText>
+              <SPanelText>Созвоны не запланированы</SPanelText>
             )}
           </SList>
         </SPanelWide>
@@ -199,7 +198,7 @@ export const MentorPage = () => {
         <SWorkspacePanel>
           <SPanelTitle>Submission команды</SPanelTitle>
           <SField>
-            Stage submission ID
+            Этап submission ID
             <SInput
               type="number"
               value={stageSubmissionId}

@@ -68,15 +68,15 @@ export const participantContestRegistrationSchema = object({
 
 export const contestParticipantSchema = object({
   userId: number().integer().optional(),
-  fullName: string().optional(),
-  nickname: string().optional(),
-  bio: string().optional(),
+  fullName: string().nullable().optional(),
+  nickname: string().nullable().optional(),
+  bio: string().nullable().optional(),
   registeredAt: string().optional(),
 });
 
 export const contestParticipantOrganizerSchema = contestParticipantSchema.shape(
   {
-    email: string().optional(),
+    email: string().nullable().optional(),
   },
 );
 

@@ -21,12 +21,10 @@ import {
   SPanelText,
   SPanelTitle,
   SSelect,
-  STextarea,
   SWorkspaceGrid,
   SWorkspaceHeader,
   SWorkspacePage,
   SWorkspacePanel,
-  SWorkspaceSubtitle,
   SWorkspaceTitle,
 } from "@/screens/AppWorkspace";
 
@@ -64,10 +62,7 @@ export const AuthPage = () => {
   const [password, setPassword] = useState("secret123");
   const [fullName, setFullName] = useState("");
   const [nickname, setNickname] = useState("");
-  const [bio, setBio] = useState("");
   const [accountType, setAccountType] = useState<AccountType>("PARTICIPANT");
-  const [contactType, setContactType] = useState<UserContactType>("TELEGRAM");
-  const [contactValue, setContactValue] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -90,8 +85,8 @@ export const AuthPage = () => {
     setErrorMessage(null);
     setMessage(
       mode === "login"
-        ? "Вы вошли в аккаунт."
-        : "Аккаунт создан, токен сохранён.",
+        ? "Вы вошли в аккаунт"
+        : "Аккаунт создан, токен сохранён",
     );
   };
 
@@ -132,16 +127,8 @@ export const AuthPage = () => {
         email,
         password,
         accountType,
-        fullName,
-        nickname,
-        bio,
-        contacts: [
-          {
-            type: contactType,
-            value: contactValue.trim(),
-            primaryContact: true,
-          },
-        ],
+        fullName: fullName || undefined,
+        nickname: nickname || undefined,
       },
       {
         onSuccess: handleSuccess,
@@ -211,16 +198,6 @@ export const AuthPage = () => {
 
             {mode === "register" && (
               <>
-                <SField>
-                  <span>
-                    ФИО <SRequiredMark>*</SRequiredMark>
-                  </span>
-                  <SInput
-                    required
-                    value={fullName}
-                    onChange={(event) => setFullName(event.target.value)}
-                  />
-                </SField>
                 <SFormGrid>
                   <SField>
                     <span>
@@ -237,49 +214,18 @@ export const AuthPage = () => {
                     </SSelect>
                   </SField>
                   <SField>
-                    <span>
-                      Никнейм <SRequiredMark>*</SRequiredMark>
-                    </span>
+                    <span>Никнейм</span>
                     <SInput
-                      required
                       value={nickname}
                       onChange={(event) => setNickname(event.target.value)}
                     />
                   </SField>
-                  <SField>
-                    <span>
-                      Контакт <SRequiredMark>*</SRequiredMark>
-                    </span>
-                    <SSelect
-                      value={contactType}
-                      onChange={(event) =>
-                        setContactType(event.target.value as UserContactType)
-                      }
-                    >
-                      <option value="TELEGRAM">Telegram</option>
-                      <option value="VK">VK</option>
-                      <option value="EMAIL">Email</option>
-                    </SSelect>
-                  </SField>
-                  <SField>
-                    <span>
-                      Значение контакта <SRequiredMark>*</SRequiredMark>
-                    </span>
-                    <SInput
-                      required
-                      value={contactValue}
-                      onChange={(event) => setContactValue(event.target.value)}
-                    />
-                  </SField>
                 </SFormGrid>
                 <SField>
-                  <span>
-                    Bio <SRequiredMark>*</SRequiredMark>
-                  </span>
-                  <STextarea
-                    required
-                    value={bio}
-                    onChange={(event) => setBio(event.target.value)}
+                  <span>ФИО</span>
+                  <SInput
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
                   />
                 </SField>
               </>
@@ -322,7 +268,7 @@ export const AuthPage = () => {
                 <span>Никнейм</span>
                 <SAuthValue>{profileData.nickname ?? "-"}</SAuthValue>
               </SAuthProfileGrid>
-              <SPanelText>{profileData.bio ?? "Bio не заполнено."}</SPanelText>
+              <SPanelText>{profileData.bio ?? "Bio не заполнено"}</SPanelText>
               <SPanelText>
                 {(profileData.contacts ?? [])
                   .map((contact) =>
@@ -331,7 +277,7 @@ export const AuthPage = () => {
                       : null,
                   )
                   .filter(Boolean)
-                  .join(", ") || "Контакты не указаны."}
+                  .join(", ") || "Контакты не указаны"}
               </SPanelText>
               <SActions>
                 <Link href={routes.PROFILE_PAGE}>
@@ -341,7 +287,7 @@ export const AuthPage = () => {
             </>
           ) : (
             <SPanelText>
-              После входа или регистрации здесь появятся данные профиля.
+              После входа или регистрации здесь появятся данные профиля
             </SPanelText>
           )}
         </SWorkspacePanel>

@@ -21,9 +21,9 @@ export const userProfileSchema = object({
   accountType: mixed<AccountType>()
     .oneOf(["ORGANIZER", "PARTICIPANT"])
     .optional(),
-  fullName: string().optional(),
-  nickname: string().optional(),
-  bio: string().optional(),
+  fullName: string().nullable().optional(),
+  nickname: string().nullable().optional(),
+  bio: string().nullable().optional(),
   contacts: array().of(contactResponseSchema).optional(),
 }).required();
 

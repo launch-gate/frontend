@@ -3,19 +3,29 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 import {
   ContestStatus,
   ParticipationMode,
+  getContestParticipantsKey,
   useGetContest,
   useGetContestParticipants,
   useRegisterContest,
 } from "@/entities/contest";
 import { useGetContestStages } from "@/entities/stage";
 import {
+  ITeamJoinRequestResponse,
+  ITeamResponse,
+  TeamJoinRequestStatus,
+  getContestTeamsKey,
+  getTeamJoinRequestsKey,
+  useApproveTeamJoinRequest,
   useCreateContestTeam,
   useGetContestTeams,
+  useGetTeamJoinRequests,
   useJoinTeamByInvite,
+  useRejectTeamJoinRequest,
   useRequestJoinTeam,
 } from "@/entities/team";
 import { useGetUserProfile } from "@/entities/user";
@@ -92,48 +102,308 @@ const formatDateTime = (date?: string) => {
 
 // ─── Контакты ──────────────────────────────────────────────────────────────
 
-const contactLabelMap: Record<string, string> = {
-  "program office": "Офис",
-  "telegram support": "Поддержка в Telegram",
-  "technical issues": "Техподдержка",
-  "office hours": "Часы работы",
-};
-const translateContactLabel = (label: string) =>
-  contactLabelMap[label.toLowerCase()] ?? label;
+type ContestContactType = "TELEGRAM" | "EMAIL" | "PHONE" | "VK" | "WEBSITE";
 
-const dayTranslations: Record<string, string> = {
-  mondays: "пн",
-  monday: "пн",
-  tuesdays: "вт",
-  tuesday: "вт",
-  wednesdays: "ср",
-  wednesday: "ср",
-  thursdays: "чт",
-  thursday: "чт",
-  fridays: "пт",
-  friday: "пт",
-  saturdays: "сб",
-  saturday: "сб",
-  sundays: "вс",
-  sunday: "вс",
-  and: "и",
+interface ContestContact {
+  type: ContestContactType;
+  value: string;
+  note?: string;
+}
+
+const CONTACT_TYPE_LABELS: Record<ContestContactType, string> = {
+  TELEGRAM: "Telegram",
+  EMAIL: "Email",
+  PHONE: "Телефон",
+  VK: "VK",
+  WEBSITE: "Сайт",
 };
 
-const addHours = (time: string, hours: number) => {
-  const [h, m] = time.split(":").map(Number);
-  return `${String((h + hours) % 24).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+const parseContacts = (raw: string): ContestContact[] => {
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((c) => c.type && c.value);
+  } catch {
+    return [];
+  }
 };
 
-const processOfficeHours = (value: string) =>
-  value
-    .replace(
-      /\b(mondays?|tuesdays?|wednesdays?|thursdays?|fridays?|saturdays?|sundays?|and)\b/gi,
-      (m) => dayTranslations[m.toLowerCase()] ?? m,
-    )
-    .replace(
-      /(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s*UTC/gi,
-      (_, t1, t2) => `${addHours(t1, 3)}–${addHours(t2, 3)} по МСК`,
+const ContactsSection = ({ contacts }: { contacts: string }) => {
+  const items = parseContacts(contacts);
+  if (!items.length) return null;
+
+  return (
+    <SContactsSection>
+      {items.map((contact, i) => {
+        const label = CONTACT_TYPE_LABELS[contact.type] ?? contact.type;
+        const value = contact.value.trim();
+
+        const renderValue = () => {
+          switch (contact.type) {
+            case "TELEGRAM":
+              return (
+                <SContactLink
+                  href={`https://t.me/${value.startsWith("@") ? value.slice(1) : value}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {value}
+                </SContactLink>
+              );
+            case "EMAIL":
+              return <SContactLink href={`mailto:${value}`}>{value}</SContactLink>;
+            case "PHONE":
+              return (
+                <SContactLink href={`tel:${value.replace(/[\s\-()]/g, "")}`}>
+                  {value}
+                </SContactLink>
+              );
+            case "VK":
+              return (
+                <SContactLink
+                  href={/^https?:\/\//.test(value) ? value : `https://vk.com/${value.replace(/^@/, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {value}
+                </SContactLink>
+              );
+            case "WEBSITE":
+              return (
+                <SContactLink href={value} target="_blank" rel="noopener noreferrer">
+                  {value}
+                </SContactLink>
+              );
+            default:
+              return <SContactValue>{value}</SContactValue>;
+          }
+        };
+
+        return (
+          <SContactRow key={i}>
+            <SContactLabel>{label}:</SContactLabel>
+            <SContactValue>
+              {renderValue()}
+              {contact.note && <> · {contact.note}</>}
+            </SContactValue>
+          </SContactRow>
+        );
+      })}
+    </SContactsSection>
+  );
+};
+
+// ─── Заявки в команду ──────────────────────────────────────────────────────
+
+const JOIN_REQUEST_STATUS_LABELS: Record<TeamJoinRequestStatus, string> = {
+  PENDING: "На рассмотрении",
+  APPROVED: "Принята",
+  REJECTED: "Отклонена",
+};
+
+const JOIN_REQUEST_STATUS_COLORS: Record<TeamJoinRequestStatus, string> = {
+  PENDING: "#9a7b00",
+  APPROVED: "#137333",
+  REJECTED: "#c5221f",
+};
+
+const PENDING_REQUESTS_STORAGE_KEY = (contestId: number, userId: number) =>
+  `pendingTeamJoinRequests:${contestId}:${userId}`;
+
+const REGISTERED_STORAGE_KEY = (contestId: number, userId: number) =>
+  `contestRegistered:${contestId}:${userId}`;
+
+const readRegisteredFlag = (contestId: number, userId: number): boolean => {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(REGISTERED_STORAGE_KEY(contestId, userId)) === "1";
+};
+
+const writeRegisteredFlag = (contestId: number, userId: number, value: boolean) => {
+  if (typeof window === "undefined") return;
+  const key = REGISTERED_STORAGE_KEY(contestId, userId);
+  if (value) window.localStorage.setItem(key, "1");
+  else window.localStorage.removeItem(key);
+};
+
+interface PendingJoinRequest {
+  teamId: number;
+  joinRequestId: number;
+}
+
+const readPendingRequests = (
+  contestId: number,
+  userId: number,
+): PendingJoinRequest[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(
+      PENDING_REQUESTS_STORAGE_KEY(contestId, userId),
     );
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const writePendingRequests = (
+  contestId: number,
+  userId: number,
+  list: PendingJoinRequest[],
+) => {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(
+    PENDING_REQUESTS_STORAGE_KEY(contestId, userId),
+    JSON.stringify(list),
+  );
+};
+
+/**
+ * Панель лидера: список входящих join-request'ов для одной команды
+ * с действиями approve / reject.
+ */
+const TeamLeaderRequestsPanel = ({
+  team,
+  contestId,
+}: {
+  team: ITeamResponse;
+  contestId: number;
+}) => {
+  const teamId = team.id ?? 0;
+  const queryClient = useQueryClient();
+  const requests = useGetTeamJoinRequests(teamId);
+  const approve = useApproveTeamJoinRequest();
+  const reject = useRejectTeamJoinRequest();
+
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const refetchAfterMutation = () => {
+    queryClient.invalidateQueries({ queryKey: [getTeamJoinRequestsKey, teamId] });
+    queryClient.invalidateQueries({ queryKey: [getContestTeamsKey, contestId] });
+  };
+
+  const handleError = (error: Error & { details?: { error?: { message?: string } } }) => {
+    setActionError(error.details?.error?.message ?? "Не удалось выполнить действие");
+  };
+
+  const list = requests.data?.requests ?? [];
+  const pending = list.filter((r) => r.status === "PENDING");
+  const decided = list.filter((r) => r.status !== "PENDING");
+
+  return (
+    <SWorkspacePanel>
+      <SPanelTitle>
+        Заявки в команду «{team.name ?? `#${team.id}`}»
+        {pending.length > 0 ? ` · ожидают: ${pending.length}` : ""}
+      </SPanelTitle>
+
+      {requests.isError && (
+        <SPanelText>Не удалось загрузить заявки.</SPanelText>
+      )}
+
+      {!requests.isPending && list.length === 0 && (
+        <SPanelText>Входящих заявок пока нет.</SPanelText>
+      )}
+
+      <SList>
+        {pending.map((req) => (
+          <SListItem key={req.id}>
+            <div>
+              <SItemTitle>
+                {req.participantFullName ??
+                  req.participantNickname ??
+                  `Участник #${req.participantId}`}
+              </SItemTitle>
+              <SItemMeta>
+                Подана {formatDateTime(req.createdAt)}
+                {req.participantNickname && req.participantFullName
+                  ? ` · @${req.participantNickname}`
+                  : ""}
+              </SItemMeta>
+            </div>
+            <SStatus
+              style={{
+                color: JOIN_REQUEST_STATUS_COLORS.PENDING,
+              }}
+            >
+              {JOIN_REQUEST_STATUS_LABELS.PENDING}
+            </SStatus>
+            <SActions>
+              <Button
+                color="violet"
+                loading={approve.isPending && approve.variables?.requestId === req.id}
+                disabled={!req.id}
+                onClick={() =>
+                  req.id &&
+                  approve.mutate(
+                    { requestId: req.id },
+                    { onSuccess: refetchAfterMutation, onError: handleError },
+                  )
+                }
+              >
+                Одобрить
+              </Button>
+              <Button
+                color="gray"
+                loading={reject.isPending && reject.variables?.requestId === req.id}
+                disabled={!req.id}
+                onClick={() =>
+                  req.id &&
+                  reject.mutate(
+                    { requestId: req.id },
+                    { onSuccess: refetchAfterMutation, onError: handleError },
+                  )
+                }
+              >
+                Отклонить
+              </Button>
+            </SActions>
+          </SListItem>
+        ))}
+
+        {decided.map((req) => (
+          <SListItem key={req.id}>
+            <div>
+              <SItemTitle>
+                {req.participantFullName ??
+                  req.participantNickname ??
+                  `Участник #${req.participantId}`}
+              </SItemTitle>
+              <SItemMeta>{formatDateTime(req.createdAt)}</SItemMeta>
+            </div>
+            <SStatus
+              style={{
+                color: req.status
+                  ? JOIN_REQUEST_STATUS_COLORS[req.status]
+                  : undefined,
+              }}
+            >
+              {req.status ? JOIN_REQUEST_STATUS_LABELS[req.status] : "—"}
+            </SStatus>
+          </SListItem>
+        ))}
+      </SList>
+
+      {actionError && (
+        <SPanelText style={{ color: "red" }}>{actionError}</SPanelText>
+      )}
+    </SWorkspacePanel>
+  );
+};
+
+/**
+ * Резолвит локально сохранённые pending-заявки участника к актуальному
+ * состоянию команд: если участник появился в memberIds — заявка APPROVED,
+ * иначе считаем её всё ещё PENDING. REJECTED здесь определить нельзя.
+ */
+const resolveParticipantJoinStatus = (
+  team: ITeamResponse | undefined,
+  userId: number | undefined,
+): TeamJoinRequestStatus => {
+  if (!team || !userId) return "PENDING";
+  return team.memberIds?.includes(userId) ? "APPROVED" : "PENDING";
+};
 
 // ─── Состояние кнопки регистрации ──────────────────────────────────────────
 
@@ -159,75 +429,6 @@ const getRegButtonState = (
   return "available";
 };
 
-// ─── Компонент контактов ────────────────────────────────────────────────────
-
-const ContactsSection = ({ contacts }: { contacts: string }) => (
-  <SContactsSection>
-    {contacts
-      .split(/\\n|\n/)
-      .filter(Boolean)
-      .map((line, i) => {
-        const colonIdx = line.indexOf(": ");
-        const rawLabel = colonIdx !== -1 ? line.slice(0, colonIdx) : null;
-        const label = rawLabel ? translateContactLabel(rawLabel) : null;
-        const rawValue = colonIdx !== -1 ? line.slice(colonIdx + 2) : line;
-        const value =
-          rawLabel?.toLowerCase() === "office hours"
-            ? processOfficeHours(rawValue)
-            : rawValue;
-
-        const nameEmail = value.match(/^(.+?)\s*<([^>]+@[^>]+)>$/);
-        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-        const isTelegram = value.startsWith("@");
-        const isUrl = /^https?:\/\//.test(value);
-
-        const renderValue = () => {
-          if (nameEmail)
-            return (
-              <SContactValue>
-                {nameEmail[1]} <span style={{ fontWeight: 400 }}>•</span>{" "}
-                <SContactLink href={`mailto:${nameEmail[2]}`}>
-                  {nameEmail[2]}
-                </SContactLink>
-              </SContactValue>
-            );
-          if (isEmail)
-            return (
-              <SContactLink href={`mailto:${value}`}>{value}</SContactLink>
-            );
-          if (isTelegram)
-            return (
-              <SContactLink
-                href={`https://t.me/${value.slice(1)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {value}
-              </SContactLink>
-            );
-          if (isUrl)
-            return (
-              <SContactLink
-                href={value}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {value}
-              </SContactLink>
-            );
-          return <SContactValue>{value}</SContactValue>;
-        };
-
-        return (
-          <SContactRow key={i}>
-            {label && <SContactLabel>{label}:</SContactLabel>}
-            {renderValue()}
-          </SContactRow>
-        );
-      })}
-  </SContactsSection>
-);
-
 // ─── Главный компонент ─────────────────────────────────────────────────────
 
 export const ContestPublicPage = () => {
@@ -235,11 +436,14 @@ export const ContestPublicPage = () => {
   const contestId = Number(params.contestId ?? params.id);
   const isContestIdValid = Number.isFinite(contestId) && contestId > 0;
 
+  const queryClient = useQueryClient();
   const contest = useGetContest(contestId);
   const stages = useGetContestStages(contestId, isContestIdValid);
   const participants = useGetContestParticipants(contestId, isContestIdValid);
   const teams = useGetContestTeams(contestId, isContestIdValid);
   const profile = useGetUserProfile(isContestIdValid);
+
+  const [justRegistered, setJustRegistered] = useState(false);
 
   const registerContest = useRegisterContest();
   const createTeam = useCreateContestTeam();
@@ -248,6 +452,38 @@ export const ContestPublicPage = () => {
 
   const [teamName, setTeamName] = useState("");
   const [inviteToken, setInviteToken] = useState("");
+  const [pendingRequests, setPendingRequests] = useState<PendingJoinRequest[]>(
+    [],
+  );
+
+  const myUserId = profile.data?.id;
+
+  // Восстанавливаем список pending-заявок и флаг регистрации из localStorage.
+  useEffect(() => {
+    if (!isContestIdValid || !myUserId) return;
+    setPendingRequests(readPendingRequests(contestId, myUserId));
+    if (readRegisteredFlag(contestId, myUserId)) setJustRegistered(true);
+  }, [contestId, isContestIdValid, myUserId]);
+
+  // Чистим из локального хранилища те заявки, которые уже подтверждены
+  // (участник присутствует в memberIds команды). REJECTED локально не виден,
+  // но при ручной отмене лидером запись просто останется висеть PENDING до
+  // повторного действия пользователя — это компромисс из-за отсутствия
+  // эндпоинта «мои исходящие заявки».
+  useEffect(() => {
+    if (!myUserId || !isContestIdValid || pendingRequests.length === 0) return;
+    const teamsById = new Map(
+      (teams.data?.teams ?? []).map((t) => [t.id, t] as const),
+    );
+    const stillPending = pendingRequests.filter((req) => {
+      const team = teamsById.get(req.teamId);
+      return resolveParticipantJoinStatus(team, myUserId) === "PENDING";
+    });
+    if (stillPending.length !== pendingRequests.length) {
+      setPendingRequests(stillPending);
+      writePendingRequests(contestId, myUserId, stillPending);
+    }
+  }, [teams.data?.teams, pendingRequests, myUserId, contestId, isContestIdValid]);
 
   const setLabels = useBreadcrumbStore((s) => s.setLabels);
   const clearLabels = useBreadcrumbStore((s) => s.clearLabels);
@@ -278,8 +514,9 @@ export const ContestPublicPage = () => {
   const isRegistered = useMemo(() => {
     const myId = profile.data?.id;
     if (!myId) return false;
+    if (justRegistered) return true;
     return participantList.some((p) => p.userId === myId);
-  }, [profile.data?.id, participantList]);
+  }, [profile.data?.id, participantList, justRegistered]);
 
   const regButtonState = getRegButtonState(
     contest.data?.status,
@@ -428,13 +665,51 @@ export const ContestPublicPage = () => {
                       {
                         onSuccess: (data) => {
                           setActionError(null);
+                          setJustRegistered(true);
+                          if (myUserId) writeRegisteredFlag(contestId, myUserId, true);
                           setActionResult(
                             data.registrationId
                               ? `Вы зарегистрированы (заявка #${data.registrationId})`
                               : "Вы успешно зарегистрированы",
                           );
+                          queryClient.invalidateQueries({
+                            queryKey: [getContestParticipantsKey, contestId],
+                          });
+                          queryClient.invalidateQueries({
+                            queryKey: [getContestTeamsKey, contestId],
+                          });
                         },
-                        onError: handleError,
+                        onError: (error) => {
+                          const status = (
+                            error as unknown as {
+                              details?: { status?: number };
+                            }
+                          ).details?.status;
+                          // 409 = заявка уже подана; считаем, что регистрация
+                          // прошла ранее и просто разворачиваем UI команд.
+                          if (status === 409) {
+                            setActionError(null);
+                            setJustRegistered(true);
+                            if (myUserId)
+                              writeRegisteredFlag(contestId, myUserId, true);
+                            setActionResult("Вы уже зарегистрированы на конкурс");
+                            queryClient.invalidateQueries({
+                              queryKey: [getContestParticipantsKey, contestId],
+                            });
+                            queryClient.invalidateQueries({
+                              queryKey: [getContestTeamsKey, contestId],
+                            });
+                            return;
+                          }
+                          handleError(
+                            error as Error & {
+                              details?: {
+                                error?: { message?: string };
+                                status?: number;
+                              };
+                            },
+                          );
+                        },
                       },
                     )
                   }
@@ -555,21 +830,35 @@ export const ContestPublicPage = () => {
                         color="gray"
                         loading={requestJoin.isPending}
                         disabled={!selectedTeamId}
-                        onClick={() =>
+                        onClick={() => {
+                          const teamIdForRequest = selectedTeamId;
                           requestJoin.mutate(
-                            { teamId: selectedTeamId },
+                            { teamId: teamIdForRequest },
                             {
-                              onSuccess: () => {
+                              onSuccess: (data) => {
                                 setActionError(null);
                                 setActionResult(
                                   "Заявка на вступление отправлена — ждите ответа лидера",
                                 );
                                 setSelectedTeamId(0);
+                                if (data?.joinRequestId && myUserId) {
+                                  const next = [
+                                    ...pendingRequests.filter(
+                                      (r) => r.teamId !== teamIdForRequest,
+                                    ),
+                                    {
+                                      teamId: teamIdForRequest,
+                                      joinRequestId: data.joinRequestId,
+                                    },
+                                  ];
+                                  setPendingRequests(next);
+                                  writePendingRequests(contestId, myUserId, next);
+                                }
                               },
                               onError: handleError,
                             },
-                          )
-                        }
+                          );
+                        }}
                       >
                         Подать заявку
                       </Button>
@@ -668,27 +957,89 @@ export const ContestPublicPage = () => {
           <SWorkspacePanel>
             <SPanelTitle>Команды ({teamList.length})</SPanelTitle>
             <SList>
-              {teamList.map((team) => (
-                <SListItem key={team.id}>
-                  <div>
-                    <SItemTitle>
-                      {team.name ?? `Команда #${team.id}`}
-                    </SItemTitle>
-                    <SItemMeta>
-                      {team.memberIds?.length ?? 0} участник
-                      {(team.memberIds?.length ?? 0) === 1
-                        ? ""
-                        : (team.memberIds?.length ?? 0) < 5
-                          ? "а"
-                          : "ов"}
-                    </SItemMeta>
-                  </div>
-                  <SStatus>#{team.id}</SStatus>
-                </SListItem>
-              ))}
+              {teamList.map((team) => {
+                const isLeader =
+                  myUserId !== undefined && team.leaderId === myUserId;
+                const isMember =
+                  myUserId !== undefined &&
+                  team.memberIds?.includes(myUserId);
+                return (
+                  <SListItem key={team.id}>
+                    <div>
+                      <SItemTitle>
+                        {team.name ?? `Команда #${team.id}`}
+                        {isLeader ? " · вы лидер" : ""}
+                        {!isLeader && isMember ? " · вы в команде" : ""}
+                      </SItemTitle>
+                      <SItemMeta>
+                        {team.memberIds?.length ?? 0} участник
+                        {(team.memberIds?.length ?? 0) === 1
+                          ? ""
+                          : (team.memberIds?.length ?? 0) < 5
+                            ? "а"
+                            : "ов"}
+                      </SItemMeta>
+                    </div>
+                    <SStatus>#{team.id}</SStatus>
+                  </SListItem>
+                );
+              })}
             </SList>
           </SWorkspacePanel>
         )}
+
+        {/* ── Мои заявки (визуализация PENDING / APPROVED для участника) ── */}
+        {!isOrganizer && isTeamContest && pendingRequests.length > 0 && (
+          <SWorkspacePanel>
+            <SPanelTitle>
+              Мои заявки на вступление ({pendingRequests.length})
+            </SPanelTitle>
+            <SList>
+              {pendingRequests.map((req) => {
+                const team = teamList.find((t) => t.id === req.teamId);
+                const status = resolveParticipantJoinStatus(team, myUserId);
+                return (
+                  <SListItem key={req.joinRequestId}>
+                    <div>
+                      <SItemTitle>
+                        {team?.name ?? `Команда #${req.teamId}`}
+                      </SItemTitle>
+                      <SItemMeta>
+                        Заявка #{req.joinRequestId}
+                        {status === "APPROVED"
+                          ? " · вы приняты в команду"
+                          : " · ждёт ответа лидера"}
+                      </SItemMeta>
+                    </div>
+                    <SStatus
+                      style={{ color: JOIN_REQUEST_STATUS_COLORS[status] }}
+                    >
+                      {JOIN_REQUEST_STATUS_LABELS[status]}
+                    </SStatus>
+                  </SListItem>
+                );
+              })}
+            </SList>
+            <SPanelText>
+              Статус обновляется автоматически: как только лидер примет заявку,
+              вы появитесь в составе команды.
+            </SPanelText>
+          </SWorkspacePanel>
+        )}
+
+        {/* ── Панель лидера: заявки в каждую команду, где я лидер ── */}
+        {!isOrganizer &&
+          isTeamContest &&
+          myUserId !== undefined &&
+          teamList
+            .filter((team) => team.leaderId === myUserId && team.id)
+            .map((team) => (
+              <TeamLeaderRequestsPanel
+                key={team.id}
+                team={team}
+                contestId={contestId}
+              />
+            ))}
       </SWorkspaceGrid>
     </SWorkspacePage>
   );

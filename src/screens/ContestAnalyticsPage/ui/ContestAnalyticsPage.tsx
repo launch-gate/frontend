@@ -9,9 +9,9 @@ import {
   useCreateCustomContestExport,
   useExportContestRanking,
   useGetContestAnalytics,
+  useGetContest,
 } from "@/entities/contest";
 import { Button } from "@/shared/components";
-import { routes } from "@/shared/config";
 import {
   SActions,
   SField,
@@ -47,6 +47,7 @@ export const ContestAnalyticsPage = () => {
   const params = useParams<{ contestId?: string }>();
   const contestId = Number(params.contestId);
   const analytics = useGetContestAnalytics(contestId);
+  const contest = useGetContest(contestId);
   const exportRanking = useExportContestRanking();
   const createCustomExport = useCreateCustomContestExport();
 
@@ -57,25 +58,12 @@ export const ContestAnalyticsPage = () => {
   return (
     <SWorkspacePage>
       <SWorkspaceHeader>
-        <Link href={routes.ORGANIZER_PAGE}>
-          <Button type="text" color="gray">
-            ← Панель организатора
-          </Button>
-        </Link>
         <SWorkspaceTitle>
-          Аналитика конкурса #{Number.isFinite(contestId) ? contestId : "-"}
+          Аналитика конкурса {contest.data?.title && ` «${contest.data.title}»`}
         </SWorkspaceTitle>
         <SWorkspaceSubtitle>
-          Метрики конкурса, экспорт рейтинга и создание кастомной выгрузки.
+          Метрики конкурса, экспорт рейтинга и создание кастомной выгрузки
         </SWorkspaceSubtitle>
-        <SActions>
-          <Link href={`/organizer/contests/${contestId}`}>
-            <Button>Настройки конкурса</Button>
-          </Link>
-          <Link href={routes.ORGANIZER_PAGE}>
-            <Button>Все конкурсы</Button>
-          </Link>
-        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>
@@ -142,7 +130,7 @@ export const ContestAnalyticsPage = () => {
                         blob,
                         `contest-${contestId}-ranking.${format.toLowerCase()}`,
                       );
-                      setActionResult("Экспорт рейтинга сформирован.");
+                      setActionResult("Экспорт рейтинга сформирован");
                     },
                     onError: (error) => setActionResult(error.message),
                   },
@@ -207,7 +195,7 @@ export const ContestAnalyticsPage = () => {
 
         <SWorkspacePanel>
           <SPanelTitle>Результат</SPanelTitle>
-          <SPanelText>{actionResult ?? "Действий пока не было."}</SPanelText>
+          <SPanelText>{actionResult ?? "Действий пока не было"}</SPanelText>
         </SWorkspacePanel>
       </SWorkspaceGrid>
     </SWorkspacePage>

@@ -27,8 +27,8 @@ export interface ITeamJoinRequestResponse {
   id?: number;
   teamId?: number;
   participantId?: number;
-  participantFullName?: string;
-  participantNickname?: string;
+  participantFullName?: string | null;
+  participantNickname?: string | null;
   status?: TeamJoinRequestStatus;
   createdAt?: string;
 }

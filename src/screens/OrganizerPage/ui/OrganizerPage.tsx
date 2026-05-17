@@ -19,6 +19,7 @@ import {
   SList,
   SListItem,
   SPanelTitle,
+  SRequiredMark,
   SSelect,
   SStatus,
   STextarea,
@@ -73,7 +74,7 @@ export const OrganizerPage = () => {
       <SWorkspaceHeader>
         <SWorkspaceTitle>Панель организатора</SWorkspaceTitle>
         <SWorkspaceSubtitle>
-          Список конкурсов, создание черновика и быстрый переход к настройке.
+          Список конкурсов, создание черновика и быстрый переход к настройке
         </SWorkspaceSubtitle>
       </SWorkspaceHeader>
 
@@ -82,7 +83,7 @@ export const OrganizerPage = () => {
           <SPanelTitle>Новый конкурс</SPanelTitle>
           <SFormGrid>
             <SField>
-              Название *
+              <span>Название <SRequiredMark>*</SRequiredMark></span>
               <SInput
                 value={title}
                 placeholder="Название конкурса"
@@ -90,7 +91,7 @@ export const OrganizerPage = () => {
               />
             </SField>
             <SField>
-              Формат участия *
+              <span>Формат участия <SRequiredMark>*</SRequiredMark></span>
               <SSelect
                 value={participationMode}
                 onChange={(e) =>
@@ -104,7 +105,7 @@ export const OrganizerPage = () => {
             {isTeam && (
               <>
                 <SField>
-                  Мин. размер команды *
+                  <span>Мин. размер команды <SRequiredMark>*</SRequiredMark></span>
                   <SInput
                     type="number"
                     min={1}
@@ -113,7 +114,7 @@ export const OrganizerPage = () => {
                   />
                 </SField>
                 <SField>
-                  Макс. размер команды *
+                  <span>Макс. размер команды <SRequiredMark>*</SRequiredMark></span>
                   <SInput
                     type="number"
                     min={1}

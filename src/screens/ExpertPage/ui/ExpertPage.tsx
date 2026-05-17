@@ -42,7 +42,7 @@ export const ExpertPage = () => {
         <SWorkspaceTitle>Кабинет эксперта</SWorkspaceTitle>
         <SWorkspaceSubtitle>
           Назначенные проверки, фильтр по статусу и переход к конкретной сдаче
-          для draft-оценки и публикации.
+          для draft-оценки и публикации
         </SWorkspaceSubtitle>
       </SWorkspaceHeader>
 
@@ -68,8 +68,8 @@ export const ExpertPage = () => {
                 <div>
                   <SItemTitle>Проверка #{assignment.id ?? "-"}</SItemTitle>
                   <SItemMeta>
-                    Submission #{assignment.submissionId ?? "-"} · Stage #
-                    {assignment.stageId ?? "-"} · Expert #
+                    Submission #{assignment.submissionId ?? "-"} · Этап #
+                    {assignment.stageId ?? "-"} · Эксперт #
                     {assignment.expertId ?? "-"}
                   </SItemMeta>
                 </div>
@@ -84,7 +84,7 @@ export const ExpertPage = () => {
               </SListItem>
             ))}
             {!assignments.length && !reviews.isPending && (
-              <SPanelText>Назначенных проверок нет.</SPanelText>
+              <SPanelText>Назначенных проверок нет</SPanelText>
             )}
           </SList>
         </SWorkspacePanel>

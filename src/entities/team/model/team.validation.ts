@@ -33,8 +33,8 @@ export const teamJoinRequestSchema = object({
   id: number().integer().optional(),
   teamId: number().integer().optional(),
   participantId: number().integer().optional(),
-  participantFullName: string().optional(),
-  participantNickname: string().optional(),
+  participantFullName: string().nullable().optional(),
+  participantNickname: string().nullable().optional(),
   status: teamJoinRequestStatusSchema.optional(),
   createdAt: string().optional(),
 }).required();

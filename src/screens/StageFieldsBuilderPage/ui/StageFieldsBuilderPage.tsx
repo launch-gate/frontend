@@ -29,6 +29,7 @@ import {
   SListItem,
   SPanelText,
   SPanelTitle,
+  SRequiredMark,
   SSelect,
   SStatus,
   STextarea,
@@ -207,8 +208,10 @@ export const StageFieldsBuilderPage = () => {
             : `#${isStageIdValid ? stageId : "-"}`}
         </SWorkspaceTitle>
         <SWorkspaceSubtitle>
-          Создание, редактирование и удаление полей формы сабмишена. Настройка
-          подсказок, критериев оценки и допустимых форматов файлов.
+          Создание, редактирование и удаление полей формы сабмишена
+        </SWorkspaceSubtitle>
+        <SWorkspaceSubtitle>
+          Настройка подсказок, критериев оценки и допустимых форматов файлов
         </SWorkspaceSubtitle>
       </SWorkspaceHeader>
 
@@ -221,7 +224,9 @@ export const StageFieldsBuilderPage = () => {
           </SPanelTitle>
           <SFormGrid>
             <SField>
-              Название *
+              <span>
+                Название <SRequiredMark>*</SRequiredMark>
+              </span>
               <SInput
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -229,7 +234,9 @@ export const StageFieldsBuilderPage = () => {
               />
             </SField>
             <SField>
-              Тип
+              <span>
+                Тип <SRequiredMark>*</SRequiredMark>
+              </span>
               <SSelect
                 value={form.type}
                 onChange={(e) =>
@@ -249,7 +256,9 @@ export const StageFieldsBuilderPage = () => {
               </SSelect>
             </SField>
             <SField>
-              Обязательное
+              <span>
+                Обязательное <SRequiredMark>*</SRequiredMark>
+              </span>
               <SSelect
                 value={form.required ? "true" : "false"}
                 onChange={(e) =>
@@ -296,7 +305,7 @@ export const StageFieldsBuilderPage = () => {
               onChange={(e) =>
                 setForm({ ...form, criteriaDescription: e.target.value })
               }
-              placeholder="Описание критериев через ; или в свободной форме"
+              placeholder="Описание критериев"
             />
           </SField>
 
@@ -374,7 +383,7 @@ export const StageFieldsBuilderPage = () => {
                 <div>
                   <SItemTitle>
                     {field.title ?? `Поле #${field.id}`}
-                    {field.required && " *"}
+                    {field.required && <SRequiredMark> *</SRequiredMark>}
                   </SItemTitle>
                   <SItemMeta>
                     {FIELD_TYPE_LABELS[field.type as SubmissionFieldType] ??
