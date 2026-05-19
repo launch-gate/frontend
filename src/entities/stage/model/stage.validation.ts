@@ -59,6 +59,17 @@ export const resourceListSchema = object({
   resources: array().of(resourceSchema).optional(),
 }).required();
 
+export const fieldCriterionRequestSchema = object({
+  order: number().integer().optional(),
+  description: string().required(),
+});
+
+export const fieldCriterionResponseSchema = object({
+  id: number().integer().optional(),
+  order: number().integer().nullable().optional(),
+  description: string().nullable().optional(),
+});
+
 export const submissionFieldRequestSchema = object({
   order: number().integer().optional(),
   title: string().required(),
@@ -70,7 +81,7 @@ export const submissionFieldRequestSchema = object({
   participantHint: string().optional(),
   exampleValue: string().optional(),
   expertNote: string().optional(),
-  criteriaDescription: string().optional(),
+  criteria: array().of(fieldCriterionRequestSchema).optional(),
 });
 
 export const fieldParticipantSchema = object({
@@ -88,8 +99,7 @@ export const fieldParticipantSchema = object({
 
 export const fieldSchema = fieldParticipantSchema.shape({
   expertNote: string().nullable().optional(),
-  criteriaDescription: string().nullable().optional(),
-  criteria: mixed().nullable().optional(),
+  criteria: array().of(fieldCriterionResponseSchema).nullable().optional(),
 });
 
 export const fieldListSchema = object({

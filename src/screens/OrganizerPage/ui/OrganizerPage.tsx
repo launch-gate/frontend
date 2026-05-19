@@ -12,6 +12,7 @@ import { Button } from "@/shared/components";
 import {
   SActions,
   SField,
+  SFieldError,
   SFormGrid,
   SInput,
   SItemMeta,
@@ -47,6 +48,17 @@ export const OrganizerPage = () => {
   const [endsAt, setEndsAt] = useState("");
 
   const isTeam = participationMode === "TEAM";
+
+  const titleError = !title.trim() ? "Укажите название конкурса." : null;
+  const teamSizeError =
+    isTeam && minTeamSize && maxTeamSize
+      ? Number(minTeamSize) > Number(maxTeamSize)
+        ? "Мин. размер не может быть больше макс."
+        : null
+      : null;
+  const endsAtError =
+    startsAt && endsAt && startsAt > endsAt ? "Дата конца раньше начала." : null;
+  const isFormInvalid = !!titleError || !!teamSizeError || !!endsAtError;
 
   const handleCreate = () => {
     const data = {
@@ -88,7 +100,9 @@ export const OrganizerPage = () => {
                 value={title}
                 placeholder="Название конкурса"
                 onChange={(e) => setTitle(e.target.value)}
+                style={titleError ? { borderColor: "#e05" } : undefined}
               />
+              {titleError && <SFieldError>{titleError}</SFieldError>}
             </SField>
             <SField>
               <span>Формат участия <SRequiredMark>*</SRequiredMark></span>
@@ -111,7 +125,9 @@ export const OrganizerPage = () => {
                     min={1}
                     value={minTeamSize}
                     onChange={(e) => setMinTeamSize(e.target.value)}
+                    style={teamSizeError ? { borderColor: "#e05" } : undefined}
                   />
+                  {teamSizeError && <SFieldError>{teamSizeError}</SFieldError>}
                 </SField>
                 <SField>
                   <span>Макс. размер команды <SRequiredMark>*</SRequiredMark></span>
@@ -120,6 +136,7 @@ export const OrganizerPage = () => {
                     min={1}
                     value={maxTeamSize}
                     onChange={(e) => setMaxTeamSize(e.target.value)}
+                    style={teamSizeError ? { borderColor: "#e05" } : undefined}
                   />
                 </SField>
               </>
@@ -156,7 +173,9 @@ export const OrganizerPage = () => {
                 type="date"
                 value={endsAt}
                 onChange={(e) => setEndsAt(e.target.value)}
+                style={endsAtError ? { borderColor: "#e05" } : undefined}
               />
+              {endsAtError && <SFieldError>{endsAtError}</SFieldError>}
             </SField>
           </SFormGrid>
           <SField>
@@ -175,6 +194,7 @@ export const OrganizerPage = () => {
             <Button
               color="violet"
               loading={createContest.isPending}
+              disabled={isFormInvalid}
               onClick={handleCreate}
             >
               Создать конкурс

@@ -21,7 +21,6 @@ import {
   SWorkspaceTitle,
 } from "@/screens/AppWorkspace";
 
-
 export const OrganizerEvaluationsPage = () => {
   const assignExpert = useAssignExpert();
   const createAiReview = useCreateAiReview();
@@ -40,9 +39,8 @@ export const OrganizerEvaluationsPage = () => {
         <SWorkspaceTitle>Назначения экспертов и менторов</SWorkspaceTitle>
         <SWorkspaceSubtitle>
           Панель организатора для назначения экспертов на submission, запуска AI
-          review и назначения менторов на команды.
+          review и назначения менторов на команды
         </SWorkspaceSubtitle>
-
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>
@@ -54,7 +52,9 @@ export const OrganizerEvaluationsPage = () => {
               <SInput
                 type="number"
                 value={submissionId}
-                onChange={(event) => setSubmissionId(Number(event.target.value))}
+                onChange={(event) =>
+                  setSubmissionId(Number(event.target.value))
+                }
               />
             </SField>
             <SField>
@@ -62,7 +62,9 @@ export const OrganizerEvaluationsPage = () => {
               <SInput
                 type="number"
                 value={expertUserId}
-                onChange={(event) => setExpertUserId(Number(event.target.value))}
+                onChange={(event) =>
+                  setExpertUserId(Number(event.target.value))
+                }
               />
             </SField>
           </SFormGrid>
@@ -94,7 +96,9 @@ export const OrganizerEvaluationsPage = () => {
             <SInput
               type="number"
               value={aiSubmissionId}
-              onChange={(event) => setAiSubmissionId(Number(event.target.value))}
+              onChange={(event) =>
+                setAiSubmissionId(Number(event.target.value))
+              }
             />
           </SField>
           <SActions>
@@ -107,7 +111,9 @@ export const OrganizerEvaluationsPage = () => {
                   { submissionId: aiSubmissionId },
                   {
                     onSuccess: (data) =>
-                      setActionResult(`AI review создан: #${data.aiReviewId ?? "-"}`),
+                      setActionResult(
+                        `AI review создан: #${data.aiReviewId ?? "-"}`,
+                      ),
                     onError: (error) => setActionResult(error.message),
                   },
                 )
@@ -134,7 +140,9 @@ export const OrganizerEvaluationsPage = () => {
               <SInput
                 type="number"
                 value={mentorUserId}
-                onChange={(event) => setMentorUserId(Number(event.target.value))}
+                onChange={(event) =>
+                  setMentorUserId(Number(event.target.value))
+                }
               />
             </SField>
           </SFormGrid>
@@ -161,7 +169,7 @@ export const OrganizerEvaluationsPage = () => {
 
         <SWorkspacePanel>
           <SPanelTitle>Результат</SPanelTitle>
-          <SPanelText>{actionResult ?? "Действий пока не было."}</SPanelText>
+          <SPanelText>{actionResult ?? "Действий пока не было"}</SPanelText>
         </SWorkspacePanel>
       </SWorkspaceGrid>
     </SWorkspacePage>

@@ -35,6 +35,17 @@ export interface IResourceListResponse {
   resources?: IResourceResponse[];
 }
 
+export interface IFieldCriterionRequest {
+  order?: number;
+  description: string;
+}
+
+export interface IFieldCriterionResponse {
+  id?: number;
+  order?: number;
+  description?: string;
+}
+
 export interface ISubmissionFieldRequest {
   order?: number;
   title: string;
@@ -46,7 +57,7 @@ export interface ISubmissionFieldRequest {
   participantHint?: string;
   exampleValue?: string;
   expertNote?: string;
-  criteriaDescription?: string;
+  criteria?: IFieldCriterionRequest[];
 }
 
 export interface IFieldParticipantResponse {
@@ -64,7 +75,7 @@ export interface IFieldParticipantResponse {
 
 export interface IFieldResponse extends IFieldParticipantResponse {
   expertNote?: string;
-  criteriaDescription?: string;
+  criteria?: IFieldCriterionResponse[];
 }
 
 export interface IFieldListResponse {

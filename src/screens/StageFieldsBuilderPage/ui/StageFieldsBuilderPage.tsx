@@ -121,7 +121,12 @@ export const StageFieldsBuilderPage = () => {
       participantHint: field.participantHint ?? "",
       exampleValue: field.exampleValue ?? "",
       expertNote: field.expertNote ?? "",
-      criteriaDescription: field.criteriaDescription ?? "",
+      criteriaDescription: (field.criteria ?? [])
+        .slice()
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        .map((c) => c.description ?? "")
+        .filter(Boolean)
+        .join("\n"),
       fileFormats: normalizeFileFormats(field.fileFormats) ?? "",
       maxFileSizeMb: field.maxFileSizeMb ? String(field.maxFileSizeMb) : "",
     });
@@ -148,7 +153,11 @@ export const StageFieldsBuilderPage = () => {
     participantHint: form.participantHint.trim() || undefined,
     exampleValue: form.exampleValue.trim() || undefined,
     expertNote: form.expertNote.trim() || undefined,
-    criteriaDescription: form.criteriaDescription.trim() || undefined,
+    criteria: form.criteriaDescription
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((description, index) => ({ order: index, description })),
     fileFormats:
       isUploadField(form.type) && form.fileFormats.trim()
         ? form.fileFormats.trim()
@@ -406,8 +415,16 @@ export const StageFieldsBuilderPage = () => {
                   {field.expertNote && (
                     <SItemMeta>Заметка эксперта: {field.expertNote}</SItemMeta>
                   )}
-                  {field.criteriaDescription && (
-                    <SItemMeta>Критерии: {field.criteriaDescription}</SItemMeta>
+                  {field.criteria && field.criteria.length > 0 && (
+                    <SItemMeta>
+                      Критерии:{" "}
+                      {field.criteria
+                        .slice()
+                        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                        .map((c) => c.description)
+                        .filter(Boolean)
+                        .join("; ")}
+                    </SItemMeta>
                   )}
                 </div>
                 <SActions>

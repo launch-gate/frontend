@@ -114,8 +114,9 @@ export const STextarea = styled.textarea`
   border: 1px solid ${({ theme }) => theme.colors.gray.primary};
   border-radius: 8px;
   color: ${({ theme }) => theme.colors.gray.dark};
-  resize: none;
-  overflow: hidden;
+  resize: vertical;
+  overflow: auto;
+  field-sizing: content;
   ${({ theme }) => theme.font.body};
 `;
 
@@ -135,6 +136,18 @@ export const SActions = styled.div`
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
+`;
+
+export const SFieldError = styled.span`
+  font-size: 12px;
+  color: #e05;
+  margin-top: 2px;
+`;
+
+export const SFormError = styled.div`
+  font-size: 13px;
+  color: #e05;
+  margin-top: 4px;
 `;
 
 export const SList = styled.div`

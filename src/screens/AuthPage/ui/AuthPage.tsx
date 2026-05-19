@@ -108,8 +108,26 @@ export const AuthPage = () => {
     }
   };
 
+  const validateBeforeSubmit = (): string | null => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) return "Укажите email.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail))
+      return "Некорректный формат email.";
+    if (!password) return "Укажите пароль.";
+    if (password.length < 6) return "Пароль должен быть не короче 6 символов.";
+    if (mode === "register" && !accountType) return "Выберите тип аккаунта.";
+    return null;
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const validationError = validateBeforeSubmit();
+    if (validationError) {
+      setMessage(null);
+      setErrorMessage(validationError);
+      return;
+    }
 
     if (mode === "login") {
       login.mutate(
@@ -231,12 +249,6 @@ export const AuthPage = () => {
               </>
             )}
 
-            {(message || errorMessage) && (
-              <SAuthStatus $tone={errorMessage ? "error" : "success"}>
-                {errorMessage ?? message}
-              </SAuthStatus>
-            )}
-
             <SActions>
               <Button color="violet" htmlType="submit" loading={isPending}>
                 {submitTitle}
@@ -245,6 +257,12 @@ export const AuthPage = () => {
                 Выйти
               </Button>
             </SActions>
+
+            {(message || errorMessage) && (
+              <SAuthStatus $tone={errorMessage ? "error" : "success"}>
+                {errorMessage ?? message}
+              </SAuthStatus>
+            )}
           </SAuthForm>
         </SWorkspacePanel>
 

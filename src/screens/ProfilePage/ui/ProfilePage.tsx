@@ -22,6 +22,7 @@ import {
   SItemTitle,
   SList,
   SListItem,
+  SFormError,
   SPanelTitle,
   SPanelWide,
   SSelect,
@@ -161,6 +162,7 @@ export const ProfilePage = () => {
   const [bio, setBio] = useState("");
   const [contacts, setContacts] = useState<EditableContact[]>([]);
   const [savedValues, setSavedValues] = useState<SavedValues>(defaultSaved);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profile.data) return;
@@ -224,6 +226,15 @@ export const ProfilePage = () => {
   };
 
   const handleSave = () => {
+    const invalidContact = contacts.find((contact) => {
+      const value = contact.value.trim();
+      return value && contactValidation[contact.type](value);
+    });
+    if (invalidContact) {
+      setSubmitError("Проверьте формат контактов.");
+      return;
+    }
+
     updateProfile.mutate(
       {
         fullName,
@@ -239,7 +250,10 @@ export const ProfilePage = () => {
           setBio(values.bio);
           setContacts(values.contacts);
           setSavedValues(values);
+          setSubmitError(null);
         },
+        onError: (error: Error) =>
+          setSubmitError(error.message || "Не удалось сохранить профиль."),
       },
     );
   };
@@ -411,15 +425,18 @@ export const ProfilePage = () => {
           </SContactSection>
 
           {isDirty && (
-            <SActions>
-              <Button
-                color="violet"
-                loading={updateProfile.isPending}
-                onClick={handleSave}
-              >
-                Сохранить
-              </Button>
-            </SActions>
+            <>
+              <SActions>
+                <Button
+                  color="violet"
+                  loading={updateProfile.isPending}
+                  onClick={handleSave}
+                >
+                  Сохранить
+                </Button>
+              </SActions>
+              {submitError && <SFormError>{submitError}</SFormError>}
+            </>
           )}
         </SWorkspacePanel>
 

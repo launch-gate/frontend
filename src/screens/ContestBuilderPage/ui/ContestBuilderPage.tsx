@@ -40,6 +40,7 @@ import {
   SActions,
   SContactEditorRow,
   SField,
+  SFieldError,
   SFormGrid,
   SInput,
   SItemMeta,
@@ -297,6 +298,36 @@ export const ContestBuilderPage = () => {
 
   const hasStages = (stages.data?.stages?.length ?? 0) > 0;
 
+  const titleError = !title.trim() ? "Укажите название конкурса." : null;
+  const teamSizeError =
+    participationMode === "TEAM" &&
+    minTeamSize &&
+    maxTeamSize &&
+    Number(minTeamSize) > Number(maxTeamSize)
+      ? "Мин. размер не может быть больше макс."
+      : null;
+
+  const dateErrors: Record<string, string | null> = {};
+  if (startsAt && endsAt && startsAt > endsAt) {
+    dateErrors.endsAt = "Дата конца раньше начала.";
+  }
+
+  const stageTitleError =
+    editingStageId !== null || stageTitle || stageDescription || stageRules
+      ? !stageTitle.trim()
+        ? "Укажите название этапа."
+        : null
+      : null;
+  const stageDeadlineError =
+    editingStageId !== null || stageTitle
+      ? !stageDeadline
+        ? "Укажите дедлайн этапа."
+        : null
+      : null;
+  const stageScoreScaleError = !scoreScale ? "Выберите шкалу оценивания." : null;
+  const stageFormValid =
+    !stageTitleError && !stageDeadlineError && !stageScoreScaleError;
+
   const setLabels = useBreadcrumbStore((s) => s.setLabels);
   const clearLabels = useBreadcrumbStore((s) => s.clearLabels);
   useEffect(() => {
@@ -535,12 +566,16 @@ export const ContestBuilderPage = () => {
       <SWorkspacePanel>
         <SPanelTitle>Описание</SPanelTitle>
         <SField>
-          Название
+          <span>
+            Название <SRequiredMark>*</SRequiredMark>
+          </span>
           <SInput
             placeholder="Название конкурса"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            style={titleError ? { borderColor: "#e05" } : undefined}
           />
+          {titleError && <SFieldError>{titleError}</SFieldError>}
         </SField>
         <SField>
           Описание
@@ -596,7 +631,9 @@ export const ContestBuilderPage = () => {
                 min={1}
                 value={minTeamSize}
                 onChange={(e) => setMinTeamSize(e.target.value)}
+                style={teamSizeError ? { borderColor: "#e05" } : undefined}
               />
+              {teamSizeError && <SFieldError>{teamSizeError}</SFieldError>}
             </SField>
             <SField>
               Макс. размер команды
@@ -605,6 +642,7 @@ export const ContestBuilderPage = () => {
                 min={1}
                 value={maxTeamSize}
                 onChange={(e) => setMaxTeamSize(e.target.value)}
+                style={teamSizeError ? { borderColor: "#e05" } : undefined}
               />
             </SField>
           </SFormGrid>
@@ -640,13 +678,22 @@ export const ContestBuilderPage = () => {
               type="date"
               value={endsAt}
               onChange={(e) => setEndsAt(e.target.value)}
+              style={dateErrors.endsAt ? { borderColor: "#e05" } : undefined}
             />
+            {dateErrors.endsAt && (
+              <SFieldError>{dateErrors.endsAt}</SFieldError>
+            )}
           </SField>
         </SFormGrid>
         <SActions>
           <Button
             color="violet"
             loading={updateContest.isPending}
+            disabled={
+              !!titleError ||
+              !!teamSizeError ||
+              Object.values(dateErrors).some(Boolean)
+            }
             onClick={handleSave}
           >
             Сохранить
@@ -881,7 +928,9 @@ export const ContestBuilderPage = () => {
               value={stageTitle}
               placeholder="Название этапа"
               onChange={(e) => setStageTitle(e.target.value)}
+              style={stageTitleError ? { borderColor: "#e05" } : undefined}
             />
+            {stageTitleError && <SFieldError>{stageTitleError}</SFieldError>}
           </SField>
           <SField>
             <span>
@@ -890,6 +939,7 @@ export const ContestBuilderPage = () => {
             <SSelect
               value={scoreScale}
               onChange={(e) => setScoreScale(e.target.value as ScoreScale)}
+              style={stageScoreScaleError ? { borderColor: "#e05" } : undefined}
             >
               {scoreScaleOptions.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -897,6 +947,9 @@ export const ContestBuilderPage = () => {
                 </option>
               ))}
             </SSelect>
+            {stageScoreScaleError && (
+              <SFieldError>{stageScoreScaleError}</SFieldError>
+            )}
           </SField>
           <SField>
             <span>
@@ -906,12 +959,16 @@ export const ContestBuilderPage = () => {
               type="date"
               value={stageDeadline}
               onChange={(e) => setStageDeadline(e.target.value)}
+              style={stageDeadlineError ? { borderColor: "#e05" } : undefined}
             />
             <SInput
               type="time"
               value={stageDeadlineTime}
               onChange={(e) => setStageDeadlineTime(e.target.value)}
             />
+            {stageDeadlineError && (
+              <SFieldError>{stageDeadlineError}</SFieldError>
+            )}
           </SField>
           <SField>
             <span>
@@ -954,7 +1011,7 @@ export const ContestBuilderPage = () => {
           <Button
             color="violet"
             loading={createStage.isPending || updateStage.isPending}
-            disabled={!stageTitle.trim()}
+            disabled={!stageFormValid || !stageTitle.trim() || !stageDeadline}
             onClick={handleSaveStage}
           >
             {editingStageId ? "Сохранить" : "Добавить этап"}
@@ -1087,7 +1144,10 @@ export const ContestBuilderPage = () => {
             disabled={!orgUserId}
             onClick={() =>
               addOrganizer.mutate(
-                { contestId, data: { userId: Number(orgUserId), role: orgRole } },
+                {
+                  contestId,
+                  data: { userId: Number(orgUserId), role: orgRole },
+                },
                 { onSuccess: () => setOrgUserId("") },
               )
             }
@@ -1114,7 +1174,10 @@ export const ContestBuilderPage = () => {
                     color="gray"
                     loading={deleteOrganizer.isPending}
                     onClick={() =>
-                      deleteOrganizer.mutate({ contestId, organizerId: org.id! })
+                      deleteOrganizer.mutate({
+                        contestId,
+                        organizerId: org.id!,
+                      })
                     }
                   >
                     Удалить
@@ -1155,7 +1218,7 @@ export const ContestBuilderPage = () => {
         ))}
         {!participants.data?.participants?.length &&
           !participants.isPending && (
-            <SPanelText>Участников пока нет.</SPanelText>
+            <SPanelText>Участников пока нет</SPanelText>
           )}
       </SList>
     </SWorkspacePanel>
