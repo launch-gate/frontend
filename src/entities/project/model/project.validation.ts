@@ -13,8 +13,8 @@ export const projectRequestSchema = object({
 export const projectSchema = object({
   id: number().integer().optional(),
   contestId: number().integer().optional(),
-  teamId: number().integer().optional(),
-  ownerParticipantId: number().integer().optional(),
+  teamId: number().integer().nullable().optional(),
+  ownerParticipantId: number().integer().nullable().optional(),
   stages: array().of(stageSubmissionSchema).optional(),
 }).required();
 
