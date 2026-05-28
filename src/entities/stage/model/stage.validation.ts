@@ -165,8 +165,8 @@ export const valueRequestSchema = object({
 export const valueSchema = object({
   id: number().integer().optional(),
   fieldId: number().integer().optional(),
-  valueText: string().optional(),
-  fileIds: string().optional(),
+  valueText: string().nullable().optional(),
+  fileIds: string().nullable().optional(),
 });
 
 export const stageSubmissionSchema = object({
