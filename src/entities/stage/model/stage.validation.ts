@@ -170,7 +170,7 @@ export const valueSchema = object({
 });
 
 export const stageSubmissionSchema = object({
-  id: number().integer().optional(),
+  id: number().integer().nullable().optional(),
   status: stageSubmissionStatusSchema.optional(),
   stage: stageParticipantSchema.optional(),
   values: array().of(valueSchema).optional(),
