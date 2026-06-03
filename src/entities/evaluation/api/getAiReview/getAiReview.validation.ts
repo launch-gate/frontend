@@ -1,3 +1,3 @@
-import { aiReviewSchema } from "../../model/evaluation.validation";
+import { aiReviewLookupSchema } from "../../model/evaluation.validation";
 
-export const getAiReviewResponseSchema = aiReviewSchema;
+export const getAiReviewResponseSchema = aiReviewLookupSchema;

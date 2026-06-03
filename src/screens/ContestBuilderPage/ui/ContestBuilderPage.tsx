@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,7 +15,7 @@ import {
   useUpdateOrganizerContest,
   useGetContest,
 } from "@/entities/contest";
-import { useAssignExpert, useCreateAiReview } from "@/entities/evaluation";
+import { useAssignExpert } from "@/entities/evaluation";
 import { useBreadcrumbStore } from "@/widgets/Breadcrumb";
 import { useAssignMentor } from "@/entities/mentor";
 import {
@@ -35,7 +34,6 @@ import {
   useUpdateUserProfile,
 } from "@/entities/user";
 import { Button } from "@/shared/components";
-import { routes } from "@/shared/config";
 import {
   SActions,
   SContactEditorRow,
@@ -65,6 +63,7 @@ import {
   SIconButton,
   SIconRow,
   SStageActions,
+  SStageLink,
   STab,
   STabs,
 } from "./contestBuilderPage.styles";
@@ -248,7 +247,6 @@ export const ContestBuilderPage = () => {
   const deleteOrganizer = useDeleteContestOrganizer();
   const assignMentor = useAssignMentor();
   const assignExpert = useAssignExpert();
-  const createAiReview = useCreateAiReview();
 
   // ── локальное состояние ─────────────────────────────────────────────────
   const [title, setTitle] = useState("");
@@ -283,7 +281,6 @@ export const ContestBuilderPage = () => {
 
   const [expertSubmissionId, setExpertSubmissionId] = useState("");
   const [expertUserId, setExpertUserId] = useState("");
-  const [aiSubmissionId, setAiSubmissionId] = useState("");
 
   const [editingContactIndex, setEditingContactIndex] = useState<number | null>(
     null,
@@ -324,7 +321,9 @@ export const ContestBuilderPage = () => {
         ? "Укажите дедлайн этапа."
         : null
       : null;
-  const stageScoreScaleError = !scoreScale ? "Выберите шкалу оценивания." : null;
+  const stageScoreScaleError = !scoreScale
+    ? "Выберите шкалу оценивания."
+    : null;
   const stageFormValid =
     !stageTitleError && !stageDeadlineError && !stageScoreScaleError;
 
@@ -1029,27 +1028,38 @@ export const ContestBuilderPage = () => {
         <SList>
           {(stages.data?.stages ?? []).map((stage) => (
             <SListItem key={stage.id}>
-              <div>
-                <SItemTitle>{stage.title ?? `Этап #${stage.id}`}</SItemTitle>
-                <SItemMeta>
-                  Дедлайн: {formatDate(stage.deadlineAt)} ·{" "}
-                  {scoreScaleOptions.find((o) => o.value === stage.scoreScale)
-                    ?.label ??
-                    stage.scoreScale ??
-                    "—"}
-                  {stage.eliminating ? " · Отборочный" : ""}
-                  {" · "}
-                  {stage.fields?.length ?? 0} полей
-                </SItemMeta>
-              </div>
+              {stage.id ? (
+                <SStageLink
+                  href={`/organizer/contests/${contestId}/stages/${stage.id}/fields`}
+                >
+                  <SItemTitle>{stage.title ?? `Этап #${stage.id}`}</SItemTitle>
+                  <SItemMeta>
+                    Дедлайн: {formatDate(stage.deadlineAt)} ·{" "}
+                    {scoreScaleOptions.find((o) => o.value === stage.scoreScale)
+                      ?.label ??
+                      stage.scoreScale ??
+                      "—"}
+                    {stage.eliminating ? " · Отборочный" : ""}
+                    {" · "}
+                    {stage.fields?.length ?? 0} полей
+                  </SItemMeta>
+                </SStageLink>
+              ) : (
+                <div>
+                  <SItemTitle>{stage.title ?? "Этап"}</SItemTitle>
+                  <SItemMeta>
+                    Дедлайн: {formatDate(stage.deadlineAt)} ·{" "}
+                    {scoreScaleOptions.find((o) => o.value === stage.scoreScale)
+                      ?.label ??
+                      stage.scoreScale ??
+                      "—"}
+                    {stage.eliminating ? " · Отборочный" : ""}
+                    {" · "}
+                    {stage.fields?.length ?? 0} полей
+                  </SItemMeta>
+                </div>
+              )}
               <SStageActions>
-                {stage.id && (
-                  <Link
-                    href={`/organizer/contests/${contestId}/stages/${stage.id}/fields`}
-                  >
-                    <Button>Конструктор полей</Button>
-                  </Link>
-                )}
                 <SIconRow>
                   <SIconButton
                     title="Изменить"
@@ -1348,39 +1358,6 @@ export const ContestBuilderPage = () => {
           </Button>
         </SActions>
         {actionResult && <SPanelText>{actionResult}</SPanelText>}
-      </SWorkspacePanel>
-
-      <SWorkspacePanel>
-        <SPanelTitle>AI-ревью сабмишена</SPanelTitle>
-        <SField>
-          Submission ID
-          <SInput
-            type="number"
-            value={aiSubmissionId}
-            placeholder="ID сабмишена"
-            onChange={(e) => setAiSubmissionId(e.target.value)}
-          />
-        </SField>
-        <SActions>
-          <Button
-            color="violet"
-            loading={createAiReview.isPending}
-            disabled={!aiSubmissionId}
-            onClick={() =>
-              createAiReview.mutate(
-                { submissionId: Number(aiSubmissionId) },
-                {
-                  onSuccess: () => {
-                    handleResult("AI-ревью запущено");
-                    setAiSubmissionId("");
-                  },
-                },
-              )
-            }
-          >
-            Создать AI-ревью
-          </Button>
-        </SActions>
       </SWorkspacePanel>
     </>
   );

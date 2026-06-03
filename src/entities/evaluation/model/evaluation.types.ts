@@ -34,37 +34,63 @@ export interface IAssignmentListResponse {
   assignments?: IAssignmentResponse[];
 }
 
-export interface IAiReviewCreatedResponse {
-  aiReviewId?: number;
-}
+export type AiReviewStatus = "COMPLETED" | "COMPLETED_WITH_WARNINGS";
 
-export type AiReviewFieldStatus =
-  | "SUCCESS"
+export type AiFieldReviewStatus =
+  | "COMPLETED"
   | "UNSUPPORTED_FORMAT"
   | "SKIPPED_NO_CRITERIA"
   | "SKIPPED_NO_DATA"
   | "FAILED";
 
-export interface IAiReviewCriterionResult {
-  criterionDescription?: string;
-  score?: number;
-  comment?: string;
+export type AiCriterionReviewStatus =
+  | "COMPLETED"
+  | "SKIPPED"
+  | "UNSUPPORTED_FORMAT"
+  | "FAILED";
+
+export interface IAiEvidenceResponse {
+  path?: string;
+  chunkIndex?: number;
+  quote?: string;
+  why?: string;
 }
 
-export interface IAiReviewFieldResult {
+export interface IAiCriterionReviewResponse {
+  criterionId?: number;
+  order?: number;
+  description?: string;
+  status?: AiCriterionReviewStatus;
+  score?: number;
+  verdict?: string;
+  answer?: string;
+  evidence?: IAiEvidenceResponse[];
+  confidence?: number;
+}
+
+export interface IAiFieldReviewResponse {
   fieldId?: number;
-  fieldTitle?: string;
-  status?: AiReviewFieldStatus;
-  result?: string;
-  criteriaResults?: IAiReviewCriterionResult[];
+  order?: number;
+  title?: string;
+  type?: string;
+  status?: AiFieldReviewStatus;
+  sourceType?: string;
+  message?: string;
+  criteria?: IAiCriterionReviewResponse[];
 }
 
 export interface IAiReviewResponse {
   id?: number;
   submissionId?: number;
-  status?: string;
+  status?: AiReviewStatus;
   createdAt?: string;
-  fieldResults?: IAiReviewFieldResult[];
+  updatedAt?: string;
+  fields?: IAiFieldReviewResponse[];
+}
+
+export interface IAiReviewLookupResponse {
+  exists?: boolean;
+  review?: IAiReviewResponse | null;
 }
 
 export type IExpertReviewSubmissionResponse = IStageSubmissionResponse;

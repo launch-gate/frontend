@@ -40,12 +40,44 @@ export const getBreadcrumbItems = ({
       organizerPageItem,
       {
         title: (
-          <Link href={`/organizer/contests/${organizerFieldsMatch[1]}?tab=stages`}>
+          <Link
+            href={`/organizer/contests/${organizerFieldsMatch[1]}?tab=stages`}
+          >
             {contestTitle ?? "Конкурс"}
           </Link>
         ),
       },
       { title: stageTitle ?? "Поля этапа" },
+    ];
+  }
+
+  // /organizer/contests/:contestId/stages/:stageId/submissions
+  const organizerStageSubmissionsMatch = pathname.match(
+    /^\/organizer\/contests\/(\d+)\/stages\/(\d+)\/submissions/,
+  );
+  if (organizerStageSubmissionsMatch) {
+    return [
+      homePageBreadcrumbItem,
+      organizerPageItem,
+      {
+        title: (
+          <Link
+            href={`/organizer/contests/${organizerStageSubmissionsMatch[1]}?tab=stages`}
+          >
+            {contestTitle ?? "Конкурс"}
+          </Link>
+        ),
+      },
+      {
+        title: (
+          <Link
+            href={`/organizer/contests/${organizerStageSubmissionsMatch[1]}/stages/${organizerStageSubmissionsMatch[2]}/fields`}
+          >
+            {stageTitle ?? "Этап"}
+          </Link>
+        ),
+      },
+      { title: "Решения участников" },
     ];
   }
 

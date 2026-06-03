@@ -1,4 +1,10 @@
-import { IStageSubmissionResponse, IValueRequestInput } from "@/entities/stage";
+import {
+  IStageOrganizesResponse,
+  IStageSubmissionResponse,
+  IValueRequestInput,
+  IValueResponse,
+  StageSubmissionStatus,
+} from "@/entities/stage";
 
 export interface IProjectRequest {
   contestId: number;
@@ -27,4 +33,25 @@ export interface ISaveProjectStageValueVariables {
 export interface ISubmitProjectStageVariables {
   projectId: number;
   stageId: number;
+}
+
+export interface ISubmissionSummary {
+  submissionId?: number;
+  projectId?: number;
+  stageId?: number;
+  contestId?: number;
+  solutionTitle?: string;
+  status?: StageSubmissionStatus;
+}
+
+export interface IOrganizerStageSubmissionResponse {
+  summary?: ISubmissionSummary;
+  id?: number;
+  status?: StageSubmissionStatus;
+  values?: IValueResponse[];
+}
+
+export interface IOrganizerStageSubmissionListResponse {
+  stage?: IStageOrganizesResponse;
+  submissions?: IOrganizerStageSubmissionResponse[];
 }

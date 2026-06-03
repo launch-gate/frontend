@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 
 import {
+  IAiReviewResponse,
   useAssignExpert,
   useCreateAiReview,
   useGetAiReview,
@@ -32,10 +33,12 @@ import {
 } from "@/screens/AppWorkspace";
 
 const AI_REVIEW_STATUS_LABELS: Record<string, string> = {
-  SUCCESS: "Проверено",
+  COMPLETED: "Проверено",
+  COMPLETED_WITH_WARNINGS: "Проверено с предупреждениями",
   UNSUPPORTED_FORMAT: "Формат не поддерживается",
   SKIPPED_NO_CRITERIA: "Пропущено: нет критериев",
   SKIPPED_NO_DATA: "Пропущено: нет данных",
+  SKIPPED: "Пропущено",
   FAILED: "Ошибка",
 };
 
@@ -44,16 +47,28 @@ export const SubmissionReviewPage = () => {
   const submissionId = Number(params.submissionId);
   const isSubmissionIdValid = Number.isFinite(submissionId) && submissionId > 0;
 
-  const submission = useGetOrganizerStageSubmission(submissionId, isSubmissionIdValid);
+  const submission = useGetOrganizerStageSubmission(
+    submissionId,
+    isSubmissionIdValid,
+  );
   const aiReview = useGetAiReview(submissionId, isSubmissionIdValid);
   const createAiReview = useCreateAiReview();
   const assignExpert = useAssignExpert();
 
   const [expertUserId, setExpertUserId] = useState("");
+  const [createdReview, setCreatedReview] = useState<IAiReviewResponse | null>(
+    null,
+  );
   const [actionResult, setActionResult] = useState<string | null>(null);
 
   const values = submission.data?.values ?? [];
   const fields = submission.data?.stage?.fields ?? [];
+  const review = createdReview ?? aiReview.data?.review ?? null;
+  const completedFields =
+    review?.fields
+      ?.filter((field) => field.status === "COMPLETED")
+      .slice()
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) ?? [];
 
   const getFieldTitle = (fieldId?: number) => {
     const field = fields.find((f) => f.id === fieldId);
@@ -64,11 +79,11 @@ export const SubmissionReviewPage = () => {
     <SWorkspacePage>
       <SWorkspaceHeader>
         <SWorkspaceTitle>
-          Stage submission #{isSubmissionIdValid ? submissionId : "-"}
+          Решение #{isSubmissionIdValid ? submissionId : "-"}
         </SWorkspaceTitle>
         <SWorkspaceSubtitle>
           Организаторский просмотр сдачи: данные этапа, статус, значения формы,
-          AI review и назначение эксперта.
+          AI-ревью и назначение эксперта.
         </SWorkspaceSubtitle>
       </SWorkspaceHeader>
 
@@ -104,7 +119,9 @@ export const SubmissionReviewPage = () => {
               <SListItem key={value.id ?? value.fieldId}>
                 <div>
                   <SItemTitle>{getFieldTitle(value.fieldId)}</SItemTitle>
-                  <SItemMeta>{value.valueText || value.fileIds || "-"}</SItemMeta>
+                  <SItemMeta>
+                    {value.valueText || value.fileIds || "-"}
+                  </SItemMeta>
                 </div>
                 <SStatus>#{value.id ?? "-"}</SStatus>
               </SListItem>
@@ -116,10 +133,17 @@ export const SubmissionReviewPage = () => {
         </SPanelWide>
 
         <SPanelWide>
-          <SPanelTitle>AI Review</SPanelTitle>
-          {aiReview.isError && !aiReview.isPending && (
+          <SPanelTitle>AI-ревью</SPanelTitle>
+          {aiReview.isError && !aiReview.isPending && !review && (
+            <SPanelText>
+              Не удалось загрузить сохраненный результат AI-ревью.
+            </SPanelText>
+          )}
+          {!aiReview.isPending && !review && (
             <SActions>
-              <SPanelText>AI Review ещё не запускался.</SPanelText>
+              <SPanelText>
+                AI-ревью для этого решения еще не запускалось.
+              </SPanelText>
               <Button
                 color="violet"
                 loading={createAiReview.isPending}
@@ -128,8 +152,9 @@ export const SubmissionReviewPage = () => {
                   createAiReview.mutate(
                     { submissionId },
                     {
-                      onSuccess: () => {
-                        setActionResult("AI Review запущен. Обновите страницу через несколько секунд.");
+                      onSuccess: (data) => {
+                        setCreatedReview(data);
+                        setActionResult("AI-ревью готово.");
                         aiReview.refetch();
                       },
                       onError: (error) => setActionResult(error.message),
@@ -137,36 +162,88 @@ export const SubmissionReviewPage = () => {
                   )
                 }
               >
-                Запустить AI Review
+                Запустить AI-ревью
               </Button>
             </SActions>
           )}
-          {aiReview.data && (
+          {review && (
             <SList>
-              {(aiReview.data.fieldResults ?? []).map((fieldResult, idx) => (
+              <SListItem>
+                <div>
+                  <SItemTitle>Результат проверки</SItemTitle>
+                  <SItemMeta>
+                    Review ID: {review.id ?? "-"} · Submission ID:{" "}
+                    {review.submissionId ?? submissionId} · Обновлено:{" "}
+                    {review.updatedAt
+                      ? new Intl.DateTimeFormat("ru-RU", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }).format(new Date(review.updatedAt))
+                      : "-"}
+                  </SItemMeta>
+                </div>
+                <SStatus>
+                  {AI_REVIEW_STATUS_LABELS[review.status ?? ""] ??
+                    review.status ??
+                    "-"}
+                </SStatus>
+              </SListItem>
+              {completedFields.map((fieldResult, idx) => (
                 <SListItem key={fieldResult.fieldId ?? idx}>
                   <div>
                     <SItemTitle>
-                      {fieldResult.fieldTitle ?? `Поле #${fieldResult.fieldId ?? idx}`}
+                      {fieldResult.title ??
+                        `Поле #${fieldResult.fieldId ?? idx}`}
                     </SItemTitle>
-                    {fieldResult.status === "SUCCESS" && fieldResult.result && (
-                      <SItemMeta>{fieldResult.result}</SItemMeta>
+                    {fieldResult.message && (
+                      <SItemMeta>{fieldResult.message}</SItemMeta>
                     )}
-                    {(fieldResult.criteriaResults ?? []).map((cr, ci) => (
-                      <SItemMeta key={ci}>
-                        {cr.criterionDescription ?? `Критерий ${ci + 1}`}:{" "}
-                        {cr.score !== undefined ? `${cr.score}` : ""}{" "}
-                        {cr.comment ?? ""}
-                      </SItemMeta>
-                    ))}
+                    {(fieldResult.criteria ?? [])
+                      .slice()
+                      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                      .map((cr, ci) => (
+                        <SItemMeta key={ci}>
+                          {cr.description ?? `Критерий ${ci + 1}`}:{" "}
+                          {cr.score !== undefined && cr.score !== null
+                            ? `${cr.score} баллов. `
+                            : ""}
+                          {cr.verdict ?? ""}
+                          {cr.answer ? ` Ответ: ${cr.answer}` : ""}
+                          {(cr.evidence ?? [])
+                            .filter(
+                              (evidence) => evidence.quote || evidence.why,
+                            )
+                            .map((evidence, evidenceIndex) =>
+                              [
+                                evidence.quote
+                                  ? `Фрагмент ${evidenceIndex + 1}: ${evidence.quote}`
+                                  : "",
+                                evidence.why
+                                  ? `Пояснение: ${evidence.why}`
+                                  : "",
+                              ]
+                                .filter(Boolean)
+                                .join(" "),
+                            )
+                            .filter(Boolean)
+                            .join(" ")}
+                        </SItemMeta>
+                      ))}
                   </div>
                   <SStatus>
-                    {AI_REVIEW_STATUS_LABELS[fieldResult.status ?? ""] ?? fieldResult.status ?? "-"}
+                    {AI_REVIEW_STATUS_LABELS[fieldResult.status ?? ""] ??
+                      fieldResult.status ??
+                      "-"}
                   </SStatus>
                 </SListItem>
               ))}
-              {!(aiReview.data.fieldResults ?? []).length && (
-                <SPanelText>Результатов AI Review нет.</SPanelText>
+              {!completedFields.length && (
+                <SPanelText>
+                  В AI-ревью нет полей со статусом COMPLETED.
+                </SPanelText>
               )}
             </SList>
           )}

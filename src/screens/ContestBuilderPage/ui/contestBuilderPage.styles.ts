@@ -1,10 +1,20 @@
 import styled from "styled-components";
+import Link from "next/link";
 
 export const SStageActions = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
+`;
+
+export const SStageLink = styled(Link)`
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.violet};
+  }
 `;
 
 export const SIconRow = styled.div`
@@ -23,7 +33,9 @@ export const SIconButton = styled.button`
   background: ${({ theme }) => theme.colors.white};
   color: ${({ theme }) => theme.colors.gray.mid};
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 
   &:hover {
     color: ${({ theme }) => theme.colors.gray.dark};

@@ -1,3 +1,3 @@
-import { aiReviewCreatedSchema } from "../../model/evaluation.validation";
+import { aiReviewSchema } from "../../model/evaluation.validation";
 
-export const createAiReviewResponseSchema = aiReviewCreatedSchema;
+export const createAiReviewResponseSchema = aiReviewSchema;

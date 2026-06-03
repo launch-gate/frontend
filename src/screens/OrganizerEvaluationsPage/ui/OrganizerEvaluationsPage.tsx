@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useAssignExpert, useCreateAiReview } from "@/entities/evaluation";
 import { useAssignMentor } from "@/entities/mentor";
 import { Button } from "@/shared/components";
-import { routes } from "@/shared/config";
 import {
   SActions,
   SField,
@@ -111,9 +110,7 @@ export const OrganizerEvaluationsPage = () => {
                   { submissionId: aiSubmissionId },
                   {
                     onSuccess: (data) =>
-                      setActionResult(
-                        `AI review создан: #${data.aiReviewId ?? "-"}`,
-                      ),
+                      setActionResult(`AI review создан: #${data.id ?? "-"}`),
                     onError: (error) => setActionResult(error.message),
                   },
                 )

@@ -222,6 +222,15 @@ export const StageFieldsBuilderPage = () => {
         <SWorkspaceSubtitle>
           Настройка подсказок, критериев оценки и допустимых форматов файлов
         </SWorkspaceSubtitle>
+        <SActions>
+          <Link
+            href={`/organizer/contests/${contestId}/stages/${stageId}/submissions`}
+          >
+            <Button color="violet" disabled={!isStageIdValid}>
+              Решения участников
+            </Button>
+          </Link>
+        </SActions>
       </SWorkspaceHeader>
 
       <SWorkspaceGrid>

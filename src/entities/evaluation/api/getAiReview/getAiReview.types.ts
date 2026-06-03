@@ -1,7 +1,7 @@
-import { IAiReviewResponse } from "../../model/evaluation.types";
+import { IAiReviewLookupResponse } from "../../model/evaluation.types";
 
 export interface IGetAiReviewVariables {
   submissionId: number;
 }
 
-export type IGetAiReviewResponse = IAiReviewResponse;
+export type IGetAiReviewResponse = IAiReviewLookupResponse;
