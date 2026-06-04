@@ -414,17 +414,23 @@ type RegButtonState =
   | "registered"
   | "available";
 
+const getLocalDateKey = (date = new Date()) =>
+  [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+
+const isBeforeToday = (date?: string) =>
+  Boolean(date && date.slice(0, 10) < getLocalDateKey());
+
 const getRegButtonState = (
   status?: string,
   registrationEndsAt?: string,
-  startsAt?: string,
   isRegistered?: boolean,
 ): RegButtonState => {
   if (status === "DRAFT") return "hidden";
-  const now = Date.now();
-  if (registrationEndsAt && new Date(registrationEndsAt).getTime() < now)
-    return "closed";
-  if (startsAt && new Date(startsAt).getTime() > now) return "not_open";
+  if (isBeforeToday(registrationEndsAt)) return "closed";
   if (isRegistered) return "registered";
   return "available";
 };
@@ -521,7 +527,6 @@ export const ContestPublicPage = () => {
   const regButtonState = getRegButtonState(
     contest.data?.status,
     contest.data?.registrationEndsAt,
-    contest.data?.startsAt,
     isRegistered,
   );
 
