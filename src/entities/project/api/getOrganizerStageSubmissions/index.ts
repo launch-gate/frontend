@@ -15,11 +15,11 @@ export const getOrganizerStageSubmissions = ({
 }: IGetOrganizerStageSubmissionsVariables): Promise<IGetOrganizerStageSubmissionsResponse> =>
   requestWithValidation<IGetOrganizerStageSubmissionsResponse>(
     {
-      url: `/organizer/stages/${stageId}/submissions`,
+      url: `/projects/organizer/stages/${stageId}/submissions`,
       method: "GET",
     },
     getOrganizerStageSubmissionsResponseSchema,
-    "/organizer/stages/{stageId}/submissions",
+    "/projects/organizer/stages/{stageId}/submissions",
   );
 
 export const useGetOrganizerStageSubmissions = (
