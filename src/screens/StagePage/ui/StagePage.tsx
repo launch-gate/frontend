@@ -245,7 +245,10 @@ export const StagePage = () => {
   const contest = useGetContest(contestId);
   const stage = useGetContestStage(stageId, isValid);
   const stageList = useGetContestStages(contestId, isValid);
-  const participants = useGetContestParticipants(contestId, isValid);
+  const participants = useGetContestParticipants(
+    contestId,
+    isValid && Boolean(profile.data?.id),
+  );
   const teams = useGetContestTeams(contestId, isValid);
   const myProjects = useGetMyProjects();
 

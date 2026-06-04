@@ -445,9 +445,12 @@ export const ContestPublicPage = () => {
   const queryClient = useQueryClient();
   const contest = useGetContest(contestId);
   const stages = useGetContestStages(contestId, isContestIdValid);
-  const participants = useGetContestParticipants(contestId, isContestIdValid);
-  const teams = useGetContestTeams(contestId, isContestIdValid);
   const profile = useGetUserProfile(isContestIdValid);
+  const participants = useGetContestParticipants(
+    contestId,
+    isContestIdValid && Boolean(profile.data?.id),
+  );
+  const teams = useGetContestTeams(contestId, isContestIdValid);
 
   const [justRegistered, setJustRegistered] = useState(false);
 
