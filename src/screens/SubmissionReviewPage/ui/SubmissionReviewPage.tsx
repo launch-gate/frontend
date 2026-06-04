@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 
 import {
@@ -31,6 +31,23 @@ import {
   SWorkspaceSubtitle,
   SWorkspaceTitle,
 } from "@/screens/AppWorkspace";
+import {
+  SAiAnswer,
+  SAiBadge,
+  SAiCriterionBadges,
+  SAiCriterionCard,
+  SAiCriterionHeader,
+  SAiCriterionTitle,
+  SAiEvidence,
+  SAiFieldBadges,
+  SAiFieldBody,
+  SAiFieldCard,
+  SAiFieldMeta,
+  SAiFieldsList,
+  SAiFieldTitleBlock,
+  SAiFieldToggle,
+  SAiReviewHeader,
+} from "./submissionReviewPage.styles";
 
 const AI_REVIEW_STATUS_LABELS: Record<string, string> = {
   COMPLETED: "Проверено",
@@ -60,19 +77,49 @@ export const SubmissionReviewPage = () => {
     null,
   );
   const [actionResult, setActionResult] = useState<string | null>(null);
+  const [expandedFieldIds, setExpandedFieldIds] = useState<number[]>([]);
+  const [autoExpandedReviewId, setAutoExpandedReviewId] = useState<
+    number | null
+  >(null);
 
   const values = submission.data?.values ?? [];
   const fields = submission.data?.stage?.fields ?? [];
   const review = createdReview ?? aiReview.data?.review ?? null;
-  const completedFields =
-    review?.fields
-      ?.filter((field) => field.status === "COMPLETED")
-      .slice()
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) ?? [];
+  const completedFields = useMemo(
+    () =>
+      review?.fields
+        ?.filter((field) => field.status === "COMPLETED")
+        .slice()
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) ?? [],
+    [review?.fields],
+  );
 
   const getFieldTitle = (fieldId?: number) => {
     const field = fields.find((f) => f.id === fieldId);
     return field?.title ?? `Поле #${fieldId ?? "-"}`;
+  };
+
+  useEffect(() => {
+    if (!completedFields.length) return;
+    const reviewId = review?.id ?? null;
+    if (reviewId === null || autoExpandedReviewId === reviewId) return;
+    const firstFieldId = completedFields[0].fieldId ?? 0;
+    if (firstFieldId) setExpandedFieldIds([firstFieldId]);
+    setAutoExpandedReviewId(reviewId);
+  }, [autoExpandedReviewId, completedFields, review?.id]);
+
+  const toggleAiField = (fieldId?: number) => {
+    if (!fieldId) return;
+    setExpandedFieldIds((current) =>
+      current.includes(fieldId)
+        ? current.filter((id) => id !== fieldId)
+        : [...current, fieldId],
+    );
+  };
+
+  const formatConfidence = (confidence?: number) => {
+    if (confidence === undefined || confidence === null) return "-";
+    return `${Math.round(confidence * 100)}%`;
   };
 
   const handleRunAiReview = () =>
@@ -168,8 +215,8 @@ export const SubmissionReviewPage = () => {
             </SActions>
           )}
           {review && (
-            <SList>
-              <SListItem>
+            <SAiFieldsList>
+              <SAiReviewHeader>
                 <div>
                   <SItemTitle>Результат проверки</SItemTitle>
                   <SItemMeta>
@@ -186,77 +233,112 @@ export const SubmissionReviewPage = () => {
                       : "-"}
                   </SItemMeta>
                 </div>
-                <SStatus>
-                  {AI_REVIEW_STATUS_LABELS[review.status ?? ""] ??
-                    review.status ??
-                    "-"}
-                </SStatus>
-              </SListItem>
-              <SActions>
-                <Button
-                  color="violet"
-                  loading={createAiReview.isPending}
-                  disabled={!isSubmissionIdValid}
-                  onClick={handleRunAiReview}
-                >
-                  Запустить повторно
-                </Button>
-              </SActions>
-              {completedFields.map((fieldResult, idx) => (
-                <SListItem key={fieldResult.fieldId ?? idx}>
-                  <div>
-                    <SItemTitle>
-                      {fieldResult.title ??
-                        `Поле #${fieldResult.fieldId ?? idx}`}
-                    </SItemTitle>
-                    {fieldResult.message && (
-                      <SItemMeta>{fieldResult.message}</SItemMeta>
-                    )}
-                    {(fieldResult.criteria ?? [])
-                      .slice()
-                      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                      .map((cr, ci) => (
-                        <SItemMeta key={ci}>
-                          {cr.description ?? `Критерий ${ci + 1}`}:{" "}
-                          {cr.score !== undefined && cr.score !== null
-                            ? `${cr.score} баллов. `
-                            : ""}
-                          {cr.verdict ?? ""}
-                          {cr.answer ? ` Ответ: ${cr.answer}` : ""}
-                          {(cr.evidence ?? [])
-                            .filter(
-                              (evidence) => evidence.quote || evidence.why,
-                            )
-                            .map((evidence, evidenceIndex) =>
-                              [
-                                evidence.quote
-                                  ? `Фрагмент ${evidenceIndex + 1}: ${evidence.quote}`
-                                  : "",
-                                evidence.why
-                                  ? `Пояснение: ${evidence.why}`
-                                  : "",
-                              ]
-                                .filter(Boolean)
-                                .join(" "),
-                            )
-                            .filter(Boolean)
-                            .join(" ")}
-                        </SItemMeta>
-                      ))}
-                  </div>
+                <SActions>
                   <SStatus>
-                    {AI_REVIEW_STATUS_LABELS[fieldResult.status ?? ""] ??
-                      fieldResult.status ??
+                    {AI_REVIEW_STATUS_LABELS[review.status ?? ""] ??
+                      review.status ??
                       "-"}
                   </SStatus>
-                </SListItem>
+                  <Button
+                    color="violet"
+                    loading={createAiReview.isPending}
+                    disabled={!isSubmissionIdValid}
+                    onClick={handleRunAiReview}
+                  >
+                    Запустить повторно
+                  </Button>
+                </SActions>
+              </SAiReviewHeader>
+              {completedFields.map((fieldResult, idx) => (
+                <SAiFieldCard key={fieldResult.fieldId ?? idx}>
+                  <SAiFieldToggle
+                    type="button"
+                    onClick={() => toggleAiField(fieldResult.fieldId)}
+                  >
+                    <SAiFieldTitleBlock>
+                      <SItemTitle>
+                        {fieldResult.title ??
+                          `Поле #${fieldResult.fieldId ?? idx}`}
+                      </SItemTitle>
+                      <SAiFieldMeta>
+                        {fieldResult.type ?? "Тип поля не указан"} ·{" "}
+                        {(fieldResult.criteria ?? []).length} критериев
+                        {fieldResult.message ? ` · ${fieldResult.message}` : ""}
+                      </SAiFieldMeta>
+                    </SAiFieldTitleBlock>
+                    <SAiFieldBadges>
+                      <SAiBadge $tone="success">
+                        {AI_REVIEW_STATUS_LABELS[fieldResult.status ?? ""] ??
+                          fieldResult.status ??
+                          "-"}
+                      </SAiBadge>
+                      <SAiBadge>
+                        {expandedFieldIds.includes(fieldResult.fieldId ?? 0)
+                          ? "Свернуть"
+                          : "Раскрыть"}
+                      </SAiBadge>
+                    </SAiFieldBadges>
+                  </SAiFieldToggle>
+
+                  {expandedFieldIds.includes(fieldResult.fieldId ?? 0) && (
+                    <SAiFieldBody>
+                      {(fieldResult.criteria ?? [])
+                        .slice()
+                        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                        .map((cr, ci) => (
+                          <SAiCriterionCard key={cr.criterionId ?? ci}>
+                            <SAiCriterionHeader>
+                              <SAiCriterionTitle>
+                                {cr.description ?? `Критерий ${ci + 1}`}
+                              </SAiCriterionTitle>
+                              <SAiCriterionBadges>
+                                <SAiBadge $tone="score">
+                                  {cr.score !== undefined && cr.score !== null
+                                    ? `${cr.score}/10`
+                                    : "Без оценки"}
+                                </SAiBadge>
+                                <SAiBadge>
+                                  Confidence {formatConfidence(cr.confidence)}
+                                </SAiBadge>
+                                <SAiBadge $tone="success">
+                                  {AI_REVIEW_STATUS_LABELS[cr.status ?? ""] ??
+                                    cr.status ??
+                                    "-"}
+                                </SAiBadge>
+                              </SAiCriterionBadges>
+                            </SAiCriterionHeader>
+                            <SAiAnswer>
+                              {cr.answer || "AI не вернул текстовый ответ."}
+                            </SAiAnswer>
+                            {(cr.evidence ?? [])
+                              .filter(
+                                (evidence) => evidence.quote || evidence.why,
+                              )
+                              .map((evidence, evidenceIndex) => (
+                                <SAiEvidence key={evidenceIndex}>
+                                  {evidence.quote && (
+                                    <div>
+                                      Фрагмент {evidenceIndex + 1}:{" "}
+                                      {evidence.quote}
+                                    </div>
+                                  )}
+                                  {evidence.why && (
+                                    <div>Пояснение: {evidence.why}</div>
+                                  )}
+                                </SAiEvidence>
+                              ))}
+                          </SAiCriterionCard>
+                        ))}
+                    </SAiFieldBody>
+                  )}
+                </SAiFieldCard>
               ))}
               {!completedFields.length && (
                 <SPanelText>
                   В AI-ревью нет полей со статусом COMPLETED.
                 </SPanelText>
               )}
-            </SList>
+            </SAiFieldsList>
           )}
         </SPanelWide>
 
