@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useGetContest, useGetContestParticipants } from "@/entities/contest";
 import { useBreadcrumbStore } from "@/widgets/Breadcrumb";
@@ -15,6 +16,7 @@ import {
 } from "@/entities/stage";
 import {
   useCreateProject,
+  getMyProjectsKey,
   useGetMyProjects,
   useSaveProjectStageValue,
   useSubmitProjectStage,
@@ -80,6 +82,7 @@ const scoreScaleLabels: Record<string, string> = {
 const fieldTypeLabels: Record<string, string> = {
   TEXT: "Текст",
   LINK: "Ссылка",
+  GITHUB_REPOSITORY: "GitHub репозиторий",
   FILE: "Файл",
   FILES: "Файлы",
   VIDEO: "Видео",
@@ -199,7 +202,9 @@ const SubmissionField = ({
           disabled={disabled}
           $disabled={disabled}
           placeholder={
-            field.type === "LINK" || field.type === "VIDEO"
+            field.type === "GITHUB_REPOSITORY"
+              ? "https://github.com/..."
+              : field.type === "LINK" || field.type === "VIDEO"
               ? "https://..."
               : field.type === "NUMBER"
                 ? "Введите число..."
@@ -225,7 +230,7 @@ const SubmissionField = ({
 
 export const StagePage = () => {
   const params = useParams<{ contestId?: string; stageId?: string }>();
-  const router = useRouter();
+  const queryClient = useQueryClient();
   const stageId = Number(params.stageId);
   const contestId = Number(params.contestId);
   const isValid =
@@ -280,8 +285,9 @@ export const StagePage = () => {
   const project = useMemo(
     () =>
       myProjects.data?.activeProjects?.find((p) => p.contestId === contestId) ??
+      (createProject.data?.contestId === contestId ? createProject.data : null) ??
       null,
-    [myProjects.data, contestId],
+    [myProjects.data, contestId, createProject.data],
   );
 
   const submission = useMemo(
@@ -375,10 +381,16 @@ export const StagePage = () => {
     if (!shouldCreateProject) return;
     if (createProjectAttempted.current) return;
     createProjectAttempted.current = true;
-    createProject.mutate({
-      contestId,
-      ...(participationMode === "TEAM" && myTeam ? { teamId: myTeam.id } : {}),
-    });
+    createProject.mutate(
+      {
+        contestId,
+        ...(participationMode === "TEAM" && myTeam ? { teamId: myTeam.id } : {}),
+      },
+      {
+        onSuccess: () =>
+          queryClient.invalidateQueries({ queryKey: [getMyProjectsKey] }),
+      },
+    );
   }, [shouldCreateProject]);
 
   /* ─── save on blur ────────────────────────────────────────────────────────── */
@@ -386,11 +398,17 @@ export const StagePage = () => {
   const handleBlur = (fieldId: number) => {
     if (!project?.id || isSubmitted || deadlinePassed) return;
     const valueText = fieldValues[fieldId] ?? "";
-    saveValue.mutate({
-      projectId: project.id,
-      stageId,
-      data: { fieldId, valueText },
-    });
+    saveValue.mutate(
+      {
+        projectId: project.id,
+        stageId,
+        data: { fieldId, valueText },
+      },
+      {
+        onSuccess: () =>
+          queryClient.invalidateQueries({ queryKey: [getMyProjectsKey] }),
+      },
+    );
   };
 
   /* ─── submit validation ─────────────────────────────────────────────────── */
@@ -407,7 +425,13 @@ export const StagePage = () => {
 
   const handleSubmit = () => {
     if (!project?.id || !canSubmit) return;
-    submitStage.mutate({ projectId: project.id, stageId });
+    submitStage.mutate(
+      { projectId: project.id, stageId },
+      {
+        onSuccess: () =>
+          queryClient.invalidateQueries({ queryKey: [getMyProjectsKey] }),
+      },
+    );
   };
 
   /* ─── invalid page ────────────────────────────────────────────────────────── */

@@ -65,7 +65,7 @@ const emptyForm = () => ({
   participantHint: "",
   exampleValue: "",
   expertNote: "",
-  criteriaDescription: "",
+  criteriaDescriptions: [""],
   fileFormats: "",
   maxFileSizeMb: "",
 });
@@ -121,12 +121,18 @@ export const StageFieldsBuilderPage = () => {
       participantHint: field.participantHint ?? "",
       exampleValue: field.exampleValue ?? "",
       expertNote: field.expertNote ?? "",
-      criteriaDescription: (field.criteria ?? [])
-        .slice()
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-        .map((c) => c.description ?? "")
-        .filter(Boolean)
-        .join("\n"),
+      criteriaDescriptions:
+        (field.criteria ?? [])
+          .slice()
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .map((c) => c.description ?? "")
+          .filter(Boolean).length > 0
+          ? (field.criteria ?? [])
+              .slice()
+              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+              .map((c) => c.description ?? "")
+              .filter(Boolean)
+          : [""],
       fileFormats: normalizeFileFormats(field.fileFormats) ?? "",
       maxFileSizeMb: field.maxFileSizeMb ? String(field.maxFileSizeMb) : "",
     });
@@ -136,6 +142,30 @@ export const StageFieldsBuilderPage = () => {
     setEditingFieldId(null);
     setForm(emptyForm());
     setActionResult(null);
+  };
+
+  const updateCriterion = (index: number, value: string) => {
+    setForm({
+      ...form,
+      criteriaDescriptions: form.criteriaDescriptions.map((criterion, i) =>
+        i === index ? value : criterion,
+      ),
+    });
+  };
+
+  const addCriterion = () => {
+    setForm({
+      ...form,
+      criteriaDescriptions: [...form.criteriaDescriptions, ""],
+    });
+  };
+
+  const removeCriterion = (index: number) => {
+    const next = form.criteriaDescriptions.filter((_, i) => i !== index);
+    setForm({
+      ...form,
+      criteriaDescriptions: next.length ? next : [""],
+    });
   };
 
   useEffect(() => {
@@ -153,9 +183,8 @@ export const StageFieldsBuilderPage = () => {
     participantHint: form.participantHint.trim() || undefined,
     exampleValue: form.exampleValue.trim() || undefined,
     expertNote: form.expertNote.trim() || undefined,
-    criteria: form.criteriaDescription
-      .split("\n")
-      .map((line) => line.trim())
+    criteria: form.criteriaDescriptions
+      .map((criterion) => criterion.trim())
       .filter(Boolean)
       .map((description, index) => ({ order: index, description })),
     fileFormats:
@@ -318,13 +347,33 @@ export const StageFieldsBuilderPage = () => {
           </SField>
           <SField>
             Критерии проверки
-            <STextarea
-              value={form.criteriaDescription}
-              onChange={(e) =>
-                setForm({ ...form, criteriaDescription: e.target.value })
-              }
-              placeholder="Описание критериев"
-            />
+            <SList>
+              {form.criteriaDescriptions.map((criterion, index) => (
+                <SListItem key={index}>
+                  <div>
+                    <SItemTitle>Критерий {index + 1}</SItemTitle>
+                    <STextarea
+                      value={criterion}
+                      onChange={(e) => updateCriterion(index, e.target.value)}
+                      placeholder="Описание критерия"
+                    />
+                  </div>
+                  <Button
+                    type="text"
+                    color="gray"
+                    disabled={form.criteriaDescriptions.length === 1}
+                    onClick={() => removeCriterion(index)}
+                  >
+                    Удалить
+                  </Button>
+                </SListItem>
+              ))}
+            </SList>
+            <SActions>
+              <Button type="text" onClick={addCriterion}>
+                Добавить критерий
+              </Button>
+            </SActions>
           </SField>
 
           {isUploadField(form.type) && (
@@ -425,15 +474,19 @@ export const StageFieldsBuilderPage = () => {
                     <SItemMeta>Заметка эксперта: {field.expertNote}</SItemMeta>
                   )}
                   {field.criteria && field.criteria.length > 0 && (
-                    <SItemMeta>
-                      Критерии:{" "}
+                    <>
+                      <SItemMeta>Критерии: {field.criteria.length}</SItemMeta>
                       {field.criteria
                         .slice()
                         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                        .map((c) => c.description)
-                        .filter(Boolean)
-                        .join("; ")}
-                    </SItemMeta>
+                        .map((c, index) =>
+                          c.description ? (
+                            <SItemMeta key={c.id ?? index}>
+                              {index + 1}. {c.description}
+                            </SItemMeta>
+                          ) : null,
+                        )}
+                    </>
                   )}
                 </div>
                 <SActions>
