@@ -75,6 +75,19 @@ export const SubmissionReviewPage = () => {
     return field?.title ?? `Поле #${fieldId ?? "-"}`;
   };
 
+  const handleRunAiReview = () =>
+    createAiReview.mutate(
+      { submissionId },
+      {
+        onSuccess: (data) => {
+          setCreatedReview(data);
+          setActionResult("AI-ревью готово.");
+          aiReview.refetch();
+        },
+        onError: (error) => setActionResult(error.message),
+      },
+    );
+
   return (
     <SWorkspacePage>
       <SWorkspaceHeader>
@@ -148,19 +161,7 @@ export const SubmissionReviewPage = () => {
                 color="violet"
                 loading={createAiReview.isPending}
                 disabled={!isSubmissionIdValid}
-                onClick={() =>
-                  createAiReview.mutate(
-                    { submissionId },
-                    {
-                      onSuccess: (data) => {
-                        setCreatedReview(data);
-                        setActionResult("AI-ревью готово.");
-                        aiReview.refetch();
-                      },
-                      onError: (error) => setActionResult(error.message),
-                    },
-                  )
-                }
+                onClick={handleRunAiReview}
               >
                 Запустить AI-ревью
               </Button>
@@ -191,6 +192,16 @@ export const SubmissionReviewPage = () => {
                     "-"}
                 </SStatus>
               </SListItem>
+              <SActions>
+                <Button
+                  color="violet"
+                  loading={createAiReview.isPending}
+                  disabled={!isSubmissionIdValid}
+                  onClick={handleRunAiReview}
+                >
+                  Запустить повторно
+                </Button>
+              </SActions>
               {completedFields.map((fieldResult, idx) => (
                 <SListItem key={fieldResult.fieldId ?? idx}>
                   <div>
